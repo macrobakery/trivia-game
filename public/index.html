@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Challenge</title>
+  <!-- Design fonts: Fraunces (serif italic titles), Geist (UI), JetBrains Mono (labels) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Geist:wght@300..700&family=JetBrains+Mono:wght@400..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Animated nebula background ── -->
+  <div class="bg" aria-hidden="true">
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+    <div class="bg-blob bg-blob-3"></div>
+    <div class="bg-grain"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════
+       SCREEN 1 · START / SPLASH SCREEN
+  ════════════════════════════════════════ -->
+  <div id="start-screen" class="screen splash active">
+
+    <!-- AI Orb (splash) -->
+    <div class="splash-orb">
+      <div class="ai-orb-container" data-state="speaking">
+        <div class="ai-orb-halo"></div>
+        <div class="ai-orb-core">
+          <div class="ai-orb-band1"></div>
+          <div class="ai-orb-band2"></div>
+          <div class="ai-orb-spec"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Title block -->
+    <div class="splash-content">
+
+      <!-- Resume banner — shown when a saved session is detected -->
+      <div id="resume-banner" class="resume-banner" style="display:none" role="alert">
+        <div class="resume-info">
+          <span class="resume-icon">⚡</span>
+          <div>
+            <div class="resume-title">Game in progress</div>
+            <div class="resume-meta" id="resume-meta">Loading…</div>
+          </div>
+        </div>
+        <div class="resume-actions">
+          <button class="btn-primary" id="resume-btn">Resume →</button>
+          <button class="btn-ghost-sm" id="discard-btn">Discard</button>
+        </div>
+      </div>
+
+      <div class="eyebrow">A trivia game powered by</div>
+      <h1 class="title-display">AI Challenge</h1>
+      <p class="lede">Answer questions, unlock levels, and master the AI app development process.</p>
+
+      <!-- Selection area (inline on splash) -->
+      <div class="splash-selections">
+
+        <!-- Level Selection -->
+        <div class="selection-block">
+          <div class="ctrl-lbl"><span class="step-num">1</span> Choose Your Level</div>
+          <div class="levels-grid">
+            <button class="level-card" data-level="AI Foundations">
+              <span class="lc-glyph">◐</span>
+              <span class="lc-num">Level 1</span>
+              <span class="lc-name">AI Foundations</span>
+            </button>
+            <button class="level-card" data-level="Data Preparation">
+              <span class="lc-glyph">◇</span>
+              <span class="lc-num">Level 2</span>
+              <span class="lc-name">Data Preparation</span>
+            </button>
+            <button class="level-card" data-level="Model Building">
+              <span class="lc-glyph">◈</span>
+              <span class="lc-num">Level 3</span>
+              <span class="lc-name">Model Building</span>
+            </button>
+            <button class="level-card" data-level="AI App Development">
+              <span class="lc-glyph">◉</span>
+              <span class="lc-num">Level 4</span>
+              <span class="lc-name">AI App Development</span>
+            </button>
+            <button class="level-card" data-level="Deployment and Responsible AI">
+              <span class="lc-glyph">✦</span>
+              <span class="lc-num">Level 5</span>
+              <span class="lc-name">Deployment &amp; Ethics</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Difficulty Selection -->
+        <div class="selection-block">
+          <div class="ctrl-lbl"><span class="step-num">2</span> Choose Difficulty</div>
+          <div class="diff-grid">
+            <button class="diff-card" data-difficulty="Beginner">
+              <span class="dc-glyph">🌱</span>
+              <span class="dc-name">Beginner</span>
+              <span class="dc-meta">25 sec · Basic concepts</span>
+            </button>
+            <button class="diff-card" data-difficulty="Intermediate">
+              <span class="dc-glyph">🔥</span>
+              <span class="dc-name">Intermediate</span>
+              <span class="dc-meta">18 sec · +25 pts bonus</span>
+            </button>
+            <button class="diff-card" data-difficulty="Advanced">
+              <span class="dc-glyph">⚡</span>
+              <span class="dc-name">Advanced</span>
+              <span class="dc-meta">12 sec · +50 pts bonus</span>
+            </button>
+            <button class="diff-card diff-card-practice" data-difficulty="Practice">
+              <span class="dc-glyph">🎓</span>
+              <span class="dc-name">Practice</span>
+              <span class="dc-meta">No timer · Learn freely</span>
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /splash-selections -->
+
+      <!-- Start button -->
+      <button id="start-btn" class="btn-primary" disabled>
+        <span id="start-btn-spinner" class="start-spinner" style="display:none">⟳</span>
+        <span id="start-btn-text">Select Level &amp; Difficulty</span>
+        <span class="arrow" id="start-btn-arrow">→</span>
+      </button>
+
+      <!-- Leaderboard preview -->
+      <div class="lb-preview-box">
+        <div class="lb-preview-header">
+          <span>🏆 Top Scores</span>
+          <button id="open-lb-btn" class="btn-ghost-sm">View All →</button>
+        </div>
+        <div id="lb-preview-list">
+          <p class="ink-faint" style="font-size:13px;text-align:center;padding:8px 0">No scores yet. Be the first!</p>
+        </div>
+      </div>
+
+    </div><!-- /splash-content -->
+
+    <div class="splash-meta">
+      <span>v1.0</span>
+      <span class="dot">·</span>
+      <span>AI App Builder Challenge</span>
+    </div>
+
+  </div><!-- /start-screen -->
+
+
+  <!-- ════════════════════════════════════════
+       SCREEN 2 · GAME / QUESTION SCREEN
+  ════════════════════════════════════════ -->
+  <div id="game-screen" class="screen question-screen">
+
+    <!-- ── Top bar ── -->
+    <header class="qbar">
+      <div class="qbar-side">
+        <button class="btn-ghost-sm" id="reset-btn" title="Restart game">↺ Restart</button>
+        <button class="btn-ghost-sm" id="sound-toggle" title="Toggle sound" aria-label="Toggle sound">🔊</button>
+        <div class="round-pill" id="progress-label">Question 1 of 10</div>
+      </div>
+      <div class="qbar-center">
+        <span class="badge badge-level" id="active-level-badge">AI Foundations</span>
+        <div class="score-display">
+          <div class="score-label">SCORE</div>
+          <div class="score-value" id="score-display">0</div>
+        </div>
+        <span class="badge badge-diff" id="active-diff-badge">Beginner</span>
+        <div class="streak-pill" id="streak-display" style="display:none">🔥 <span id="streak-num">3</span></div>
+      </div>
+      <div class="qbar-side qbar-right">
+        <div class="answer-counter correct-counter">✓ <span id="correct-count">0</span></div>
+        <div class="answer-counter wrong-counter">✗ <span id="wrong-count">0</span></div>
+        <!-- Circular timer -->
+        <div class="timer-wrap" id="timer-wrap">
+          <svg class="timer-svg" viewBox="0 0 36 36" aria-hidden="true">
+            <circle cx="18" cy="18" r="15.9" pathLength="100" class="timer-track" />
+            <circle cx="18" cy="18" r="15.9" pathLength="100" class="timer-bar" id="timer-bar"
+                    style="stroke-dasharray:100 100" />
+          </svg>
+          <div class="timer-content">
+            <span class="timer-num" id="timer-num">25</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── Thin progress bar ── -->
+    <div class="progress-thin-track">
+      <div class="progress-fill" id="progress-fill" style="width:10%"></div>
+    </div>
+
+    <!-- ── Body: orb + question ── -->
+    <div class="qbody">
+
+      <!-- Orb column -->
+      <div class="qorb">
+        <div class="ai-orb-container" id="game-orb" data-state="idle">
+          <div class="ai-orb-halo"></div>
+          <div class="ai-orb-core">
+            <div class="ai-orb-band1"></div>
+            <div class="ai-orb-band2"></div>
+            <div class="ai-orb-spec"></div>
+          </div>
+        </div>
+        <div class="orb-caption" id="orb-caption">AI is ready</div>
+      </div>
+
+      <!-- Question column -->
+      <div class="qprompt">
+
+        <!-- Power-ups row (50/50 + extra time) -->
+        <div class="powerups-row">
+          <button class="pu-btn" id="pu-fifty" title="Remove 2 wrong answers">50/50</button>
+          <button class="pu-btn" id="pu-time"  title="Add 5 extra seconds">+5 sec</button>
+          <!-- q-num and q-cat sit to the right -->
+          <span class="q-num" id="q-num">Question 1</span>
+          <span class="qcat"  id="q-cat">AI Foundations</span>
+        </div>
+
+        <!-- Question text -->
+        <h2 class="qtext" id="q-text">Loading question…</h2>
+
+        <!-- Hint card (shown when hint power-up used) -->
+        <div class="hint-card" id="hint-box" style="display:none">
+          <span class="hint-lbl">Hint</span>
+          <span id="hint-text"></span>
+        </div>
+
+        <!-- Answer choices -->
+        <div class="qchoices" id="options-grid" role="group" aria-label="Answer options">
+          <button class="opt-btn" id="opt-a" data-opt="A">
+            <span class="choice-letter opt-label">A</span>
+            <span class="choice-text opt-text" id="opt-a-text"></span>
+          </button>
+          <button class="opt-btn" id="opt-b" data-opt="B">
+            <span class="choice-letter opt-label">B</span>
+            <span class="choice-text opt-text" id="opt-b-text"></span>
+          </button>
+          <button class="opt-btn" id="opt-c" data-opt="C">
+            <span class="choice-letter opt-label">C</span>
+            <span class="choice-text opt-text" id="opt-c-text"></span>
+          </button>
+          <button class="opt-btn" id="opt-d" data-opt="D">
+            <span class="choice-letter opt-label">D</span>
+            <span class="choice-text opt-text" id="opt-d-text"></span>
+          </button>
+        </div>
+
+        <!-- Feedback area (shown after answering) -->
+        <div class="feedback-area" id="feedback-area" style="display:none">
+          <div class="feedback-banner" id="feedback-banner">Correct! ✓</div>
+          <div class="mentor-box">
+            <div class="mentor-header">
+              <span class="mentor-avatar">🤖</span>
+              <span class="mentor-title">AI Mentor Explanation</span>
+            </div>
+            <p class="mentor-text" id="mentor-text"></p>
+          </div>
+          <div class="feedback-actions">
+            <button class="btn-next" id="next-btn">Next Question → <span class="kb-tag">Enter</span></button>
+            <button class="btn-flag" id="flag-btn" title="Report an issue with this question">⚑ Report issue</button>
+          </div>
+        </div>
+
+        <!-- Keyboard shortcut hint (desktop only) -->
+        <p class="kb-hint" aria-hidden="true">⌨ Press <kbd>A</kbd> <kbd>B</kbd> <kbd>C</kbd> <kbd>D</kbd> to answer</p>
+
+      </div><!-- /qprompt -->
+    </div><!-- /qbody -->
+
+    <!-- ── Footer: hint power-up ── -->
+    <footer class="qfoot">
+      <button class="btn-ghost" id="pu-hint" title="Show a hint">
+        <span class="hint-glyph">✦</span>
+        Ask AI for a hint
+      </button>
+    </footer>
+
+  </div><!-- /game-screen -->
+
+
+  <!-- ════════════════════════════════════════
+       SCREEN 3 · RESULTS SCREEN
+  ════════════════════════════════════════ -->
+  <div id="results-screen" class="screen results">
+
+    <!-- Orb (results) -->
+    <div class="splash-orb">
+      <div class="ai-orb-container" id="results-orb" data-state="correct">
+        <div class="ai-orb-halo"></div>
+        <div class="ai-orb-core">
+          <div class="ai-orb-band1"></div>
+          <div class="ai-orb-band2"></div>
+          <div class="ai-orb-spec"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="splash-content">
+      <div class="eyebrow" id="results-eyebrow">Your performance</div>
+      <h1 class="title-display" id="badge-name">AI Architect</h1>
+
+      <div class="pass-fail-banner" id="pass-fail-banner">Level Complete! ✓</div>
+
+      <!-- Stats board -->
+      <div class="results-board">
+        <div class="results-row">
+          <span class="results-name">Final Score</span>
+          <span class="results-score" id="res-score">0</span>
+        </div>
+        <div class="results-row">
+          <span class="results-name">Correct Answers</span>
+          <span class="results-score" id="res-correct">0/10</span>
+        </div>
+        <div class="results-row">
+          <span class="results-name">Accuracy</span>
+          <span class="results-score" id="res-accuracy">0%</span>
+        </div>
+        <div id="res-time-row" class="results-row" style="display:none">
+          <span class="results-name">Round Time</span>
+          <span class="results-score" id="res-time">0:00</span>
+        </div>
+        <div id="badge-ring" class="results-row winner" style="display:none">
+          <span class="results-name" id="badge-icon-label">Badge</span>
+          <span class="results-score" id="badge-icon">🏗️</span>
+        </div>
+        <div id="res-streak-row" class="results-row" style="display:none">
+          <span class="results-name">Best Streak</span>
+          <span class="results-score" id="res-streak">🔥 0</span>
+        </div>
+        <div id="res-rank-row" class="results-row" style="display:none">
+          <span class="results-name">Your Rank</span>
+          <span class="results-score" id="res-rank">—</span>
+        </div>
+      </div>
+
+      <!-- Level / difficulty played -->
+      <div class="res-meta">
+        <span class="badge badge-level" id="res-level-badge"></span>
+        <span class="badge badge-diff"  id="res-diff-badge"></span>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="results-actions">
+        <button class="btn-primary" id="save-score-btn">💾 Save Score</button>
+        <button class="btn-ghost"   id="share-score-btn">📤 Share Score</button>
+        <button class="btn-ghost"   id="view-lb-res-btn">🏆 Leaderboard</button>
+        <button class="btn-ghost"   id="play-again-btn">↻ Play Again</button>
+        <button class="btn-ghost"   id="review-btn">📋 Review Answers</button>
+      </div>
+
+      <!-- Answer review (toggled) -->
+      <div id="review-section" class="review-section" style="display:none">
+        <div id="review-list"></div>
+      </div>
+
+    </div>
+
+    <div class="splash-meta">
+      <span id="res-correct-meta">0 correct</span>
+      <span class="dot">·</span>
+      <span id="res-wrong-meta">0 wrong</span>
+    </div>
+
+  </div><!-- /results-screen -->
+
+
+  <!-- ════════════════════════════════════════
+       MODAL · SAVE SCORE
+  ════════════════════════════════════════ -->
+  <div id="save-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <h3>💾 Save Your Score</h3>
+      <p>Enter your name to appear on the leaderboard.</p>
+      <label class="field">
+        <span class="field-lbl">Your name</span>
+        <input type="text" id="player-name-input" placeholder="Type your name…" maxlength="30" autocomplete="off" />
+      </label>
+      <div class="modal-actions">
+        <button class="btn-primary" id="confirm-save-btn">Save Score</button>
+        <button class="btn-ghost"   id="cancel-save-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ════════════════════════════════════════
+       MODAL · LEADERBOARD
+  ════════════════════════════════════════ -->
+  <div id="lb-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true">
+    <div class="modal-box">
+      <div class="modal-header-row">
+        <h3>🏆 Leaderboard</h3>
+        <button class="btn-ghost-sm" id="close-lb-btn" aria-label="Close">✕</button>
+      </div>
+      <div id="lb-table-content">
+        <p style="color:var(--ink-faint);text-align:center;padding:16px 0;font-size:13px">Loading…</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

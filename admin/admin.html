@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — AI App Builder Challenge</title>
+  <link rel="stylesheet" href="/admin/admin.css" />
+</head>
+<body>
+
+  <!-- Background grid -->
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <!-- ── Header ── -->
+  <header class="admin-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="header-icon">⚙️</span>
+        <div>
+          <div class="header-title">Admin Dashboard</div>
+          <div class="header-sub">AI App Builder Challenge</div>
+        </div>
+      </div>
+      <a href="/" class="btn-outline-sm">← Back to Game</a>
+    </div>
+  </header>
+
+  <!-- ── Main Layout ── -->
+  <main class="admin-main">
+
+    <!-- ════ LEFT PANEL: Question Form ════ -->
+    <aside class="form-panel">
+      <div class="panel-heading">
+        <h2 id="form-title">➕ Add Question</h2>
+        <button id="reset-form-btn" class="btn-ghost" title="Clear form">✕ Cancel</button>
+      </div>
+
+      <form id="question-form" autocomplete="off">
+        <input type="hidden" id="edit-id" value="" />
+
+        <!-- Level -->
+        <div class="form-group">
+          <label for="f-level">Level <span class="req">*</span></label>
+          <select id="f-level" required>
+            <option value="">— Select Level —</option>
+            <option value="AI Foundations">Level 1: AI Foundations</option>
+            <option value="Data Preparation">Level 2: Data Preparation</option>
+            <option value="Model Building">Level 3: Model Building</option>
+            <option value="AI App Development">Level 4: AI App Development</option>
+            <option value="Deployment and Responsible AI">Level 5: Deployment and Responsible AI</option>
+          </select>
+        </div>
+
+        <!-- Difficulty -->
+        <div class="form-group">
+          <label for="f-difficulty">Difficulty <span class="req">*</span></label>
+          <select id="f-difficulty" required>
+            <option value="">— Select Difficulty —</option>
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+
+        <!-- Question Text -->
+        <div class="form-group">
+          <label for="f-question">Question Text <span class="req">*</span></label>
+          <textarea id="f-question" rows="3" placeholder="Enter the question…" required></textarea>
+        </div>
+
+        <!-- Options -->
+        <div class="form-group">
+          <label>Answer Options <span class="req">*</span></label>
+          <div class="options-form-grid">
+            <div class="opt-form-row">
+              <span class="opt-badge a">A</span>
+              <input type="text" id="f-opt-a" placeholder="Option A…" required />
+            </div>
+            <div class="opt-form-row">
+              <span class="opt-badge b">B</span>
+              <input type="text" id="f-opt-b" placeholder="Option B…" required />
+            </div>
+            <div class="opt-form-row">
+              <span class="opt-badge c">C</span>
+              <input type="text" id="f-opt-c" placeholder="Option C…" required />
+            </div>
+            <div class="opt-form-row">
+              <span class="opt-badge d">D</span>
+              <input type="text" id="f-opt-d" placeholder="Option D…" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- Correct Option -->
+        <div class="form-group">
+          <label for="f-correct">Correct Answer <span class="req">*</span></label>
+          <select id="f-correct" required>
+            <option value="">— Select Answer —</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+            <option value="D">D</option>
+          </select>
+        </div>
+
+        <!-- Explanation -->
+        <div class="form-group">
+          <label for="f-explanation">Explanation <span class="req">*</span></label>
+          <textarea id="f-explanation" rows="3" placeholder="Explain why the answer is correct…" required></textarea>
+        </div>
+
+        <!-- Hint -->
+        <div class="form-group">
+          <label for="f-hint">Hint <span class="req">*</span></label>
+          <input type="text" id="f-hint" placeholder="A short hint for the player…" required />
+        </div>
+
+        <!-- Error message -->
+        <div id="form-error" class="form-error" style="display:none"></div>
+
+        <button type="submit" class="btn-submit" id="submit-btn">✅ Add Question</button>
+      </form>
+    </aside>
+
+    <!-- ════ RIGHT PANEL: Questions List + Leaderboard ════ -->
+    <section class="content-panel">
+
+      <!-- Tab bar -->
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="questions">📋 Questions</button>
+        <button class="tab-btn" data-tab="leaderboard">🏆 Leaderboard</button>
+      </div>
+
+      <!-- Questions Tab -->
+      <div id="tab-questions" class="tab-content active">
+
+        <!-- Filters + stats -->
+        <div class="filters-bar">
+          <div class="filter-group">
+            <label for="filter-level">Level</label>
+            <select id="filter-level">
+              <option value="">All Levels</option>
+              <option value="AI Foundations">Level 1: AI Foundations</option>
+              <option value="Data Preparation">Level 2: Data Preparation</option>
+              <option value="Model Building">Level 3: Model Building</option>
+              <option value="AI App Development">Level 4: AI App Development</option>
+              <option value="Deployment and Responsible AI">Level 5: Deployment &amp; Responsible AI</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="filter-difficulty">Difficulty</label>
+            <select id="filter-difficulty">
+              <option value="">All Difficulties</option>
+              <option value="Beginner">Beginner</option>
+              <option value="Intermediate">Intermediate</option>
+              <option value="Advanced">Advanced</option>
+            </select>
+          </div>
+          <button id="apply-filter-btn" class="btn-filter">Apply</button>
+          <button id="clear-filter-btn" class="btn-ghost">Clear</button>
+        </div>
+
+        <div id="question-stats" class="question-stats"></div>
+        <div id="questions-list" class="questions-list">
+          <div class="loading-msg">Loading questions…</div>
+        </div>
+      </div>
+
+      <!-- Leaderboard Tab -->
+      <div id="tab-leaderboard" class="tab-content">
+        <div class="lb-actions-bar">
+          <h3>All Scores</h3>
+          <button id="clear-lb-btn" class="btn-danger">🗑 Clear Leaderboard</button>
+        </div>
+        <div id="admin-lb-content">
+          <div class="loading-msg">Loading scores…</div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Confirm delete modal -->
+  <div id="confirm-modal" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <h3 id="confirm-title">Confirm Delete</h3>
+      <p id="confirm-message">Are you sure?</p>
+      <div class="modal-actions">
+        <button id="confirm-yes-btn" class="btn-danger-full">Yes, Delete</button>
+        <button id="confirm-no-btn"  class="btn-ghost">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast" style="display:none"></div>
+
+  <script src="/admin/admin.js"></script>
+</body>
+</html>
