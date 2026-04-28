@@ -39,35 +39,16 @@
       <button class="theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
     </div>
 
-    <!-- ── Hero: Daily Learning Hub ── -->
-    <a href="/learn.html" class="hub-hero-card" id="daily-hub-btn">
-      <div class="hub-hero-top">
-        <span class="hub-hero-label">📚 Daily Learning Hub</span>
-        <span class="hub-hero-streak">🔥 <span id="hub-streak-num">0</span></span>
+    <!-- ── Compact learning strip ── -->
+    <a href="/learn.html" class="hub-learn-strip" id="daily-hub-btn">
+      <span class="hub-learn-icon">📚</span>
+      <div class="hub-learn-text">
+        <span class="hub-learn-title">Daily Learning Hub</span>
+        <span class="hub-learn-sub">AI trends + 3 micro-lessons, updated daily</span>
       </div>
-      <div class="hub-hero-title">Continue Today's Session</div>
-      <div class="hub-hero-sub">Fresh AI trends + 3 micro-lessons, generated every morning</div>
-      <div class="hub-hero-cta">Start learning today →</div>
+      <span class="hub-learn-streak">🔥 <span id="hub-streak-num">0</span></span>
+      <span class="hub-learn-arrow">→</span>
     </a>
-
-    <!-- ── Quick-action tiles ── -->
-    <div class="hub-tiles">
-      <a href="/lessons.html" class="hub-tile">
-        <span class="hub-tile-icon">🎓</span>
-        <span class="hub-tile-title">Lessons</span>
-        <span class="hub-tile-sub">25 structured lessons</span>
-      </a>
-      <a href="/news.html" class="hub-tile">
-        <span class="hub-tile-icon">📰</span>
-        <span class="hub-tile-title">AI News</span>
-        <span class="hub-tile-sub">Today's top stories</span>
-      </a>
-      <button class="hub-tile" id="daily-challenge-btn" style="border:none">
-        <span class="hub-tile-icon">🏆</span>
-        <span class="hub-tile-title">Daily Quiz</span>
-        <span class="hub-tile-sub" id="dcb-countdown">Loading…</span>
-      </button>
-    </div>
 
     <!-- ── Main content: quiz + leaderboard ── -->
     <div class="splash-content">
@@ -99,17 +80,6 @@
           <span class="play-setting-sep">·</span>
           <span id="play-diff-chip" class="play-setting-chip">Intermediate</span>
           <button class="btn-ghost-sm" id="customize-btn">⚙ Customize</button>
-        </div>
-      </div>
-
-      <!-- Leaderboard preview -->
-      <div class="lb-preview-box">
-        <div class="lb-preview-header">
-          <span>🏆 Top Scores</span>
-          <button id="open-lb-btn" class="btn-ghost-sm">View All →</button>
-        </div>
-        <div id="lb-preview-list">
-          <p class="ink-faint" style="font-size:13px;text-align:center;padding:8px 0">No scores yet. Be the first!</p>
         </div>
       </div>
 

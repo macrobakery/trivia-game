@@ -357,7 +357,7 @@ $('customize-apply-btn').addEventListener('click', () => {
 });
 
 $('start-btn').addEventListener('click', startGame);
-$('open-lb-btn').addEventListener('click', () => openLeaderboardModal());
+if ($('open-lb-btn')) $('open-lb-btn').addEventListener('click', () => openLeaderboardModal());
 $('resume-btn').addEventListener('click', resumeSession);
 $('discard-btn').addEventListener('click', () => {
   clearSession();
@@ -1079,24 +1079,7 @@ function renderLeaderboardTable(scores, containerId) {
 // ══════════════════════════════════════════════════════════════
 
 async function loadLeaderboardPreview() {
-  try {
-    const scores = await fetch('/api/leaderboard').then(r => r.json());
-    const el     = $('lb-preview-list');
-    if (!scores || scores.length === 0) {
-      el.innerHTML = '<p class="lb-empty">No scores yet. Be the first!</p>';
-      return;
-    }
-    const ranks = ['🥇','🥈','🥉','4️⃣','5️⃣'];
-    el.innerHTML = scores.map((s, i) => `
-      <div class="lb-preview-item">
-        <span class="lb-rank">${ranks[i] || '#' + (i+1)}</span>
-        <span class="lb-name">${escapeHtml(s.player_name)}</span>
-        <span class="lb-meta">${escapeHtml(s.difficulty)}</span>
-        <span class="lb-score">${s.score}</span>
-      </div>`).join('');
-  } catch {
-    $('lb-preview-list').innerHTML = '<p class="lb-empty">Could not load scores.</p>';
-  }
+  // Leaderboard preview removed from home screen — no-op
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1486,7 +1469,7 @@ function initDailyChallenge() {
   setInterval(() => { if (badge) badge.textContent = getDailyCountdown(); }, 60000);
 }
 
-$('daily-challenge-btn').addEventListener('click', async () => {
+if ($('daily-challenge-btn')) $('daily-challenge-btn').addEventListener('click', async () => {
   const btn = $('daily-challenge-btn');
   btn.style.opacity = '0.6';
   btn.style.pointerEvents = 'none';
