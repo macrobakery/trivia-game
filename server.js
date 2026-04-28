@@ -26,12 +26,30 @@ try {
 
 const app     = express();
 const PORT    = process.env.PORT || 3000;
-const DB_PATH = path.join(__dirname, 'database.db');
+// On Vercel, the filesystem is read-only except for /tmp
+const DB_PATH = process.env.VERCEL
+  ? '/tmp/database.db'
+  : path.join(__dirname, 'database.db');
 
 app.use(express.json());
 
 // ── Database instance (set during async init) ──
 let db;
+
+// ── Lazy-init middleware: ensures DB is ready before any request ──
+let _initPromise = null;
+app.use(async (req, res, next) => {
+  if (!db) {
+    if (!_initPromise) _initPromise = initDb();
+    try {
+      await _initPromise;
+    } catch (e) {
+      console.error('DB init failed:', e);
+      return res.status(500).json({ error: 'Database initialisation failed.' });
+    }
+  }
+  next();
+});
 
 // ── Persist in-memory db to disk ──
 function saveDb() {
@@ -525,33 +543,41 @@ app.use('/admin', adminAuth, express.static(path.join(__dirname, 'admin')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ============================================================
-// INIT — load db from disk (or create new), then start server
+// INIT — load db from disk (or create new)
 // ============================================================
-async function init() {
+async function initDb() {
   const SQL = await initSqlJs();
 
   // Load existing db file, or create a fresh one
   if (fs.existsSync(DB_PATH)) {
     db = new SQL.Database(fs.readFileSync(DB_PATH));
-    console.log('📂 Loaded existing database.');
+    console.log('📂 Loaded existing database from', DB_PATH);
   } else {
     db = new SQL.Database();
-    console.log('🆕 Created new database.');
+    console.log('🆕 Created new database at', DB_PATH);
   }
 
   createTables();
   seedQuestions();
-
-  app.listen(PORT, () => {
-    console.log('');
-    console.log('🚀 AI App Builder Challenge is running!');
-    console.log(`   Game:  http://localhost:${PORT}`);
-    console.log(`   Admin: http://localhost:${PORT}/admin  (password: ${ADMIN_PASSWORD === 'admin' ? 'admin [change via ADMIN_PASSWORD env var]' : '(set via ADMIN_PASSWORD)'})`);
-    console.log('');
-  });
 }
 
-init().catch(err => {
-  console.error('Failed to start server:', err);
-  process.exit(1);
-});
+// ── Start the HTTP server only when run directly (not imported by Vercel) ──
+if (require.main === module) {
+  initDb()
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log('');
+        console.log('🚀 AI App Builder Challenge is running!');
+        console.log(`   Game:  http://localhost:${PORT}`);
+        console.log(`   Admin: http://localhost:${PORT}/admin  (password: ${ADMIN_PASSWORD === 'admin' ? 'admin [change via ADMIN_PASSWORD env var]' : '(set via ADMIN_PASSWORD)'})`);
+        console.log('');
+      });
+    })
+    .catch(err => {
+      console.error('Failed to start server:', err);
+      process.exit(1);
+    });
+}
+
+// Export for Vercel serverless runtime
+module.exports = app;
