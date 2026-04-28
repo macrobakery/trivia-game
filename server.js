@@ -500,6 +500,39 @@ app.get('/api/leaderboard', async (req, res) => {
   res.json(await dbAll('SELECT * FROM scores ORDER BY score DESC LIMIT 10'));
 });
 
+// GET /api/leaderboard/weekly — top 10 scores this Mon–Sun week
+app.get('/api/leaderboard/weekly', async (req, res) => {
+  try {
+    const now  = new Date();
+    const day  = now.getUTCDay();               // 0=Sun,1=Mon…6=Sat
+    const diff = day === 0 ? -6 : 1 - day;     // days back to Monday
+    const monday = new Date(now);
+    monday.setUTCDate(now.getUTCDate() + diff);
+    monday.setUTCHours(0, 0, 0, 0);
+    const weekStart = monday.toISOString().replace('T', ' ').slice(0, 19);
+    const scores = await dbAll(
+      `SELECT * FROM scores WHERE created_at >= ? ORDER BY score DESC LIMIT 10`,
+      [weekStart]
+    );
+    res.json({ scores, weekStart: monday.toISOString().split('T')[0] });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/profile?name=X — last 20 scores for a player (case-insensitive)
+app.get('/api/profile', async (req, res) => {
+  const name = (req.query.name || '').trim();
+  if (!name) return res.status(400).json({ error: 'name query param required.' });
+  const scores = await dbAll(
+    `SELECT score, correct_answers, accuracy, level, difficulty, created_at
+       FROM scores WHERE LOWER(player_name) = LOWER(?)
+       ORDER BY created_at DESC LIMIT 20`,
+    [name]
+  );
+  res.json({ scores });
+});
+
 // GET /api/leaderboard/rank?score=N — player's rank for a given score
 app.get('/api/leaderboard/rank', async (req, res) => {
   const score = parseInt(req.query.score, 10);

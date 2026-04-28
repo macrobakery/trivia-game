@@ -1,0 +1,358 @@
+/* ============================================================
+   AI Challenge — Profile Page Styles
+   ============================================================ */
+
+/* ── Page container ── */
+.prof-page {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 20px 16px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Top nav ── */
+.prof-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.prof-back { text-decoration: none; }
+.prof-nav-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ── Profile header ── */
+.prof-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  margin-bottom: 14px;
+}
+
+.prof-avatar {
+  font-size: 3rem;
+  line-height: 1;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+}
+
+.prof-header-info { flex: 1; min-width: 0; }
+
+.prof-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.prof-name {
+  font-family: 'Fraunces', serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.prof-badge-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 2px;
+}
+
+.prof-games-played {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Stats row ── */
+.prof-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.prof-stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 12px;
+  text-align: center;
+  transition: border-color var(--t);
+}
+.prof-stat:hover { border-color: var(--border-hi); }
+
+.prof-stat-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.prof-stat-lbl {
+  font-size: 0.62rem;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 400px) {
+  .prof-stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Section wrapper ── */
+.prof-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-bottom: 14px;
+}
+
+.prof-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.prof-section-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.prof-section-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Activity calendar ── */
+.activity-calendar {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.cal-day {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  transition: transform 0.15s;
+  position: relative;
+  cursor: default;
+}
+.cal-day:hover { transform: scale(1.3); z-index: 2; }
+
+.cal-day.cal-active {
+  background: var(--green);
+  border-color: transparent;
+  box-shadow: 0 0 6px hsl(142 68% 50% / 0.4);
+}
+.cal-day.cal-today {
+  border-color: var(--accent) !important;
+}
+.cal-day[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--modal-bg);
+  border: 1px solid var(--border-hi);
+  border-radius: 6px;
+  font-size: 0.6rem;
+  white-space: nowrap;
+  padding: 3px 8px;
+  color: var(--ink);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.cal-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.62rem;
+  color: var(--ink-faint);
+}
+.cal-legend-box {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+  border: 1px solid var(--border);
+}
+.cal-empty  { background: var(--surface-2); }
+.cal-active { background: var(--green); border-color: transparent; }
+
+/* ── Level records ── */
+.level-records-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.level-rec-card {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 14px 12px;
+  transition: all var(--t);
+}
+.level-rec-card.played {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.level-rec-card:hover { border-color: var(--border-hi); }
+.level-rec-card.played:hover { border-color: var(--accent); filter: brightness(1.05); }
+
+.lrc-glyph {
+  font-size: 1.2rem;
+  margin-bottom: 6px;
+}
+.lrc-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+.lrc-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.3;
+  margin-bottom: 10px;
+}
+
+.lrc-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.lrc-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+}
+.lrc-stat-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.72rem;
+}
+
+.lrc-unplayed {
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  opacity: 0.5;
+  margin-top: 6px;
+}
+
+/* ── Achievements grid ── */
+.prof-ach-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.prof-ach-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  opacity: 0.4;
+  transition: all var(--t);
+}
+.prof-ach-chip.unlocked {
+  opacity: 1;
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+
+.prof-ach-icon { font-size: 1.4rem; flex-shrink: 0; }
+
+.prof-ach-info { min-width: 0; }
+.prof-ach-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+  margin-bottom: 1px;
+}
+.prof-ach-desc {
+  font-size: 0.62rem;
+  color: var(--ink-faint);
+  line-height: 1.4;
+}
+
+/* ── CTA row ── */
+.prof-cta {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 20px 0 8px;
+}
+.prof-cta .btn-primary,
+.prof-cta .btn-ghost {
+  min-width: 140px;
+  justify-content: center;
+}
+
+.prof-footer-note {
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  opacity: 0.5;
+  margin-top: 6px;
+}
+
+/* ── Light mode adjustments ── */
+[data-theme="light"] .prof-ach-chip.unlocked {
+  background: hsl(270 70% 55% / 0.1);
+}
+[data-theme="light"] .level-rec-card.played {
+  background: hsl(270 70% 55% / 0.08);
+}

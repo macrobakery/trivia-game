@@ -1266,6 +1266,65 @@ ul     { list-style: none; }
 .modal-actions .btn-primary { flex: 2; }
 .modal-actions .btn-ghost   { flex: 1; }
 
+/* ── Leaderboard tab switcher ── */
+.lb-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  background: var(--surface);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+}
+.lb-tab {
+  flex: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 7px 14px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: transparent;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all var(--t);
+  cursor: pointer;
+}
+.lb-tab:hover { color: var(--ink); background: var(--surface-2); }
+.lb-tab.active {
+  background: var(--accent);
+  color: #0a0013;
+}
+
+.lb-week-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  margin-bottom: 8px;
+  opacity: 0.7;
+}
+.lb-week-empty {
+  text-align: center;
+  padding: 20px 0;
+  line-height: 1.8;
+}
+.lb-week-empty span {
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+/* ── Profile meta link in footer ── */
+.profile-meta-link {
+  font-size: 0.72rem;
+  text-decoration: none;
+  opacity: 0.8;
+  transition: opacity var(--t);
+}
+.profile-meta-link:hover { opacity: 1; }
+
 /* Leaderboard table */
 .lb-table { display: flex; flex-direction: column; }
 .lb-row {

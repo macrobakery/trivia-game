@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile — AI Challenge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Geist:wght@300..700&family=JetBrains+Mono:wght@400..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="profile.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#07060c" id="meta-theme-color" />
+</head>
+<body>
+
+  <!-- ── Animated nebula background ── -->
+  <div class="bg" aria-hidden="true">
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+    <div class="bg-blob bg-blob-3"></div>
+    <div class="bg-grain"></div>
+  </div>
+
+  <div class="prof-page">
+
+    <!-- ── Top nav ── -->
+    <nav class="prof-nav">
+      <a href="/" class="btn-ghost-sm prof-back">← Back to Game</a>
+      <span class="prof-nav-title">My Profile</span>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+    </nav>
+
+    <!-- ── Profile header ── -->
+    <header class="prof-header">
+      <div class="prof-avatar" id="prof-avatar">🔰</div>
+      <div class="prof-header-info">
+        <div class="prof-name-row">
+          <h1 class="prof-name" id="prof-name">Player</h1>
+          <button class="btn-ghost-sm" id="edit-name-btn" title="Change name">✏️</button>
+        </div>
+        <div class="prof-badge-name" id="prof-badge-name">AI Rookie</div>
+        <div class="prof-games-played" id="prof-games-played">0 games played</div>
+      </div>
+    </header>
+
+    <!-- ── Stats row ── -->
+    <div class="prof-stats-row">
+      <div class="prof-stat">
+        <div class="prof-stat-val" id="ps-streak">0</div>
+        <div class="prof-stat-lbl">🔥 Streak</div>
+      </div>
+      <div class="prof-stat">
+        <div class="prof-stat-val" id="ps-best-streak">0</div>
+        <div class="prof-stat-lbl">🏆 Best Streak</div>
+      </div>
+      <div class="prof-stat">
+        <div class="prof-stat-val" id="ps-answered">0</div>
+        <div class="prof-stat-lbl">✅ Questions</div>
+      </div>
+      <div class="prof-stat">
+        <div class="prof-stat-val" id="ps-accuracy">—</div>
+        <div class="prof-stat-lbl">🎯 Accuracy</div>
+      </div>
+    </div>
+
+    <!-- ── Activity calendar ── -->
+    <section class="prof-section">
+      <div class="prof-section-header">
+        <span class="prof-section-title">📅 Activity — Last 30 Days</span>
+        <span class="prof-section-sub" id="cal-days-active">0 active days</span>
+      </div>
+      <div class="activity-calendar" id="activity-calendar"></div>
+      <div class="cal-legend">
+        <span class="cal-legend-box cal-empty"></span> No visit
+        <span class="cal-legend-box cal-active" style="margin-left:12px"></span> Visited
+      </div>
+    </section>
+
+    <!-- ── Level records ── -->
+    <section class="prof-section">
+      <div class="prof-section-header">
+        <span class="prof-section-title">🎮 Level Records</span>
+        <span class="prof-section-sub" id="levels-beaten">0 of 5 levels played</span>
+      </div>
+      <div class="level-records-grid" id="level-records"></div>
+    </section>
+
+    <!-- ── Achievements ── -->
+    <section class="prof-section">
+      <div class="prof-section-header">
+        <span class="prof-section-title">🏅 Achievements</span>
+        <span class="prof-section-sub" id="ach-count">0 / 8 unlocked</span>
+      </div>
+      <div class="prof-ach-grid" id="prof-ach-grid"></div>
+    </section>
+
+    <!-- ── CTA ── -->
+    <div class="prof-cta">
+      <a href="/" class="btn-primary">🎮 Play Now</a>
+      <a href="/learn.html" class="btn-ghost">📚 Daily Hub</a>
+    </div>
+
+    <p class="prof-footer-note">Progress is stored locally on this device.</p>
+
+  </div><!-- /prof-page -->
+
+  <!-- ── Edit name modal ── -->
+  <div id="edit-name-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true">
+    <div class="modal-box" style="max-width:360px">
+      <h3>✏️ Change Your Name</h3>
+      <p style="font-size:0.82rem;color:var(--ink-faint);margin:6px 0 14px">This is the name shown on the leaderboard.</p>
+      <label class="field">
+        <input type="text" id="edit-name-input" class="field-input" maxlength="24" placeholder="Your display name" autocomplete="off" />
+      </label>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn-primary" id="edit-name-confirm" style="flex:1">Save</button>
+        <button class="btn-ghost"   id="edit-name-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating chat button -->
+  <a href="/chat.html" class="chat-fab" title="Chat with Alex AI">
+    <span class="chat-fab-icon">🤖</span>
+    <span class="chat-fab-label">Ask Alex</span>
+  </a>
+
+  <script src="profile.js"></script>
+</body>
+</html>

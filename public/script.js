@@ -965,38 +965,74 @@ $('player-name-input').addEventListener('keydown', e => {
 // LEADERBOARD MODAL
 // ══════════════════════════════════════════════════════════════
 
-async function openLeaderboardModal() {
-  $('lb-table-content').innerHTML = '<p class="lb-empty">Loading…</p>';
+let _activeLeaderboardTab = 'alltime';
+
+async function openLeaderboardModal(tab = 'alltime') {
+  _activeLeaderboardTab = tab;
   $('lb-modal').style.display = 'flex';
+  // Sync tab button states
+  document.querySelectorAll('.lb-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+  await loadLeaderboardTab(tab);
+}
+
+async function loadLeaderboardTab(tab) {
+  const el = $('lb-table-content');
+  el.innerHTML = '<p class="lb-empty">Loading…</p>';
   try {
-    const scores = await fetch('/api/leaderboard').then(r => r.json());
-    renderLeaderboardTable(scores, 'lb-table-content');
+    if (tab === 'weekly') {
+      const data   = await fetch('/api/leaderboard/weekly').then(r => r.json());
+      const scores = data.scores || [];
+      if (scores.length === 0) {
+        el.innerHTML = `<p class="lb-empty lb-week-empty">No scores yet this week.<br><span>First game of the week? You could be #1 🏆</span></p>`;
+      } else {
+        const d = new Date(data.weekStart + 'T00:00:00');
+        const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        el.innerHTML = `<p class="lb-week-label">Week of ${label}</p>`;
+        el.innerHTML += renderLeaderboardRows(scores);
+      }
+    } else {
+      const scores = await fetch('/api/leaderboard').then(r => r.json());
+      el.innerHTML = renderLeaderboardRows(scores);
+    }
   } catch {
-    $('lb-table-content').innerHTML = '<p class="lb-empty">Could not load leaderboard.</p>';
+    el.innerHTML = '<p class="lb-empty">Could not load leaderboard.</p>';
   }
 }
-function closeLeaderboardModal() { $('lb-modal').style.display = 'none'; }
 
-$('close-lb-btn').addEventListener('click', closeLeaderboardModal);
-$('lb-modal').addEventListener('click',   e => { if (e.target === $('lb-modal'))   closeLeaderboardModal(); });
-$('save-modal').addEventListener('click', e => { if (e.target === $('save-modal')) closeSaveModal(); });
-
-function renderLeaderboardTable(scores, containerId) {
-  const el    = $(containerId);
+function renderLeaderboardRows(scores) {
   const ranks = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
-  if (!scores || scores.length === 0) {
-    el.innerHTML = '<p class="lb-empty">No scores yet. Be the first!</p>';
-    return;
-  }
-  el.innerHTML = `<div class="lb-table">${scores.map((s, i) => `
+  if (!scores || scores.length === 0) return '<p class="lb-empty">No scores yet. Be the first!</p>';
+  return `<div class="lb-table">${scores.map((s, i) => `
     <div class="lb-row">
-      <div class="lb-row-rank">${ranks[i] || '#' + (i+1)}</div>
+      <div class="lb-row-rank">${ranks[i] || '#' + (i + 1)}</div>
       <div class="lb-row-info">
         <div class="lb-row-name">${escapeHtml(s.player_name)}</div>
         <div class="lb-row-meta">${escapeHtml(s.level)} · ${escapeHtml(s.difficulty)} · ${s.correct_answers}/10 · ${s.accuracy}% · ${new Date(s.created_at).toLocaleDateString()}</div>
       </div>
       <div class="lb-row-score">${s.score}</div>
     </div>`).join('')}</div>`;
+}
+
+function closeLeaderboardModal() { $('lb-modal').style.display = 'none'; }
+
+$('close-lb-btn').addEventListener('click', closeLeaderboardModal);
+$('lb-modal').addEventListener('click',   e => { if (e.target === $('lb-modal'))   closeLeaderboardModal(); });
+$('save-modal').addEventListener('click', e => { if (e.target === $('save-modal')) closeSaveModal(); });
+
+// Leaderboard tab switching
+document.addEventListener('click', e => {
+  const tab = e.target.closest('.lb-tab');
+  if (!tab) return;
+  _activeLeaderboardTab = tab.dataset.tab;
+  document.querySelectorAll('.lb-tab').forEach(b => b.classList.toggle('active', b === tab));
+  loadLeaderboardTab(_activeLeaderboardTab);
+});
+
+// renderLeaderboardTable kept for backwards compatibility
+function renderLeaderboardTable(scores, containerId) {
+  $(containerId).innerHTML = renderLeaderboardRows(scores);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1459,6 +1495,38 @@ $('daily-challenge-btn').addEventListener('click', async () => {
 });
 
 // ══════════════════════════════════════════════════════════════
+// LEVEL STATS — save best scores per level for profile page
+// ══════════════════════════════════════════════════════════════
+
+function updateLevelStats() {
+  const { score, correctCount, questions, selectedLevel, selectedDifficulty } = state;
+  if (!selectedLevel) return;
+  const isPractice = DIFFICULTY_CONFIG[selectedDifficulty] && DIFFICULTY_CONFIG[selectedDifficulty].practice;
+  const total      = questions.length || 10;
+  const accuracy   = Math.round((correctCount / total) * 100);
+
+  let stats = {};
+  try { stats = JSON.parse(localStorage.getItem('aiChallenge_levelStats') || '{}'); } catch {}
+
+  // Per-level best (non-practice only)
+  if (!isPractice) {
+    const lvl = stats[selectedLevel] || { bestScore: 0, bestAccuracy: 0, attempts: 0, lastPlayed: null };
+    lvl.attempts++;
+    if (score > lvl.bestScore) { lvl.bestScore = score; lvl.bestAccuracy = accuracy; }
+    lvl.lastPlayed = new Date().toISOString().split('T')[0];
+    stats[selectedLevel] = lvl;
+  }
+
+  // Global totals (including practice)
+  stats._total = stats._total || { answered: 0, correct: 0, games: 0 };
+  stats._total.answered += total;
+  stats._total.correct  += correctCount;
+  stats._total.games    += 1;
+
+  try { localStorage.setItem('aiChallenge_levelStats', JSON.stringify(stats)); } catch {}
+}
+
+// ══════════════════════════════════════════════════════════════
 // HOOK RESULTS SCREEN — award achievements + render panel
 // ══════════════════════════════════════════════════════════════
 
@@ -1482,6 +1550,7 @@ function showResults() {
     isPractice, avgTimeLeft
   });
 
+  updateLevelStats();
   renderAchievementsPanel();
 }
 

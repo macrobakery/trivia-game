@@ -110,6 +110,16 @@ function updateStreak() {
     localStorage.setItem(STREAK_KEY, JSON.stringify(data));
   } catch (_) { /* storage unavailable */ }
 
+  // Track visit date for profile activity calendar
+  try {
+    let visitDates = JSON.parse(localStorage.getItem('aiChallenge_visitDates') || '[]');
+    if (!visitDates.includes(today)) {
+      visitDates.push(today);
+      if (visitDates.length > 90) visitDates = visitDates.slice(-90);
+      localStorage.setItem('aiChallenge_visitDates', JSON.stringify(visitDates));
+    }
+  } catch (_) {}
+
   return data;
 }
 
