@@ -295,3 +295,37 @@
   .news-card-headline { font-size: 1.05rem; }
   .news-grid { gap: 14px; }
 }
+
+/* ── Tablet (768px+) ─────────────────────────────────────── */
+
+@media (min-width: 768px) {
+  .news-page {
+    max-width: 760px;
+    padding: 36px 32px 100px;
+  }
+
+  .news-page-title { font-size: 1.75rem; }
+  .news-card { padding: 28px; }
+  .news-grid { gap: 20px; }
+  .news-card-headline { font-size: 1.2rem; }
+}
+
+/* ── Desktop (1024px+) ───────────────────────────────────── */
+
+@media (min-width: 1024px) {
+  .news-page {
+    max-width: 820px;
+    padding: 44px 40px 100px;
+  }
+
+  /* Two-column layout for news cards on wide screens */
+  .news-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  /* Reset the left-border color cycling for grid layout */
+  .news-card:nth-child(odd)  { border-left-color: var(--accent); }
+  .news-card:nth-child(even) { border-left-color: var(--cyan); }
+}

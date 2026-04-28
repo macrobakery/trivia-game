@@ -359,3 +359,72 @@
 [data-theme="light"] .level-rec-card.played {
   background: hsl(270 70% 55% / 0.08);
 }
+
+/* ── Mobile — small screen stack ── */
+
+@media (max-width: 480px) {
+  .prof-page { padding: 20px 16px 100px; }
+
+  .prof-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 20px 18px;
+  }
+
+  .prof-name { font-size: 1.3rem; }
+
+  .prof-section { padding: 20px 18px; }
+}
+
+/* ── Tablet (768px+) ── */
+
+@media (min-width: 768px) {
+  .prof-page {
+    max-width: 760px;
+    padding: 36px 32px 100px;
+  }
+
+  .prof-header { padding: 32px 28px; gap: 24px; }
+  .prof-avatar { width: 84px; height: 84px; font-size: 3.2rem; }
+  .prof-name   { font-size: 1.75rem; }
+
+  .prof-stats-row {
+    gap: 14px;
+  }
+  .prof-stat { padding: 20px 16px; }
+  .prof-stat-val { font-size: 1.75rem; }
+
+  .prof-section { padding: 28px 28px; }
+
+  .activity-calendar {
+    grid-template-columns: repeat(15, 1fr);
+    gap: 6px;
+  }
+
+  .level-records-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  .prof-ach-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+}
+
+/* ── Desktop (1024px+) ── */
+
+@media (min-width: 1024px) {
+  .prof-page {
+    max-width: 820px;
+    padding: 44px 40px 100px;
+  }
+
+  .prof-stats-row { gap: 16px; }
+  .prof-stat-val  { font-size: 2rem; }
+
+  .activity-calendar {
+    grid-template-columns: repeat(30, 1fr);
+    gap: 4px;
+  }
+}

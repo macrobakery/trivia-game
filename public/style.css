@@ -8,6 +8,7 @@
   --bg:          #07060c;
   --surface:     rgba(255 255 255 / 0.04);
   --surface-2:   rgba(255 255 255 / 0.07);
+  --card:        rgba(255 255 255 / 0.05);  /* learn page cards */
   --border:      rgba(255 255 255 / 0.10);
   --border-hi:   rgba(255 255 255 / 0.18);
   --accent:      hsl(270 90% 70%);
@@ -36,6 +37,7 @@
   --bg:          hsl(240 20% 97%);
   --surface:     rgba(0 0 0 / 0.04);
   --surface-2:   rgba(0 0 0 / 0.07);
+  --card:        rgba(0 0 0 / 0.03);
   --border:      rgba(0 0 0 / 0.10);
   --border-hi:   rgba(0 0 0 / 0.20);
   --accent:      hsl(270 70% 55%);
@@ -1911,7 +1913,7 @@ button, a, input, select {
 
 .achievement-toast {
   position: fixed;
-  bottom: 24px;
+  bottom: 80px; /* above bottom nav */
   left: 50%;
   transform: translateX(-50%) translateY(80px);
   z-index: 400;
@@ -1927,6 +1929,7 @@ button, a, input, select {
   font-weight: 600;
   color: var(--ink);
   white-space: nowrap;
+  max-width: calc(100vw - 32px);
   opacity: 0;
   transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275), opacity 0.4s;
   pointer-events: none;
@@ -2107,6 +2110,9 @@ button, a, input, select {
 }
 .chat-fab-icon { font-size: 1.1rem; }
 .chat-fab-label { white-space: nowrap; }
+
+/* On the home/start screen the bottom nav already has an Alex link — hide duplicate FAB */
+#start-screen.active ~ .chat-fab { display: none; }
 
 @media (max-width: 480px) {
   .chat-fab { padding: 12px; border-radius: 50%; }
@@ -2573,4 +2579,70 @@ button, a, input, select {
 .results-actions {
   margin-bottom: 0;
   padding-bottom: 4px;
+}
+
+/* ══════════════════════════════════════════════
+   TABLET & DESKTOP RESPONSIVE (768px+)
+══════════════════════════════════════════════ */
+
+@media (min-width: 768px) {
+  /* Home screen — more breathing room */
+  .screen.splash,
+  .screen.results {
+    padding: 48px 32px 100px;
+  }
+
+  /* Hub hero slightly larger on tablet */
+  .hub-hero-title { font-size: 1.65rem; }
+
+  /* Hub tiles — bigger tap targets */
+  .hub-tile { padding: 24px 14px; min-height: 108px; }
+  .hub-tile-icon  { font-size: 2rem; }
+  .hub-tile-title { font-size: 0.9rem; }
+  .hub-tile-sub   { font-size: 0.68rem; }
+
+  /* Leaderboard preview — more spacious */
+  .lb-preview-box { padding: 24px; }
+
+  /* Play button larger */
+  .play-main-btn { font-size: 1.05rem; padding: 18px 28px; }
+
+  /* Modals — comfortable on tablet */
+  .customize-modal-box { padding: 36px 32px 32px; }
+
+  /* Profile stats row — always 4 cols on tablet+ */
+  /* (overrides the 2-col 400px breakpoint) */
+}
+
+@media (min-width: 1024px) {
+  /* Wide desktop — generous centred layout */
+  .screen.splash,
+  .screen.results {
+    padding: 56px 48px 100px;
+  }
+
+  /* Wider content column on desktop */
+  .splash-content,
+  .hub-topbar,
+  .hub-hero-card,
+  .hub-tiles {
+    max-width: 760px;
+  }
+
+  /* Larger headings */
+  .hub-hero-title { font-size: 1.8rem; }
+
+  /* Question screen — better use of wide space */
+  .qbody {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* Results board — wider */
+  .results-board { max-width: 520px; }
+  .res-meta      { max-width: 520px; }
+
+  /* Leaderboard preview */
+  .lb-preview-box { max-width: 760px; }
 }

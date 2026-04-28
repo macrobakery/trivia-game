@@ -65,21 +65,28 @@
   flex-direction: row;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
+  padding: 6px 12px;
   border-radius: 20px;
   background: linear-gradient(135deg, #ff6b35 0%, #ff2d55 100%);
   color: #ffffff;
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   line-height: 1;
   white-space: nowrap;
   user-select: none;
+  flex-shrink: 0;
 }
 
 #streak-num {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 800;
   letter-spacing: -0.02em;
+}
+
+/* Hide "day streak" label on very small screens, keep emoji + number */
+@media (max-width: 380px) {
+  .streak-badge span:last-child { display: none; }
+  .streak-badge { padding: 6px 10px; }
 }
 
 /* ── Main content container ───────────────────────────────── */
@@ -646,6 +653,33 @@
   gap: 14px;
 }
 
+/* CTA button row */
+.cta-inner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.cta-inner .btn-primary,
+.cta-inner .btn-ghost {
+  min-width: 160px;
+}
+
+@media (max-width: 480px) {
+  .cta-inner {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .cta-inner .btn-primary,
+  .cta-inner .btn-ghost {
+    width: 100%;
+    max-width: 320px;
+  }
+}
+
 .learn-cta-heading {
   font-size: 1.3rem;
   font-weight: 700;
@@ -866,9 +900,6 @@
   .section-heading {
     flex-wrap: wrap;
     margin-bottom: 0;
-  }
-
-  .section-heading h2 {
     font-size: 1.25rem;
   }
 }
@@ -893,3 +924,47 @@
 
 /* Bottom nav clearance */
 .learn-cta { padding-bottom: 100px; }
+
+/* ── Tablet & Desktop ─────────────────────────────────────── */
+
+@media (min-width: 768px) {
+  .learn-section {
+    max-width: 860px;
+    padding: 0 32px;
+    margin-bottom: 56px;
+  }
+
+  .learn-hero {
+    padding: 60px 32px 52px;
+  }
+
+  .hero-streak {
+    font-size: 88px;
+  }
+
+  .trends-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+
+  .trend-card { padding: 32px; }
+  .lesson-card { padding: 32px; }
+}
+
+@media (min-width: 1024px) {
+  .learn-section {
+    max-width: 1100px;
+    padding: 0 48px;
+  }
+
+  .learn-hero {
+    padding: 72px 48px 60px;
+  }
+
+  .hero-streak { font-size: 100px; }
+
+  .trends-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+}
