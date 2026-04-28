@@ -1,14 +1,13 @@
 // ============================================================
 // AI App Builder Challenge — Backend Server
-// Node.js + Express + sql.js (pure-JS SQLite, no native deps)
+// Node.js + Express + @libsql/client (Turso / local SQLite)
 // ============================================================
 
 require('dotenv').config(); // load .env file if present
 
 const express      = require('express');
 const path         = require('path');
-const fs           = require('fs');
-const initSqlJs    = require('sql.js');
+const { createClient } = require('@libsql/client');
 const rateLimit    = require('express-rate-limit');
 
 // Anthropic client — optional, requires ANTHROPIC_API_KEY env var
@@ -27,10 +26,18 @@ try {
 
 const app     = express();
 const PORT    = process.env.PORT || 3000;
-// On Vercel, the filesystem is read-only except for /tmp
-const DB_PATH = process.env.VERCEL
-  ? '/tmp/database.db'
-  : path.join(__dirname, 'database.db');
+
+// ── Database client — Turso in production, local file otherwise ──
+const DB_URL  = process.env.TURSO_DATABASE_URL
+  ? process.env.TURSO_DATABASE_URL                   // Turso cloud (persistent)
+  : process.env.VERCEL
+    ? 'file:/tmp/database.db'                         // Vercel /tmp fallback (ephemeral)
+    : 'file:./database.db';                           // local development
+const dbClient = createClient({
+  url:       DB_URL,
+  authToken: process.env.TURSO_AUTH_TOKEN || undefined
+});
+console.log('🗄️  DB URL:', DB_URL.startsWith('libsql') ? DB_URL.replace(/:\/\/[^@]+@/, '://***@') : DB_URL);
 
 app.use(express.json());
 
@@ -54,51 +61,37 @@ const scoreLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
-// ── Database instance (set during async init) ──
-let db;
-
-// ── Lazy-init middleware: ensures DB is ready before any request ──
+// ── Lazy-init middleware: ensures tables exist before any request ──
 let _initPromise = null;
 app.use(async (req, res, next) => {
-  if (!db) {
-    if (!_initPromise) _initPromise = initDb();
-    try {
-      await _initPromise;
-    } catch (e) {
-      console.error('DB init failed:', e);
-      return res.status(500).json({ error: 'Database initialisation failed.' });
-    }
+  if (!_initPromise) _initPromise = initDb();
+  try {
+    await _initPromise;
+  } catch (e) {
+    console.error('DB init failed:', e);
+    return res.status(500).json({ error: 'Database initialisation failed.' });
   }
   next();
 });
 
-// ── Persist in-memory db to disk ──
-function saveDb() {
-  const data = db.export();
-  fs.writeFileSync(DB_PATH, Buffer.from(data));
-}
-
-// ── Run a SELECT and return all rows as objects ──
-function dbAll(sql, params = []) {
-  const stmt = db.prepare(sql);
-  if (params.length > 0) stmt.bind(params);
-  const rows = [];
-  while (stmt.step()) rows.push(stmt.getAsObject());
-  stmt.free();
-  return rows;
+// ── Run a SELECT and return all rows as plain JS objects ──
+async function dbAll(sql, params = []) {
+  const result = await dbClient.execute({ sql, args: params });
+  return result.rows.map(row =>
+    Object.fromEntries(result.columns.map((col, i) => [col, row[i]]))
+  );
 }
 
 // ── Run a SELECT and return the first row (or null) ──
-function dbGet(sql, params = []) {
-  return dbAll(sql, params)[0] || null;
+async function dbGet(sql, params = []) {
+  const rows = await dbAll(sql, params);
+  return rows[0] || null;
 }
 
-// ── Run an INSERT / UPDATE / DELETE; persist; return last insert rowid ──
-function dbRun(sql, params = []) {
-  db.run(sql, params.length > 0 ? params : []);
-  saveDb();
-  const res = db.exec('SELECT last_insert_rowid() as id');
-  return res.length > 0 ? res[0].values[0][0] : null;
+// ── Run an INSERT / UPDATE / DELETE; return last insert rowid ──
+async function dbRun(sql, params = []) {
+  const result = await dbClient.execute({ sql, args: params });
+  return result.lastInsertRowid ? Number(result.lastInsertRowid) : null;
 }
 
 // ============================================================
@@ -125,8 +118,9 @@ function adminAuth(req, res, next) {
 // ============================================================
 // TABLE CREATION & MIGRATIONS
 // ============================================================
-function createTables() {
-  db.run(`CREATE TABLE IF NOT EXISTS questions (
+async function createTables() {
+  // Create tables with all columns upfront (idempotent)
+  await dbClient.execute(`CREATE TABLE IF NOT EXISTS questions (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     question_text  TEXT NOT NULL,
     option_a       TEXT NOT NULL,
@@ -138,22 +132,11 @@ function createTables() {
     difficulty     TEXT NOT NULL,
     explanation    TEXT NOT NULL,
     hint           TEXT NOT NULL,
-    flag_count     INTEGER NOT NULL DEFAULT 0
+    flag_count     INTEGER NOT NULL DEFAULT 0,
+    status         TEXT NOT NULL DEFAULT 'approved'
   )`);
 
-  // Migration: add flag_count to existing tables that don't have it
-  try {
-    db.run('ALTER TABLE questions ADD COLUMN flag_count INTEGER NOT NULL DEFAULT 0');
-    console.log('🔧 Migrated: added flag_count column to questions.');
-  } catch (_) { /* column already exists — fine */ }
-
-  // Migration: add status column for AI-generated question approval queue
-  try {
-    db.run("ALTER TABLE questions ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'");
-    console.log('🔧 Migrated: added status column to questions.');
-  } catch (_) { /* column already exists — fine */ }
-
-  db.run(`CREATE TABLE IF NOT EXISTS scores (
+  await dbClient.execute(`CREATE TABLE IF NOT EXISTS scores (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     player_name     TEXT NOT NULL,
     score           INTEGER NOT NULL,
@@ -164,18 +147,26 @@ function createTables() {
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
-  db.run(`CREATE TABLE IF NOT EXISTS flagged_questions (
+  await dbClient.execute(`CREATE TABLE IF NOT EXISTS flagged_questions (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     question_id INTEGER NOT NULL,
     reason      TEXT,
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
+
+  // Schema migrations for tables that existed before these columns were added
+  for (const migration of [
+    'ALTER TABLE questions ADD COLUMN flag_count INTEGER NOT NULL DEFAULT 0',
+    "ALTER TABLE questions ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'"
+  ]) {
+    try { await dbClient.execute(migration); } catch (_) { /* column exists, skip */ }
+  }
 }
 
 // ============================================================
 // SEED QUESTIONS — 225 total (15 combos × 15 questions each)
 // ============================================================
-function seedQuestions() {
+async function seedQuestions() {
   const questions = [
     // ==================== LEVEL 1: AI FOUNDATIONS ====================
 
@@ -396,22 +387,20 @@ function seedQuestions() {
   ];
 
   // Guard: only (re)seed if the DB has fewer questions than the array
-  const count = dbGet('SELECT COUNT(*) as c FROM questions');
+  const count = await dbGet('SELECT COUNT(*) as c FROM questions');
   if (count && count.c >= questions.length) return;
 
   // Wipe and re-seed so we always have the full set
-  db.run('DELETE FROM questions');
+  await dbClient.execute('DELETE FROM questions');
 
-  // Batch insert using a transaction for speed
-  db.run('BEGIN TRANSACTION');
-  const sql = `INSERT INTO questions
+  // Batch-insert all questions in a single transaction (fast)
+  const insertSql = `INSERT INTO questions
     (question_text, option_a, option_b, option_c, option_d, correct_option, level, difficulty, explanation, hint)
     VALUES (?,?,?,?,?,?,?,?,?,?)`;
-  for (const q of questions) {
-    db.run(sql, q);
-  }
-  db.run('COMMIT');
-  saveDb();
+  await dbClient.batch(
+    questions.map(q => ({ sql: insertSql, args: q })),
+    'write'
+  );
   console.log(`✅ Seeded ${questions.length} questions into the database.`);
 }
 
@@ -420,7 +409,7 @@ function seedQuestions() {
 // ============================================================
 
 // GET /api/questions — approved questions only, optionally filtered
-app.get('/api/questions', (req, res) => {
+app.get('/api/questions', async (req, res) => {
   const { level, difficulty } = req.query;
   const conditions = ["(status IS NULL OR status = 'approved')"]; // only live questions
   const params     = [];
@@ -429,17 +418,17 @@ app.get('/api/questions', (req, res) => {
   if (difficulty) { conditions.push('difficulty = ?'); params.push(difficulty); }
 
   const where     = 'WHERE ' + conditions.join(' AND ');
-  const questions = dbAll(`SELECT * FROM questions ${where}`, params);
+  const questions = await dbAll(`SELECT * FROM questions ${where}`, params);
   res.json(questions);
 });
 
 // POST /api/questions — add a new question (admin)
-app.post('/api/questions', adminAuth, (req, res) => {
+app.post('/api/questions', adminAuth, async (req, res) => {
   const { question_text, option_a, option_b, option_c, option_d, correct_option, level, difficulty, explanation, hint } = req.body;
   if (!question_text || !option_a || !option_b || !option_c || !option_d || !correct_option || !level || !difficulty || !explanation || !hint) {
     return res.status(400).json({ error: 'All fields are required.' });
   }
-  const id = dbRun(
+  const id = await dbRun(
     `INSERT INTO questions (question_text,option_a,option_b,option_c,option_d,correct_option,level,difficulty,explanation,hint) VALUES (?,?,?,?,?,?,?,?,?,?)`,
     [question_text, option_a, option_b, option_c, option_d, correct_option, level, difficulty, explanation, hint]
   );
@@ -447,30 +436,13 @@ app.post('/api/questions', adminAuth, (req, res) => {
 });
 
 // PUT /api/questions/:id — update a question (admin)
-app.put('/api/questions/:id', adminAuth, (req, res) => {
-  const { id } = req.params;
-  const { question_text, option_a, option_b, option_c, option_d, correct_option, level, difficulty, explanation, hint } = req.body;
-  dbRun(
-    `UPDATE questions SET question_text=?,option_a=?,option_b=?,option_c=?,option_d=?,correct_option=?,level=?,difficulty=?,explanation=?,hint=? WHERE id=?`,
-    [question_text, option_a, option_b, option_c, option_d, correct_option, level, difficulty, explanation, hint, id]
-  );
-  res.json({ message: 'Question updated successfully.' });
-});
-
-// DELETE /api/questions/:id — delete a question (admin)
-app.delete('/api/questions/:id', adminAuth, (req, res) => {
-  dbRun('DELETE FROM questions WHERE id = ?', [req.params.id]);
-  res.json({ message: 'Question deleted successfully.' });
-});
-
-// PUT /api/questions/:id — update a question (admin)
-app.put('/api/questions/:id', adminAuth, (req, res) => {
+app.put('/api/questions/:id', adminAuth, async (req, res) => {
   const { id } = req.params;
   const { question_text, option_a, option_b, option_c, option_d, correct_option, level, difficulty, explanation, hint } = req.body;
   if (!question_text || !option_a || !option_b || !option_c || !option_d || !correct_option || !level || !difficulty || !explanation || !hint) {
     return res.status(400).json({ error: 'All fields are required.' });
   }
-  dbRun(
+  await dbRun(
     `UPDATE questions SET question_text=?,option_a=?,option_b=?,option_c=?,option_d=?,correct_option=?,level=?,difficulty=?,explanation=?,hint=? WHERE id=?`,
     [question_text, option_a, option_b, option_c, option_d, correct_option, level, difficulty, explanation, hint, id]
   );
@@ -478,30 +450,30 @@ app.put('/api/questions/:id', adminAuth, (req, res) => {
 });
 
 // DELETE /api/questions/:id — delete a question (admin)
-app.delete('/api/questions/:id', adminAuth, (req, res) => {
+app.delete('/api/questions/:id', adminAuth, async (req, res) => {
   const { id } = req.params;
-  dbRun('DELETE FROM questions WHERE id = ?', [id]);
+  await dbRun('DELETE FROM questions WHERE id = ?', [id]);
   res.json({ message: 'Question deleted.' });
 });
 
 // POST /api/questions/:id/flag — report a question issue
-app.post('/api/questions/:id/flag', (req, res) => {
+app.post('/api/questions/:id/flag', async (req, res) => {
   const { id }     = req.params;
   const { reason } = req.body;
-  const q = dbGet('SELECT id FROM questions WHERE id = ?', [id]);
+  const q = await dbGet('SELECT id FROM questions WHERE id = ?', [id]);
   if (!q) return res.status(404).json({ error: 'Question not found.' });
-  dbRun('UPDATE questions SET flag_count = flag_count + 1 WHERE id = ?', [id]);
-  dbRun('INSERT INTO flagged_questions (question_id, reason) VALUES (?, ?)', [id, reason || '']);
+  await dbRun('UPDATE questions SET flag_count = flag_count + 1 WHERE id = ?', [id]);
+  await dbRun('INSERT INTO flagged_questions (question_id, reason) VALUES (?, ?)', [id, reason || '']);
   res.json({ message: 'Question flagged. Thank you for the report.' });
 });
 
 // POST /api/scores — save a player score (rate-limited)
-app.post('/api/scores', scoreLimiter, (req, res) => {
+app.post('/api/scores', scoreLimiter, async (req, res) => {
   const { player_name, score, correct_answers, accuracy, level, difficulty } = req.body;
   if (!player_name || score === undefined || correct_answers === undefined) {
     return res.status(400).json({ error: 'player_name, score, and correct_answers are required.' });
   }
-  const id = dbRun(
+  const id = await dbRun(
     `INSERT INTO scores (player_name,score,correct_answers,accuracy,level,difficulty) VALUES (?,?,?,?,?,?)`,
     [player_name, score, correct_answers, accuracy, level, difficulty]
   );
@@ -509,33 +481,33 @@ app.post('/api/scores', scoreLimiter, (req, res) => {
 });
 
 // GET /api/leaderboard — top 10 scores
-app.get('/api/leaderboard', (req, res) => {
-  res.json(dbAll('SELECT * FROM scores ORDER BY score DESC LIMIT 10'));
+app.get('/api/leaderboard', async (req, res) => {
+  res.json(await dbAll('SELECT * FROM scores ORDER BY score DESC LIMIT 10'));
 });
 
 // GET /api/leaderboard/rank?score=N — player's rank for a given score
-app.get('/api/leaderboard/rank', (req, res) => {
+app.get('/api/leaderboard/rank', async (req, res) => {
   const score = parseInt(req.query.score, 10);
   if (isNaN(score)) return res.status(400).json({ error: 'score query param required.' });
-  const row   = dbGet('SELECT COUNT(*) + 1 AS rank FROM scores WHERE score > ?', [score]);
-  const total = dbGet('SELECT COUNT(*) AS total FROM scores');
+  const row   = await dbGet('SELECT COUNT(*) + 1 AS rank FROM scores WHERE score > ?', [score]);
+  const total = await dbGet('SELECT COUNT(*) AS total FROM scores');
   res.json({ rank: row ? row.rank : 1, total: total ? total.total : 0 });
 });
 
 // GET /api/leaderboard/all — all scores (admin)
-app.get('/api/leaderboard/all', adminAuth, (req, res) => {
-  res.json(dbAll('SELECT * FROM scores ORDER BY score DESC'));
+app.get('/api/leaderboard/all', adminAuth, async (req, res) => {
+  res.json(await dbAll('SELECT * FROM scores ORDER BY score DESC'));
 });
 
 // DELETE /api/leaderboard — clear all scores (admin)
-app.delete('/api/leaderboard', adminAuth, (req, res) => {
-  dbRun('DELETE FROM scores');
+app.delete('/api/leaderboard', adminAuth, async (req, res) => {
+  await dbRun('DELETE FROM scores');
   res.json({ message: 'Leaderboard cleared successfully.' });
 });
 
 // GET /api/leaderboard/export — CSV download (admin)
-app.get('/api/leaderboard/export', adminAuth, (req, res) => {
-  const scores = dbAll('SELECT * FROM scores ORDER BY score DESC');
+app.get('/api/leaderboard/export', adminAuth, async (req, res) => {
+  const scores = await dbAll('SELECT * FROM scores ORDER BY score DESC');
   const header = 'Rank,Player,Score,Correct,Accuracy,Level,Difficulty,Date\n';
   const rows   = scores.map((s, i) =>
     `${i + 1},"${(s.player_name || '').replace(/"/g, '""')}",${s.score},${s.correct_answers},${s.accuracy}%,"${s.level}","${s.difficulty}","${s.created_at}"`
@@ -546,14 +518,16 @@ app.get('/api/leaderboard/export', adminAuth, (req, res) => {
 });
 
 // GET /api/analytics — stats for admin dashboard
-app.get('/api/analytics', adminAuth, (req, res) => {
-  const totalGames    = dbGet('SELECT COUNT(*) AS c FROM scores');
-  const avgScore      = dbGet('SELECT AVG(score) AS avg, MAX(score) AS max FROM scores');
-  const byLevel       = dbAll('SELECT level, COUNT(*) AS games, AVG(score) AS avg_score, AVG(accuracy) AS avg_acc FROM scores GROUP BY level ORDER BY avg_score DESC');
-  const byDifficulty  = dbAll('SELECT difficulty, COUNT(*) AS games, AVG(score) AS avg_score FROM scores GROUP BY difficulty ORDER BY avg_score DESC');
-  const recentScores  = dbAll('SELECT player_name, score, level, difficulty, created_at FROM scores ORDER BY created_at DESC LIMIT 20');
-  const flaggedCount  = dbGet('SELECT COUNT(*) AS c FROM flagged_questions');
-  const questionCount = dbGet('SELECT COUNT(*) AS c FROM questions');
+app.get('/api/analytics', adminAuth, async (req, res) => {
+  const [totalGames, avgScore, byLevel, byDifficulty, recentScores, flaggedCount, questionCount] = await Promise.all([
+    dbGet('SELECT COUNT(*) AS c FROM scores'),
+    dbGet('SELECT AVG(score) AS avg, MAX(score) AS max FROM scores'),
+    dbAll('SELECT level, COUNT(*) AS games, AVG(score) AS avg_score, AVG(accuracy) AS avg_acc FROM scores GROUP BY level ORDER BY avg_score DESC'),
+    dbAll('SELECT difficulty, COUNT(*) AS games, AVG(score) AS avg_score FROM scores GROUP BY difficulty ORDER BY avg_score DESC'),
+    dbAll('SELECT player_name, score, level, difficulty, created_at FROM scores ORDER BY created_at DESC LIMIT 20'),
+    dbGet('SELECT COUNT(*) AS c FROM flagged_questions'),
+    dbGet('SELECT COUNT(*) AS c FROM questions')
+  ]);
   res.json({
     totalGames:    totalGames ? totalGames.c : 0,
     avgScore:      avgScore   ? Math.round(avgScore.avg || 0) : 0,
@@ -567,7 +541,7 @@ app.get('/api/analytics', adminAuth, (req, res) => {
 });
 
 // GET /api/daily-challenge — same 10 questions for everyone today (seeded by date)
-app.get('/api/daily-challenge', (req, res) => {
+app.get('/api/daily-challenge', async (req, res) => {
   // Use today's date string as a deterministic seed
   const today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
   const seed  = today.split('').reduce((n, c) => n + c.charCodeAt(0), 0);
@@ -581,14 +555,14 @@ app.get('/api/daily-challenge', (req, res) => {
     return a;
   }
 
-  const all       = dbAll('SELECT * FROM questions WHERE difficulty = ?', ['Intermediate']);
-  const shuffled  = seededShuffle(all, seed);
+  const all      = await dbAll('SELECT * FROM questions WHERE difficulty = ?', ['Intermediate']);
+  const shuffled = seededShuffle(all, seed);
   res.json(shuffled.slice(0, 10));
 });
 
 // GET /api/flagged — view flagged questions (admin)
-app.get('/api/flagged', adminAuth, (req, res) => {
-  res.json(dbAll(`
+app.get('/api/flagged', adminAuth, async (req, res) => {
+  res.json(await dbAll(`
     SELECT fq.id, fq.question_id, fq.reason, fq.created_at,
            q.question_text, q.level, q.difficulty, q.flag_count
     FROM flagged_questions fq
@@ -770,7 +744,7 @@ Return ONLY a valid JSON array, no other text:
     const inserted = [];
     for (const q of generated) {
       if (!q.question_text || !q.option_a || !q.correct_option) continue;
-      const id = dbRun(
+      const id = await dbRun(
         `INSERT INTO questions (question_text,option_a,option_b,option_c,option_d,correct_option,level,difficulty,explanation,hint,status)
          VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
         [q.question_text, q.option_a, q.option_b||'', q.option_c||'', q.option_d||'',
@@ -787,19 +761,19 @@ Return ONLY a valid JSON array, no other text:
 });
 
 // GET /api/questions/pending — pending AI-generated questions awaiting approval (admin)
-app.get('/api/questions/pending', adminAuth, (req, res) => {
-  res.json(dbAll("SELECT * FROM questions WHERE status = 'pending' ORDER BY id DESC"));
+app.get('/api/questions/pending', adminAuth, async (req, res) => {
+  res.json(await dbAll("SELECT * FROM questions WHERE status = 'pending' ORDER BY id DESC"));
 });
 
 // POST /api/questions/:id/approve — approve a pending question (admin)
-app.post('/api/questions/:id/approve', adminAuth, (req, res) => {
-  dbRun("UPDATE questions SET status = 'approved' WHERE id = ?", [req.params.id]);
+app.post('/api/questions/:id/approve', adminAuth, async (req, res) => {
+  await dbRun("UPDATE questions SET status = 'approved' WHERE id = ?", [req.params.id]);
   res.json({ message: 'Question approved and now live.' });
 });
 
 // POST /api/questions/:id/reject — reject a pending question (admin)
-app.post('/api/questions/:id/reject', adminAuth, (req, res) => {
-  dbRun('DELETE FROM questions WHERE id = ? AND status = ?', [req.params.id, 'pending']);
+app.post('/api/questions/:id/reject', adminAuth, async (req, res) => {
+  await dbRun('DELETE FROM questions WHERE id = ? AND status = ?', [req.params.id, 'pending']);
   res.json({ message: 'Question rejected and removed.' });
 });
 
@@ -815,26 +789,12 @@ app.use('/admin', adminAuth, express.static(path.join(__dirname, 'admin')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ============================================================
-// INIT — load db from disk (or create new)
+// INIT — ensure tables exist and seed if empty
 // ============================================================
 async function initDb() {
-  // Explicitly locate the WASM file — required on Vercel serverless where
-  // the default relative-path resolution breaks outside of local node_modules
-  const SQL = await initSqlJs({
-    locateFile: file => path.join(__dirname, 'node_modules', 'sql.js', 'dist', file)
-  });
-
-  // Load existing db file, or create a fresh one
-  if (fs.existsSync(DB_PATH)) {
-    db = new SQL.Database(fs.readFileSync(DB_PATH));
-    console.log('📂 Loaded existing database from', DB_PATH);
-  } else {
-    db = new SQL.Database();
-    console.log('🆕 Created new database at', DB_PATH);
-  }
-
-  createTables();
-  seedQuestions();
+  await createTables();
+  await seedQuestions();
+  console.log('✅ Database ready.');
 }
 
 // ── Start the HTTP server only when run directly (not imported by Vercel) ──
