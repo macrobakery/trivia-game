@@ -59,6 +59,11 @@ const scoreLimiter = rateLimit({
   max: 20, // max 20 score saves per hour per IP
   message: { error: 'Too many score submissions. Try again later.' }
 });
+const learnLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 15, // generous — cached after first call per day
+  message: { error: 'Too many requests. Try again in a moment.' }
+});
 app.use('/api/', apiLimiter);
 
 // ── Lazy-init middleware: ensures tables exist before any request ──
@@ -152,6 +157,16 @@ async function createTables() {
     question_id INTEGER NOT NULL,
     reason      TEXT,
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  // Daily content cache — lessons and AI trends, one row per (date, type)
+  await dbClient.execute(`CREATE TABLE IF NOT EXISTS daily_content (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    date       TEXT NOT NULL,
+    type       TEXT NOT NULL,
+    content    TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(date, type)
   )`);
 
   // Schema migrations for tables that existed before these columns were added
@@ -775,6 +790,178 @@ app.post('/api/questions/:id/approve', adminAuth, async (req, res) => {
 app.post('/api/questions/:id/reject', adminAuth, async (req, res) => {
   await dbRun('DELETE FROM questions WHERE id = ? AND status = ?', [req.params.id, 'pending']);
   res.json({ message: 'Question rejected and removed.' });
+});
+
+// ============================================================
+// DAILY LEARNING HUB — lessons + AI trends (cached per day in Turso)
+// ============================================================
+
+// Helper: rotate through AI topic areas based on date seed
+function dailyTopic(dateStr) {
+  const topics = [
+    'neural networks and how they learn',
+    'natural language processing and how machines understand text',
+    'computer vision and image recognition',
+    'reinforcement learning and AI decision-making',
+    'AI ethics, fairness, and bias',
+    'large language models and how they work',
+    'generative AI — images, music, and creativity',
+    'AI in healthcare and medicine',
+    'robotics and autonomous systems',
+    'AI safety and alignment',
+    'transformer architecture and attention mechanisms',
+    'diffusion models and image generation',
+    'retrieval-augmented generation (RAG)',
+    'AI agents and tool use',
+    'AI in business and productivity'
+  ];
+  const seed = dateStr.split('').reduce((n, c) => n + c.charCodeAt(0), 0);
+  return topics[seed % topics.length];
+}
+
+// GET /api/daily-lesson — 3 micro-lessons, generated once per day, cached in DB
+app.get('/api/daily-lesson', learnLimiter, async (req, res) => {
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Serve from cache if already generated today
+  const cached = await dbGet("SELECT content FROM daily_content WHERE date = ? AND type = 'lesson'", [today]);
+  if (cached) return res.json(JSON.parse(cached.content));
+
+  if (!anthropic) {
+    return res.status(503).json({ error: 'AI not configured.', fallback: true });
+  }
+
+  const topic = dailyTopic(today);
+
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-haiku-4-5',
+      max_tokens: 1800,
+      messages: [{
+        role: 'user',
+        content: `Generate exactly 3 bite-sized AI micro-lessons about "${topic}" for complete beginners.
+
+Each lesson should be self-contained, educational, and feel fresh.
+Use plain English — no unexplained jargon.
+
+Return ONLY a valid JSON object:
+{
+  "topic": "${topic}",
+  "lessons": [
+    {
+      "title": "Short catchy concept name (max 6 words)",
+      "emoji": "one relevant emoji",
+      "explanation": "2-3 sentences explaining the concept clearly in plain English",
+      "real_world": "One real-world example most people already know (Netflix, Spotify, Google Maps etc.)",
+      "fun_fact": "One surprising or counterintuitive fact about this concept"
+    }
+  ]
+}`
+      }]
+    });
+
+    const raw = message.content[0].text.trim().replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+    const data = JSON.parse(raw);
+    if (!data.lessons || !Array.isArray(data.lessons)) throw new Error('Invalid response shape');
+
+    // Cache for the rest of the day
+    await dbRun(
+      "INSERT OR REPLACE INTO daily_content (date, type, content) VALUES (?, 'lesson', ?)",
+      [today, JSON.stringify(data)]
+    );
+
+    res.json(data);
+  } catch (err) {
+    console.error('Daily lesson error:', err.message);
+    res.status(500).json({ error: 'Could not generate lessons: ' + err.message });
+  }
+});
+
+// GET /api/ai-trends — top 3 AI stories from HackerNews, summarised by Claude, cached per day
+app.get('/api/ai-trends', learnLimiter, async (req, res) => {
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Serve from cache
+  const cached = await dbGet("SELECT content FROM daily_content WHERE date = ? AND type = 'trend'", [today]);
+  if (cached) return res.json(JSON.parse(cached.content));
+
+  if (!anthropic) {
+    return res.status(503).json({ error: 'AI not configured.', fallback: true });
+  }
+
+  try {
+    // 1. Fetch top HN story IDs
+    const hnTop = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
+    const ids   = await hnTop.json();
+
+    // 2. Fetch details for first 60 stories in parallel
+    const stories = await Promise.all(
+      ids.slice(0, 60).map(id =>
+        fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(r => r.json()).catch(() => null)
+      )
+    );
+
+    // 3. Filter for AI-related stories by title keywords
+    const AI_KEYWORDS = ['ai', 'llm', 'gpt', 'claude', 'gemini', 'mistral', 'openai', 'anthropic',
+      'neural', 'machine learning', 'deep learning', 'generative', 'diffusion', 'transformer',
+      'chatbot', 'model', 'training', 'inference', 'robotics', 'automation'];
+    const aiStories = stories.filter(s =>
+      s && s.title && AI_KEYWORDS.some(kw => s.title.toLowerCase().includes(kw))
+    ).slice(0, 6);
+
+    // 4. Build prompt — use real stories if found, otherwise ask Claude for curated picks
+    let prompt;
+    if (aiStories.length >= 2) {
+      prompt = `Here are today's top AI-related stories trending on Hacker News:
+
+${aiStories.map((s, i) => `${i + 1}. "${s.title}"${s.url ? ` — ${s.url}` : ''} (${s.score || 0} upvotes)`).join('\n')}
+
+Summarise the 3 most interesting ones for a complete beginner. Avoid jargon.`;
+    } else {
+      prompt = `Share 3 of the most significant recent AI developments or breakthroughs that a beginner learning AI would find interesting and relevant in ${new Date().getFullYear()}. Focus on things that have happened in the last 6-12 months.`;
+    }
+
+    prompt += `
+
+Return ONLY a valid JSON array with exactly 3 items:
+[
+  {
+    "headline": "Short punchy title (max 10 words)",
+    "emoji": "one relevant emoji",
+    "plain_english": "2-3 sentences explaining this to a 15-year-old — no jargon",
+    "why_it_matters": "One sentence on why this matters for AI's future",
+    "source_url": "original URL or empty string"
+  }
+]`;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-haiku-4-5',
+      max_tokens: 1200,
+      messages: [{ role: 'user', content: prompt }]
+    });
+
+    const raw  = message.content[0].text.trim().replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data)) throw new Error('Response was not an array');
+
+    const result = {
+      trends:   data,
+      source:   aiStories.length >= 2 ? 'hackernews' : 'ai_curated',
+      fallback: aiStories.length < 2,
+      date:     today
+    };
+
+    // Cache for the rest of the day
+    await dbRun(
+      "INSERT OR REPLACE INTO daily_content (date, type, content) VALUES (?, 'trend', ?)",
+      [today, JSON.stringify(result)]
+    );
+
+    res.json(result);
+  } catch (err) {
+    console.error('AI trends error:', err.message);
+    res.status(500).json({ error: 'Could not fetch trends: ' + err.message });
+  }
 });
 
 // ============================================================

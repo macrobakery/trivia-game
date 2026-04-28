@@ -1406,6 +1406,35 @@ if ('serviceWorker' in navigator) {
 }
 
 // ══════════════════════════════════════════════════════════════
+// DAILY LEARNING HUB — streak display on the home screen
+// ══════════════════════════════════════════════════════════════
+
+function getStreakData() {
+  try {
+    return JSON.parse(localStorage.getItem('aiChallenge_streak') ||
+      '{"count":0,"lastVisit":null,"longestStreak":0,"totalDays":0}');
+  } catch { return { count: 0, lastVisit: null, longestStreak: 0, totalDays: 0 }; }
+}
+
+function initHubStreakDisplay() {
+  const data = getStreakData();
+  const numEl = document.getElementById('hub-streak-num');
+  if (!numEl) return;
+
+  if (data.count > 0) {
+    numEl.textContent = data.count;
+    const hubBtn = document.getElementById('daily-hub-btn');
+    if (hubBtn) {
+      const sub = hubBtn.querySelector('.dhb-sub');
+      if (sub && data.count === 1) sub.textContent = 'Day 1 — great start! Keep the streak going 🔥';
+      else if (sub && data.count >= 7) sub.textContent = `${data.count}-day streak — you're on fire! 🔥`;
+    }
+  } else {
+    numEl.textContent = '0';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════
 
@@ -1413,3 +1442,4 @@ loadLeaderboardPreview();
 updateLevelCards();
 checkForSession();
 initDailyChallenge();
+initHubStreakDisplay();
