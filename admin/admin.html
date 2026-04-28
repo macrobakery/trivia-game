@@ -132,6 +132,7 @@
         <button class="tab-btn" data-tab="leaderboard">🏆 Leaderboard</button>
         <button class="tab-btn" data-tab="analytics">📊 Analytics</button>
         <button class="tab-btn" data-tab="flagged">⚑ Flagged</button>
+        <button class="tab-btn" data-tab="generate">✨ AI Generate</button>
       </div>
 
       <!-- Questions Tab -->
@@ -188,6 +189,61 @@
         <div class="analytics-grid" id="analytics-grid">
           <div class="loading-msg">Loading analytics…</div>
         </div>
+      </div>
+
+      <!-- AI Generate Tab -->
+      <div id="tab-generate" class="tab-content">
+
+        <!-- Generator form -->
+        <div class="generate-panel">
+          <div class="generate-header">
+            <h3>✨ Generate Questions with AI</h3>
+            <p>Claude will write brand-new trivia questions. Review them below before approving.</p>
+          </div>
+
+          <div class="generate-form">
+            <div class="gen-row">
+              <div class="form-group" style="flex:1">
+                <label>Level</label>
+                <select id="gen-level">
+                  <option value="AI Foundations">Level 1: AI Foundations</option>
+                  <option value="Data Preparation">Level 2: Data Preparation</option>
+                  <option value="Model Building">Level 3: Model Building</option>
+                  <option value="AI App Development">Level 4: AI App Development</option>
+                  <option value="Deployment and Responsible AI">Level 5: Deployment &amp; Responsible AI</option>
+                </select>
+              </div>
+              <div class="form-group" style="flex:1">
+                <label>Difficulty</label>
+                <select id="gen-difficulty">
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate" selected>Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                </select>
+              </div>
+              <div class="form-group" style="width:100px">
+                <label>Count</label>
+                <select id="gen-count">
+                  <option value="3">3</option>
+                  <option value="5" selected>5</option>
+                  <option value="10">10</option>
+                </select>
+              </div>
+            </div>
+            <button id="gen-btn" class="btn-submit" style="width:100%">✨ Generate with Claude</button>
+            <div id="gen-status" style="display:none;text-align:center;padding:12px;font-size:0.85rem;color:#aaa"></div>
+          </div>
+        </div>
+
+        <!-- Pending approval queue -->
+        <div class="pending-header">
+          <h4>⏳ Awaiting Approval <span id="pending-count"></span></h4>
+          <button id="approve-all-btn" class="btn-outline-sm" style="display:none">✅ Approve All</button>
+        </div>
+        <div id="pending-list">
+          <div class="loading-msg" style="padding:24px">No pending questions — generate some above!</div>
+        </div>
+
       </div>
 
       <!-- Flagged Questions Tab -->

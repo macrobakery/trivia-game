@@ -369,7 +369,7 @@ function escHtml(str) {
 }
 
 // ════════════════════════════════════════════════════════════
-// TAB — hook analytics + flagged on tab click
+// TAB — hook analytics + flagged + generate on tab click
 // ════════════════════════════════════════════════════════════
 
 // Extend existing tab-btn listener to handle new tabs
@@ -377,6 +377,7 @@ $$('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     if (btn.dataset.tab === 'analytics') loadAnalytics();
     if (btn.dataset.tab === 'flagged')   loadFlagged();
+    if (btn.dataset.tab === 'generate')  loadPendingQueue();
   });
 });
 
@@ -544,6 +545,125 @@ async function loadFlagged() {
     list.innerHTML = '<div class="loading-msg">Error loading flagged questions.</div>';
   }
 }
+
+// ════════════════════════════════════════════════════════════
+// AI QUESTION GENERATOR
+// ════════════════════════════════════════════════════════════
+
+$('gen-btn').addEventListener('click', async () => {
+  const level      = $('gen-level').value;
+  const difficulty = $('gen-difficulty').value;
+  const count      = $('gen-count').value;
+  const btn        = $('gen-btn');
+  const status     = $('gen-status');
+
+  btn.disabled     = true;
+  btn.textContent  = '⏳ Claude is writing questions…';
+  status.style.display = 'block';
+  status.textContent   = 'Sending request to Claude — this takes ~10 seconds…';
+
+  try {
+    const res  = await fetch('/api/questions/generate', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ level, difficulty, count: parseInt(count) })
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Generation failed');
+
+    status.textContent = `✅ Generated ${data.generated} questions — review them below!`;
+    status.style.color = '#22c55e';
+    showToast(`✨ ${data.generated} questions generated — approve to go live.`, 'success');
+    loadPendingQueue();
+  } catch (err) {
+    status.textContent = '❌ ' + err.message;
+    status.style.color = '#ef4444';
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = '✨ Generate with Claude';
+  }
+});
+
+async function loadPendingQueue() {
+  const list  = $('pending-list');
+  const count = $('pending-count');
+  if (!list) return;
+  list.innerHTML = '<div class="loading-msg" style="padding:24px">Loading…</div>';
+
+  try {
+    const items = await fetch('/api/questions/pending').then(r => r.json());
+    if (count) count.textContent = items.length ? `(${items.length})` : '';
+
+    const approveAll = $('approve-all-btn');
+    if (approveAll) approveAll.style.display = items.length ? 'inline-flex' : 'none';
+
+    if (!items || items.length === 0) {
+      list.innerHTML = '<div class="loading-msg" style="padding:24px">No pending questions — generate some above!</div>';
+      return;
+    }
+
+    list.innerHTML = items.map(q => `
+      <div class="pending-card" id="pcard-${q.id}">
+        <div class="pending-card-meta">
+          <span class="badge-level-admin">${escHtml(q.level)}</span>
+          <span class="badge-diff-admin">${escHtml(q.difficulty)}</span>
+          <span style="font-size:0.7rem;color:#888;margin-left:auto">ID #${q.id}</span>
+        </div>
+        <p class="pending-question">${escHtml(q.question_text)}</p>
+        <div class="pending-opts">
+          <div class="popt correct">✓ A: ${escHtml(q.option_a)}</div>
+          <div class="popt">B: ${escHtml(q.option_b)}</div>
+          <div class="popt">C: ${escHtml(q.option_c)}</div>
+          <div class="popt">D: ${escHtml(q.option_d)}</div>
+        </div>
+        <p class="pending-explanation">💡 ${escHtml(q.explanation)}</p>
+        <div class="pending-actions">
+          <button class="btn-success" onclick="approveQuestion(${q.id})">✅ Approve — Go Live</button>
+          <button class="btn-danger"  onclick="rejectQuestion(${q.id})">🗑 Reject</button>
+          <button class="btn-ghost"   onclick="editQuestion(${q.id})" style="font-size:0.75rem;padding:7px 12px">✏️ Edit first</button>
+        </div>
+      </div>
+    `).join('');
+
+  } catch {
+    list.innerHTML = '<div class="loading-msg" style="padding:24px">Error loading queue.</div>';
+  }
+}
+
+async function approveQuestion(id) {
+  try {
+    await fetch(`/api/questions/${id}/approve`, { method: 'POST' });
+    const card = document.getElementById(`pcard-${id}`);
+    if (card) { card.style.opacity = '0.4'; card.style.pointerEvents = 'none'; }
+    showToast('✅ Question approved and now live!', 'success');
+    setTimeout(loadPendingQueue, 800);
+  } catch { showToast('Error approving.', 'error'); }
+}
+
+async function rejectQuestion(id) {
+  if (!confirm('Reject and delete this question?')) return;
+  try {
+    await fetch(`/api/questions/${id}/reject`, { method: 'POST' });
+    const card = document.getElementById(`pcard-${id}`);
+    if (card) card.remove();
+    showToast('🗑 Question rejected.', 'success');
+    loadPendingQueue();
+  } catch { showToast('Error rejecting.', 'error'); }
+}
+
+// Approve-all button
+$('approve-all-btn') && $('approve-all-btn').addEventListener('click', async () => {
+  if (!confirm('Approve ALL pending questions and make them live?')) return;
+  const cards = document.querySelectorAll('[id^="pcard-"]');
+  for (const card of cards) {
+    const id = card.id.replace('pcard-', '');
+    await fetch(`/api/questions/${id}/approve`, { method: 'POST' });
+  }
+  showToast('✅ All questions approved!', 'success');
+  loadPendingQueue();
+});
 
 // ════════════════════════════════════════════════════════════
 // INIT

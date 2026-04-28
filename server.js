@@ -147,6 +147,12 @@ function createTables() {
     console.log('🔧 Migrated: added flag_count column to questions.');
   } catch (_) { /* column already exists — fine */ }
 
+  // Migration: add status column for AI-generated question approval queue
+  try {
+    db.run("ALTER TABLE questions ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'");
+    console.log('🔧 Migrated: added status column to questions.');
+  } catch (_) { /* column already exists — fine */ }
+
   db.run(`CREATE TABLE IF NOT EXISTS scores (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     player_name     TEXT NOT NULL,
@@ -413,16 +419,16 @@ function seedQuestions() {
 // API ROUTES
 // ============================================================
 
-// GET /api/questions — all questions, optionally filtered
+// GET /api/questions — approved questions only, optionally filtered
 app.get('/api/questions', (req, res) => {
   const { level, difficulty } = req.query;
-  const conditions = [];
+  const conditions = ["(status IS NULL OR status = 'approved')"]; // only live questions
   const params     = [];
 
   if (level)      { conditions.push('level = ?');      params.push(level); }
   if (difficulty) { conditions.push('difficulty = ?'); params.push(difficulty); }
 
-  const where     = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+  const where     = 'WHERE ' + conditions.join(' AND ');
   const questions = dbAll(`SELECT * FROM questions ${where}`, params);
   res.json(questions);
 });
@@ -624,6 +630,174 @@ Topic: ${level} — ${difficulty}`
     console.error('AI hint error:', err.message);
     res.status(500).json({ error: 'AI request failed.', source: 'error' });
   }
+});
+
+// ============================================================
+// AI CHATBOT — streaming tutor endpoint
+// ============================================================
+
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20, // 20 chat messages per minute per IP
+  message: { error: 'Chat rate limit reached. Please slow down.' }
+});
+
+app.post('/api/chat', chatLimiter, async (req, res) => {
+  const { messages } = req.body; // array of { role, content }
+  if (!messages || !Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ error: 'messages array required.' });
+  }
+
+  // Sanitise: only allow 'user' and 'assistant' roles, cap history at 20
+  const safeMessages = messages
+    .filter(m => m.role === 'user' || m.role === 'assistant')
+    .slice(-20)
+    .map(m => ({ role: m.role, content: String(m.content).slice(0, 2000) }));
+
+  if (!anthropic) {
+    // Graceful fallback when no API key
+    return res.json({
+      content: "I'm Alex, your AI tutor! 👋 To enable live AI responses, the site owner needs to add an ANTHROPIC_API_KEY in the server settings. In the meantime, try the AI Hint button during a quiz question — it uses the same technology!",
+      fallback: true
+    });
+  }
+
+  // Stream the response using Server-Sent Events
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  try {
+    const stream = await anthropic.messages.stream({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 600,
+      system: `You are Alex, a friendly and encouraging AI tutor for complete beginners learning about artificial intelligence and machine learning.
+
+Your teaching style:
+- Use simple, everyday language — no jargon unless you immediately explain it
+- Give real-world analogies and examples (e.g. "think of it like Netflix recommending movies")
+- Keep answers concise: 2-4 short paragraphs max, unless the user asks for more detail
+- Be warm, patient, and enthusiastic — learning AI should feel exciting, not intimidating
+- If asked something outside AI/tech, gently steer back: "Great question! Let me relate that back to AI..."
+- Use occasional emojis to make it friendly (but not excessive)
+- End responses with a short follow-up question or encouragement to keep the conversation going`,
+      messages: safeMessages
+    });
+
+    for await (const chunk of stream) {
+      if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
+        res.write(`data: ${JSON.stringify({ text: chunk.delta.text })}\n\n`);
+      }
+    }
+
+    res.write('data: [DONE]\n\n');
+    res.end();
+  } catch (err) {
+    console.error('Chat error:', err.message);
+    res.write(`data: ${JSON.stringify({ error: 'AI response failed. Please try again.' })}\n\n`);
+    res.end();
+  }
+});
+
+// ============================================================
+// AI QUESTION GENERATOR — admin endpoint
+// ============================================================
+
+const generateLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 5, // 5 generation requests per minute (each costs API credits)
+  message: { error: 'Generation rate limit reached. Wait a moment.' }
+});
+
+app.post('/api/questions/generate', adminAuth, generateLimiter, async (req, res) => {
+  const { level, difficulty, count = 5 } = req.body;
+
+  const validLevels = ['AI Foundations','Data Preparation','Model Building','AI App Development','Deployment and Responsible AI'];
+  const validDiffs  = ['Beginner','Intermediate','Advanced'];
+
+  if (!validLevels.includes(level) || !validDiffs.includes(difficulty)) {
+    return res.status(400).json({ error: 'Invalid level or difficulty.' });
+  }
+  if (!anthropic) {
+    return res.status(503).json({ error: 'ANTHROPIC_API_KEY not configured on server.' });
+  }
+
+  const n = Math.min(Math.max(parseInt(count) || 5, 1), 10); // clamp 1–10
+
+  const prompt = `Generate exactly ${n} multiple-choice trivia questions about "${level}" at "${difficulty}" level for an AI app development course.
+
+Requirements:
+- Each question tests a specific, factual concept relevant to AI/ML practitioners
+- Four answer options (A, B, C, D) — only one is correct, option A is ALWAYS correct
+- Options should be plausible but clearly distinguishable
+- Explanation: 1-2 sentences explaining WHY option A is correct
+- Hint: one sentence that guides thinking without giving the answer away
+- Language difficulty should match: Beginner=plain English, Intermediate=some technical terms, Advanced=assume ML knowledge
+
+Return ONLY a valid JSON array, no other text:
+[
+  {
+    "question_text": "...",
+    "option_a": "...",
+    "option_b": "...",
+    "option_c": "...",
+    "option_d": "...",
+    "correct_option": "A",
+    "explanation": "...",
+    "hint": "..."
+  }
+]`;
+
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 4000,
+      messages: [{ role: 'user', content: prompt }]
+    });
+
+    const raw  = message.content[0].text.trim();
+    // Extract JSON array from response (handle markdown code fences)
+    const json = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+    const generated = JSON.parse(json);
+
+    if (!Array.isArray(generated)) throw new Error('Response was not an array');
+
+    // Insert as PENDING (status field) — admin approves before they go live
+    const inserted = [];
+    for (const q of generated) {
+      if (!q.question_text || !q.option_a || !q.correct_option) continue;
+      const id = dbRun(
+        `INSERT INTO questions (question_text,option_a,option_b,option_c,option_d,correct_option,level,difficulty,explanation,hint,status)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+        [q.question_text, q.option_a, q.option_b||'', q.option_c||'', q.option_d||'',
+         'A', level, difficulty, q.explanation||'', q.hint||'', 'pending']
+      );
+      inserted.push({ id, ...q, level, difficulty, status: 'pending' });
+    }
+
+    res.json({ generated: inserted.length, questions: inserted });
+  } catch (err) {
+    console.error('Question generation error:', err.message);
+    res.status(500).json({ error: 'Failed to generate questions: ' + err.message });
+  }
+});
+
+// GET /api/questions/pending — pending AI-generated questions awaiting approval (admin)
+app.get('/api/questions/pending', adminAuth, (req, res) => {
+  res.json(dbAll("SELECT * FROM questions WHERE status = 'pending' ORDER BY id DESC"));
+});
+
+// POST /api/questions/:id/approve — approve a pending question (admin)
+app.post('/api/questions/:id/approve', adminAuth, (req, res) => {
+  dbRun("UPDATE questions SET status = 'approved' WHERE id = ?", [req.params.id]);
+  res.json({ message: 'Question approved and now live.' });
+});
+
+// POST /api/questions/:id/reject — reject a pending question (admin)
+app.post('/api/questions/:id/reject', adminAuth, (req, res) => {
+  dbRun('DELETE FROM questions WHERE id = ? AND status = ?', [req.params.id, 'pending']);
+  res.json({ message: 'Question rejected and removed.' });
 });
 
 // ============================================================

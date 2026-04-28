@@ -1847,6 +1847,42 @@ button, a, input, select {
   border: 1px solid hsl(40 95% 58% / 0.30);
 }
 
+/* ══════════════════════════════════════════════
+   FLOATING CHAT BUTTON
+══════════════════════════════════════════════ */
+
+.chat-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 350;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: var(--accent);
+  color: #0a0013;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  box-shadow: 0 4px 20px var(--accent-glow);
+  transition: all var(--t);
+  border: none;
+}
+.chat-fab:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px var(--accent-glow);
+}
+.chat-fab-icon { font-size: 1.1rem; }
+.chat-fab-label { white-space: nowrap; }
+
+@media (max-width: 480px) {
+  .chat-fab { padding: 12px; border-radius: 50%; }
+  .chat-fab-label { display: none; }
+}
+
 /* PWA Install Banner */
 .pwa-banner {
   display: none;

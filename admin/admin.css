@@ -550,6 +550,94 @@ button { cursor: pointer; border: none; outline: none; }
 }
 
 /* ════════════════════════════════════════════
+   AI GENERATOR TAB
+════════════════════════════════════════════ */
+
+.generate-panel {
+  margin: 16px;
+  background: var(--bg-card2);
+  border: 1px solid rgba(139,92,246,0.3);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.generate-header h3 { font-size: 1rem; margin-bottom: 4px; }
+.generate-header p  { font-size: 0.8rem; color: var(--muted); margin-bottom: 16px; }
+
+.generate-form { display: flex; flex-direction: column; gap: 12px; }
+.gen-row { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.pending-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-sub);
+}
+.pending-header h4 { font-size: 0.9rem; color: var(--muted); }
+
+.pending-card {
+  margin: 0 16px 12px;
+  background: var(--bg-card2);
+  border: 1px solid var(--border-sub);
+  border-radius: var(--radius);
+  padding: 16px;
+  transition: opacity 0.3s;
+}
+.pending-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.badge-level-admin {
+  font-size: 0.68rem; font-weight: 600; padding: 2px 8px;
+  background: rgba(139,92,246,0.15); color: #a78bfa;
+  border: 1px solid rgba(139,92,246,0.3); border-radius: 99px;
+}
+.badge-diff-admin {
+  font-size: 0.68rem; font-weight: 600; padding: 2px 8px;
+  background: rgba(0,212,255,0.1); color: var(--primary);
+  border: 1px solid rgba(0,212,255,0.25); border-radius: 99px;
+}
+.pending-question {
+  font-size: 0.92rem; color: var(--white);
+  line-height: 1.5; margin-bottom: 10px; font-weight: 500;
+}
+.pending-opts {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 6px; margin-bottom: 10px;
+}
+.popt {
+  font-size: 0.78rem; color: var(--muted);
+  padding: 6px 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-sub);
+  border-radius: var(--radius-sm);
+}
+.popt.correct {
+  color: var(--success);
+  background: rgba(34,197,94,0.08);
+  border-color: rgba(34,197,94,0.25);
+  font-weight: 600;
+}
+.pending-explanation {
+  font-size: 0.78rem; color: var(--muted);
+  line-height: 1.5; margin-bottom: 12px;
+  padding: 8px 12px;
+  background: rgba(245,158,11,0.06);
+  border-left: 2px solid var(--warning);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.pending-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-success {
+  padding: 8px 16px; font-size: 0.8rem; font-weight: 700;
+  background: rgba(34,197,94,0.15); color: var(--success);
+  border: 1px solid rgba(34,197,94,0.3); border-radius: var(--radius-sm);
+  cursor: pointer; transition: all var(--tr);
+}
+.btn-success:hover { background: rgba(34,197,94,0.25); }
+
+/* ════════════════════════════════════════════
    ANALYTICS TAB
 ════════════════════════════════════════════ */
 
