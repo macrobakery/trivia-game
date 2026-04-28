@@ -6,7 +6,7 @@
 .prof-page {
   max-width: 680px;
   margin: 0 auto;
-  padding: 20px 16px 80px;
+  padding: 28px 20px 100px;
   position: relative;
   z-index: 1;
 }
@@ -17,7 +17,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 .prof-back { text-decoration: none; }
 .prof-nav-title {
@@ -33,20 +33,20 @@
 .prof-header {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 22px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 22px 24px;
-  margin-bottom: 14px;
+  padding: 28px 24px;
+  margin-bottom: 20px;
 }
 
 .prof-avatar {
-  font-size: 3rem;
+  font-size: 2.8rem;
   line-height: 1;
   flex-shrink: 0;
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -66,24 +66,25 @@
 
 .prof-name {
   font-family: 'Fraunces', serif;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.01em;
 }
 
 .prof-badge-name {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--accent);
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .prof-games-played {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.62rem;
+  font-size: 0.63rem;
   color: var(--ink-faint);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -93,15 +94,15 @@
 .prof-stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 14px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .prof-stat {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px 12px;
+  padding: 18px 12px;
   text-align: center;
   transition: border-color var(--t);
 }
@@ -109,11 +110,11 @@
 
 .prof-stat-val {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--accent);
   line-height: 1.1;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .prof-stat-lbl {
@@ -121,6 +122,7 @@
   color: var(--ink-faint);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  line-height: 1.4;
 }
 
 @media (max-width: 400px) {
@@ -132,28 +134,29 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 18px 20px;
-  margin-bottom: 14px;
+  padding: 24px 24px;
+  margin-bottom: 20px;
 }
 
 .prof-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
   gap: 8px;
   flex-wrap: wrap;
 }
 
 .prof-section-title {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--ink);
+  letter-spacing: -0.01em;
 }
 
 .prof-section-sub {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   color: var(--ink-faint);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -163,8 +166,8 @@
 .activity-calendar {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  gap: 4px;
-  margin-bottom: 8px;
+  gap: 5px;
+  margin-bottom: 12px;
 }
 
 .cal-day {
@@ -224,14 +227,14 @@
 .level-records-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .level-rec-card {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 14px 14px 12px;
+  padding: 18px 16px 14px;
   transition: all var(--t);
 }
 .level-rec-card.played {
@@ -242,24 +245,24 @@
 .level-rec-card.played:hover { border-color: var(--accent); filter: brightness(1.05); }
 
 .lrc-glyph {
-  font-size: 1.2rem;
-  margin-bottom: 6px;
+  font-size: 1.35rem;
+  margin-bottom: 8px;
 }
 .lrc-num {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.55rem;
+  font-size: 0.57rem;
   font-weight: 700;
   color: var(--ink-faint);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 .lrc-name {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--ink);
   line-height: 1.3;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .lrc-stats {
@@ -292,14 +295,14 @@
 .prof-ach-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 8px;
+  gap: 10px;
 }
 
 .prof-ach-chip {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 12px;
+  padding: 14px 14px;
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -312,28 +315,28 @@
   border-color: var(--accent);
 }
 
-.prof-ach-icon { font-size: 1.4rem; flex-shrink: 0; }
+.prof-ach-icon { font-size: 1.5rem; flex-shrink: 0; }
 
 .prof-ach-info { min-width: 0; }
 .prof-ach-name {
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--ink);
   line-height: 1.2;
-  margin-bottom: 1px;
+  margin-bottom: 3px;
 }
 .prof-ach-desc {
-  font-size: 0.62rem;
+  font-size: 0.65rem;
   color: var(--ink-faint);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 /* ── CTA row ── */
 .prof-cta {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   justify-content: center;
-  margin: 20px 0 8px;
+  margin: 28px 0 12px;
 }
 .prof-cta .btn-primary,
 .prof-cta .btn-ghost {

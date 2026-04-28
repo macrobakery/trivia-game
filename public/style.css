@@ -164,7 +164,7 @@ ul     { list-style: none; }
 .screen.results {
   align-items: center;
   justify-content: flex-start;
-  padding: 28px 16px 100px; /* bottom pad = bottom nav + space */
+  padding: 36px 20px 100px; /* bottom pad = bottom nav + space */
   gap: 0;
 }
 
@@ -296,7 +296,7 @@ ul     { list-style: none; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
   width: 100%;
   max-width: 680px;
 }
@@ -336,7 +336,7 @@ ul     { list-style: none; }
 .splash-selections {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 22px;
   width: 100%;
 }
 
@@ -349,7 +349,7 @@ ul     { list-style: none; }
   color: var(--ink-faint);
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  margin-bottom: 9px;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -373,15 +373,15 @@ ul     { list-style: none; }
 .levels-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
+  gap: 10px;
 }
 
 .level-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
-  padding: 14px 8px;
+  gap: 6px;
+  padding: 16px 10px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -399,7 +399,7 @@ ul     { list-style: none; }
   background: var(--accent-dim);
   box-shadow: 0 0 18px var(--accent-glow);
 }
-.lc-glyph { font-size: 1.2rem; color: var(--ink-faint); }
+.lc-glyph { font-size: 1.3rem; color: var(--ink); }
 .lc-num {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.58rem;
@@ -408,21 +408,21 @@ ul     { list-style: none; }
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
-.lc-name { font-size: 0.7rem; font-weight: 600; line-height: 1.3; }
+.lc-name { font-size: 0.72rem; font-weight: 600; line-height: 1.3; }
 
 /* ── Difficulty Cards Grid ── */
 .diff-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: 10px;
 }
 
 .diff-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 16px 10px;
+  gap: 7px;
+  padding: 18px 12px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -440,9 +440,9 @@ ul     { list-style: none; }
   background: var(--accent-dim);
   box-shadow: 0 0 18px var(--accent-glow);
 }
-.dc-glyph { font-size: 1.4rem; }
-.dc-name  { font-size: 0.88rem; font-weight: 700; }
-.dc-meta  { font-size: 0.67rem; color: var(--ink-faint); }
+.dc-glyph { font-size: 1.5rem; }
+.dc-name  { font-size: 0.9rem; font-weight: 700; letter-spacing: -0.01em; }
+.dc-meta  { font-size: 0.68rem; color: var(--ink-faint); }
 
 /* Practice difficulty card — distinct teal colour */
 .diff-card-practice {
@@ -536,7 +536,7 @@ ul     { list-style: none; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 20px;
 }
 .lb-preview-header {
   display: flex;
@@ -2312,19 +2312,20 @@ button, a, input, select {
   justify-content: space-between;
   width: 100%;
   max-width: 680px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 .hub-greeting {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--ink);
+  letter-spacing: -0.01em;
 }
 .hub-greeting span {
   color: var(--ink-faint);
   font-weight: 400;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   display: block;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 /* Hero card: Daily Learning Hub */
@@ -2332,7 +2333,7 @@ button, a, input, select {
   display: block;
   width: 100%;
   max-width: 680px;
-  padding: 20px 22px 18px;
+  padding: 24px 24px 20px;
   background: linear-gradient(135deg,
     hsl(25 100% 50% / 0.14) 0%,
     hsl(345 100% 55% / 0.08) 100%);
@@ -2364,18 +2365,18 @@ button, a, input, select {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 .hub-hero-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.58rem;
+  font-size: 0.6rem;
   font-weight: 700;
   color: #ff6b35;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
 }
 .hub-hero-streak {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 800;
   color: #ff6b35;
   font-family: 'JetBrains Mono', monospace;
@@ -2383,20 +2384,21 @@ button, a, input, select {
 .hub-hero-title {
   font-family: 'Fraunces', serif;
   font-style: italic;
-  font-size: 1.35rem;
+  font-size: 1.45rem;
   font-weight: 700;
   color: var(--ink);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 .hub-hero-sub {
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   color: var(--ink-faint);
-  margin-bottom: 14px;
-  line-height: 1.5;
+  margin-bottom: 16px;
+  line-height: 1.55;
 }
 .hub-hero-cta {
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: #ff6b35;
   display: flex;
@@ -2408,7 +2410,7 @@ button, a, input, select {
 .hub-tiles {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 12px;
   width: 100%;
   max-width: 680px;
 }
@@ -2418,8 +2420,8 @@ button, a, input, select {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 16px 8px;
+  gap: 8px;
+  padding: 20px 10px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -2427,24 +2429,26 @@ button, a, input, select {
   text-decoration: none;
   color: var(--ink);
   transition: all var(--t);
-  min-height: 80px;
+  min-height: 92px;
 }
 .hub-tile:hover {
   background: var(--surface-2);
   border-color: var(--border-hi);
   transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.18);
 }
-.hub-tile-icon  { font-size: 1.6rem; line-height: 1; }
+.hub-tile-icon  { font-size: 1.75rem; line-height: 1; }
 .hub-tile-title {
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--ink);
+  letter-spacing: -0.01em;
 }
 .hub-tile-sub {
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   color: var(--ink-faint);
   text-align: center;
-  line-height: 1.3;
+  line-height: 1.35;
 }
 
 /* Quiz section divider */
@@ -2454,7 +2458,7 @@ button, a, input, select {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 4px 0;
+  margin: 10px 0;
 }
 .quiz-section-divider span {
   font-family: 'JetBrains Mono', monospace;
@@ -2479,8 +2483,8 @@ button, a, input, select {
   .splash-orb .ai-orb-container { width: 64px; height: 64px; }
   .splash-orb .ai-orb-core      { width: 64px; height: 64px; }
   .title-display { font-size: clamp(1.8rem, 8vw, 2.8rem); }
-  .lede { font-size: 0.82rem; }
-  .splash-content { gap: 14px; }
+  .lede { font-size: 0.84rem; }
+  .splash-content { gap: 18px; }
 
   /* Level cards: 2 cols + last card full width */
   .levels-grid {
@@ -2492,14 +2496,14 @@ button, a, input, select {
   }
   /* Results screen */
   .screen.splash,
-  .screen.results { padding: 20px 14px 100px; }
+  .screen.results { padding: 24px 16px 100px; }
 }
 
 @media (max-width: 380px) {
-  .hub-tiles { grid-template-columns: repeat(3, 1fr); gap: 7px; }
-  .hub-tile  { padding: 12px 4px; min-height: 70px; }
-  .hub-tile-icon { font-size: 1.3rem; }
-  .hub-tile-title { font-size: 0.68rem; }
+  .hub-tiles { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .hub-tile  { padding: 14px 6px; min-height: 76px; gap: 6px; }
+  .hub-tile-icon { font-size: 1.4rem; }
+  .hub-tile-title { font-size: 0.72rem; }
   .hub-tile-sub { display: none; }
 }
 
