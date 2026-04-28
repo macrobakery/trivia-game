@@ -546,7 +546,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // INIT — load db from disk (or create new)
 // ============================================================
 async function initDb() {
-  const SQL = await initSqlJs();
+  // Explicitly locate the WASM file — required on Vercel serverless where
+  // the default relative-path resolution breaks outside of local node_modules
+  const SQL = await initSqlJs({
+    locateFile: file => path.join(__dirname, 'node_modules', 'sql.js', 'dist', file)
+  });
 
   // Load existing db file, or create a fresh one
   if (fs.existsSync(DB_PATH)) {
