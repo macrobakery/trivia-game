@@ -162,11 +162,16 @@ ul     { list-style: none; }
    SPLASH & RESULTS SCREENS (centred layout)
 ══════════════════════════════════════════════ */
 
-.screen.splash,
-.screen.results {
+.screen.splash {
   align-items: center;
   justify-content: flex-start;
   padding: 36px 20px 100px; /* bottom pad = bottom nav + space */
+  gap: 20px; /* space between topbar / learn-strip / content */
+}
+.screen.results {
+  align-items: center;
+  justify-content: flex-start;
+  padding: 36px 20px 100px;
   gap: 0;
 }
 
@@ -561,6 +566,91 @@ ul     { list-style: none; }
   font-size: 0.7rem;
   color: var(--border-hi);
   flex-shrink: 0;
+}
+
+/* ── CTA Stack: three stacked home-screen actions ── */
+.hub-cta-stack {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Primary wrapper (play button + settings chips) */
+.hub-cta-primary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+/* Override the 380px cap so play button fills the stack */
+.hub-cta-stack .play-main-btn,
+.hub-cta-stack #start-btn { max-width: none; width: 100%; }
+
+/* Secondary — outlined, accent colour */
+.hub-cta-secondary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 20px;
+  background: transparent;
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  color: var(--accent);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: background var(--t), border-color var(--t), transform var(--t);
+  cursor: pointer;
+}
+.hub-cta-secondary:hover {
+  background: hsl(270 80% 65% / 0.1);
+  border-color: hsl(270 90% 80%);
+  transform: translateY(-1px);
+}
+
+/* Tertiary — ghost */
+.hub-cta-tertiary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 20px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  color: var(--ink-faint);
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: border-color var(--t), color var(--t), transform var(--t);
+  cursor: pointer;
+}
+.hub-cta-tertiary:hover {
+  border-color: var(--border-hi);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+
+/* Shared icon / label / arrow */
+.hub-cta-icon  { font-size: 1.1rem; flex-shrink: 0; }
+.hub-cta-label { flex: 1; min-width: 0; }
+.hub-cta-arr   {
+  font-size: 0.9rem;
+  opacity: 0.55;
+  flex-shrink: 0;
+  transition: transform var(--t), opacity var(--t);
+}
+.hub-cta-secondary:hover .hub-cta-arr,
+.hub-cta-tertiary:hover  .hub-cta-arr {
+  transform: translateX(4px);
+  opacity: 1;
 }
 
 /* Customize modal sizing */
@@ -1470,7 +1560,7 @@ ul     { list-style: none; }
 }
 
 @media (max-width: 540px) {
-  .screen.splash,
+  .screen.splash  { padding: 28px 16px 100px; gap: 16px; }
   .screen.results { padding: 36px 16px 52px; }
   .levels-grid { grid-template-columns: repeat(2, 1fr); }
   .qchoices    { grid-template-columns: 1fr; }
@@ -2119,24 +2209,44 @@ button, a, input, select {
   .chat-fab-label { display: none; }
 }
 
-/* PWA Install Banner */
+/* PWA Install Pill — compact, fixed, floats above bottom nav */
 .pwa-banner {
   display: none;
+  position: fixed;
+  bottom: calc(60px + env(safe-area-inset-bottom) + 12px);
+  left: 50%;
+  transform: translateX(-50%);
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 16px;
-  background: hsl(200 100% 60% / 0.07);
-  border: 1px solid hsl(200 100% 60% / 0.25);
-  border-radius: var(--radius);
-  font-size: 0.82rem;
+  gap: 10px;
+  padding: 9px 12px 9px 16px;
+  background: var(--card);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
   color: var(--ink);
-  width: 100%;
-  flex-wrap: wrap;
+  white-space: nowrap;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.28);
+  z-index: 300;
+  max-width: calc(100vw - 40px);
 }
 .pwa-banner.visible { display: flex; }
-.pwa-banner-text { display: flex; align-items: center; gap: 8px; }
-.pwa-banner-actions { display: flex; gap: 8px; }
+
+.pwa-pill-icon  { font-size: 1rem; flex-shrink: 0; }
+.pwa-pill-text  { font-size: 0.78rem; color: var(--ink-faint); flex: 1; min-width: 0; }
+.pwa-pill-btn   { padding: 6px 14px !important; font-size: 0.74rem !important; flex-shrink: 0; }
+.pwa-pill-close {
+  background: transparent;
+  border: none;
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: 0.65;
+  transition: opacity var(--t), color var(--t);
+}
+.pwa-pill-close:hover { opacity: 1; color: var(--ink); }
 
 /* ══════════════════════════════════════════════
    SHARE SCORE CARD MODAL
@@ -2375,7 +2485,7 @@ button, a, input, select {
   justify-content: space-between;
   width: 100%;
   max-width: 680px;
-  margin-bottom: 20px;
+  /* spacing handled by parent gap */
 }
 .hub-greeting {
   font-size: 0.95rem;
@@ -2615,8 +2725,8 @@ button, a, input, select {
   .diff-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  /* Results screen */
-  .screen.splash,
+  /* Screens on small mobile */
+  .screen.splash  { padding: 24px 16px 100px; gap: 16px; }
   .screen.results { padding: 24px 16px 100px; }
 }
 
@@ -2644,26 +2754,20 @@ button, a, input, select {
 ══════════════════════════════════════════════ */
 
 @media (min-width: 768px) {
-  /* Home screen — more breathing room */
+  /* Home + results — more breathing room */
   .screen.splash,
   .screen.results {
     padding: 48px 32px 100px;
   }
 
-  /* Hub hero slightly larger on tablet */
-  .hub-hero-title { font-size: 1.65rem; }
-
-  /* Hub tiles — bigger tap targets */
-  .hub-tile { padding: 24px 14px; min-height: 108px; }
-  .hub-tile-icon  { font-size: 2rem; }
-  .hub-tile-title { font-size: 0.9rem; }
-  .hub-tile-sub   { font-size: 0.68rem; }
-
-  /* Leaderboard preview — more spacious */
-  .lb-preview-box { padding: 24px; }
+  /* CTA stack — slightly wider on tablet */
+  .hub-cta-stack { max-width: 520px; }
 
   /* Play button larger */
   .play-main-btn { font-size: 1.05rem; padding: 18px 28px; }
+
+  /* Leaderboard preview — more spacious */
+  .lb-preview-box { padding: 24px; }
 
   /* Modals — comfortable on tablet */
   .customize-modal-box { padding: 36px 32px 32px; }
@@ -2673,8 +2777,11 @@ button, a, input, select {
 }
 
 @media (min-width: 1024px) {
-  /* Wide desktop — generous centred layout */
-  .screen.splash,
+  /* Wide desktop — vertically center the splash content */
+  .screen.splash {
+    justify-content: center;   /* vertically centers the content group */
+    padding: 20px 48px 80px;   /* small top breath, side margins, nav clearance */
+  }
   .screen.results {
     padding: 56px 48px 100px;
   }
@@ -2682,13 +2789,16 @@ button, a, input, select {
   /* Wider content column on desktop */
   .splash-content,
   .hub-topbar,
-  .hub-hero-card,
-  .hub-tiles {
+  .hub-learn-strip {
     max-width: 760px;
   }
 
-  /* Larger headings */
-  .hub-hero-title { font-size: 1.8rem; }
+  /* CTA stack — comfortable desktop width, still constrained */
+  .hub-cta-stack { max-width: 540px; }
+
+  /* Secondary / tertiary buttons slightly larger on desktop */
+  .hub-cta-secondary { padding: 16px 24px; font-size: 0.96rem; }
+  .hub-cta-tertiary  { padding: 14px 24px; font-size: 0.9rem; }
 
   /* Question screen — better use of wide space */
   .qbody {

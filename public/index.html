@@ -68,19 +68,38 @@
         </div>
       </div>
 
-      <!-- ── Play Section ── -->
-      <div class="play-section">
-        <button id="start-btn" class="btn-primary play-main-btn">
-          <span id="start-btn-spinner" class="start-spinner" style="display:none">⟳</span>
-          <span id="start-btn-text">🎮 Play a Game</span>
-          <span class="arrow" id="start-btn-arrow">→</span>
-        </button>
-        <div class="play-settings-row">
-          <span id="play-level-chip" class="play-setting-chip">AI Foundations</span>
-          <span class="play-setting-sep">·</span>
-          <span id="play-diff-chip" class="play-setting-chip">Intermediate</span>
-          <button class="btn-ghost-sm" id="customize-btn">⚙ Customize</button>
+      <!-- ── CTA Stack: three core actions ── -->
+      <div class="hub-cta-stack">
+
+        <!-- 1st — Primary: Play a Game (filled, purple) -->
+        <div class="hub-cta-primary">
+          <button id="start-btn" class="btn-primary play-main-btn">
+            <span id="start-btn-spinner" class="start-spinner" style="display:none">⟳</span>
+            <span id="start-btn-text">🎮 Play a Game</span>
+            <span class="arrow" id="start-btn-arrow">→</span>
+          </button>
+          <div class="play-settings-row">
+            <span id="play-level-chip" class="play-setting-chip">AI Foundations</span>
+            <span class="play-setting-sep">·</span>
+            <span id="play-diff-chip" class="play-setting-chip">Intermediate</span>
+            <button class="btn-ghost-sm" id="customize-btn">⚙ Customize</button>
+          </div>
         </div>
+
+        <!-- 2nd — Secondary: Learn AI (outlined) -->
+        <a href="/lessons.html" class="hub-cta-secondary">
+          <span class="hub-cta-icon">🎓</span>
+          <span class="hub-cta-label">Learn AI</span>
+          <span class="hub-cta-arr">→</span>
+        </a>
+
+        <!-- 3rd — Tertiary: Latest AI News (ghost) -->
+        <a href="/news.html" class="hub-cta-tertiary">
+          <span class="hub-cta-icon">📰</span>
+          <span class="hub-cta-label">Catch up with the latest AI news</span>
+          <span class="hub-cta-arr">→</span>
+        </a>
+
       </div>
 
       <div class="splash-meta">
@@ -91,13 +110,12 @@
 
     </div><!-- /splash-content -->
 
-    <!-- PWA install banner -->
+    <!-- PWA install pill (compact, floats above nav) -->
     <div id="pwa-banner" class="pwa-banner">
-      <div class="pwa-banner-text">📱 <span>Install AI Challenge as an app for offline play</span></div>
-      <div class="pwa-banner-actions">
-        <button class="btn-primary" id="pwa-install-btn" style="padding:8px 16px;font-size:0.8rem">Install</button>
-        <button class="btn-ghost-sm" id="pwa-dismiss-btn">Dismiss</button>
-      </div>
+      <span class="pwa-pill-icon">📱</span>
+      <span class="pwa-pill-text">Add to Home Screen</span>
+      <button class="btn-primary pwa-pill-btn" id="pwa-install-btn">Install</button>
+      <button class="pwa-pill-close" id="pwa-dismiss-btn" aria-label="Dismiss">✕</button>
     </div>
 
     <!-- ── Bottom App Navigation ── -->
