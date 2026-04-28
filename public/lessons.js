@@ -762,37 +762,36 @@ function renderTopicList() {
   container.innerHTML = CURRICULUM.map(topic => {
     const doneCount = topicDoneCount(topic);
     const lessonCount = topic.lessons.length;
-    const pctTopic = (doneCount / lessonCount) * 100;
+    const pctTopic = Math.round((doneCount / lessonCount) * 100);
     const allDone = doneCount === lessonCount;
     const started = doneCount > 0 && !allDone;
-
-    // SVG ring constants
-    const r = 15;
-    const circ = 2 * Math.PI * r;
-    const offset = circ - (pctTopic / 100) * circ;
+    const leftCount = lessonCount - doneCount;
 
     let stateClass = `topic-color-${topic.color}`;
     if (allDone) stateClass += ' done';
     else if (started) stateClass += ' started';
 
+    const progressLabel = allDone
+      ? '✓ Complete'
+      : doneCount === 0
+        ? `${lessonCount} lessons`
+        : `${leftCount} lesson${leftCount !== 1 ? 's' : ''} left`;
+
     return `
       <button class="topic-card ${stateClass}" data-topic="${topic.id}">
-        <span class="topic-icon">${topic.icon}</span>
-        <div class="topic-info">
-          <div class="topic-title">${topic.title}</div>
-          <div class="topic-meta">${lessonCount} lessons · ${allDone ? 'Complete' : doneCount === 0 ? 'Not started' : `${doneCount} of ${lessonCount} done`}</div>
+        <div class="topic-thumb">
+          <span class="topic-thumb-icon">${topic.icon}</span>
+          ${allDone ? '<span class="topic-thumb-badge">✓ Done</span>' : ''}
         </div>
-        <div class="topic-progress-ring-wrap">
-          <svg class="topic-ring-svg" viewBox="0 0 38 38">
-            <circle class="topic-ring-track" cx="19" cy="19" r="${r}" />
-            <circle
-              class="topic-ring-fill"
-              cx="19" cy="19" r="${r}"
-              stroke-dasharray="${circ.toFixed(2)}"
-              stroke-dashoffset="${offset.toFixed(2)}"
-            />
-          </svg>
-          ${allDone ? '<span class="topic-done-badge">✓</span>' : `<span class="topic-ring-label">${doneCount}/${lessonCount}</span>`}
+        <div class="topic-body">
+          <div class="topic-title">${topic.title}</div>
+          <div class="topic-meta">${lessonCount} lessons · ${allDone ? 'Complete ✓' : doneCount === 0 ? 'Not started' : `${doneCount} of ${lessonCount} done`}</div>
+          <div class="topic-prog-row">
+            <div class="topic-prog-track">
+              <div class="topic-prog-fill" style="width:${pctTopic}%"></div>
+            </div>
+            <span class="topic-prog-label">${progressLabel}</span>
+          </div>
         </div>
       </button>
     `;

@@ -151,6 +151,32 @@ function renderStreak(data) {
 
   // Milestone progress bar
   renderMilestoneBar(data.count);
+
+  // Stats strip
+  renderStatsStrip(data);
+}
+
+function renderStatsStrip(streakData) {
+  // Streak
+  const streakEl = document.getElementById('stat-streak-val');
+  if (streakEl) streakEl.textContent = streakData.count;
+
+  // Total days
+  const daysEl = document.getElementById('stat-days-val');
+  if (daysEl) daysEl.textContent = streakData.totalDays || streakData.count;
+
+  // Lessons done today
+  const progress = getLessonProgress();
+  const doneTodayCount = progress.completed.filter(Boolean).length;
+  const todayEl = document.getElementById('stat-today-val');
+  if (todayEl) todayEl.textContent = `${doneTodayCount}/3`;
+
+  // Estimated read time (3 min per lesson done today)
+  const timeEl = document.getElementById('stat-time-val');
+  if (timeEl) {
+    const minutes = doneTodayCount * 3;
+    timeEl.textContent = minutes > 0 ? `~${minutes}m` : '~0m';
+  }
 }
 
 function renderMilestoneBar(currentDay) {
@@ -405,20 +431,23 @@ async function loadLessons() {
 }
 
 function buildLessonCard(lesson, i, completed) {
+  const numLabel = String(i + 1).padStart(2, '0');
   return `
     <div class="lesson-card ${completed ? 'lesson-done' : ''}" data-index="${i}" role="listitem">
-      <div class="lesson-header">
-        <span class="lesson-num">${i + 1}</span>
-        <span class="lesson-emoji">${escapeHtml(lesson.emoji || '📖')}</span>
-        <h3 class="lesson-title">${escapeHtml(lesson.title || '')}</h3>
+      <div class="lc-panel">
+        <span class="lc-emoji">${escapeHtml(lesson.emoji || '📖')}</span>
+        <span class="lc-num">${numLabel}</span>
       </div>
-      <p class="lesson-explanation">${escapeHtml(lesson.explanation || lesson.description || '')}</p>
-      <div class="lesson-realworld">🌍 <strong>Real world:</strong> ${escapeHtml(lesson.real_world || lesson.realWorld || '')}</div>
-      <div class="lesson-funfact">💡 <strong>Did you know?</strong> ${escapeHtml(lesson.fun_fact || lesson.funFact || lesson.did_you_know || '')}</div>
-      <div class="lesson-footer">
-        <button class="btn-mark-read ${completed ? 'done' : ''}" data-index="${i}" aria-pressed="${completed}">
-          ${completed ? '✅ Completed' : 'Mark as read'}
-        </button>
+      <div class="lc-content">
+        <h3 class="lesson-title">${escapeHtml(lesson.title || '')}</h3>
+        <p class="lesson-explanation">${escapeHtml(lesson.explanation || lesson.description || '')}</p>
+        <div class="lesson-realworld">🌍 <strong>Real world:</strong> ${escapeHtml(lesson.real_world || lesson.realWorld || '')}</div>
+        <div class="lesson-funfact">💡 <strong>Did you know?</strong> ${escapeHtml(lesson.fun_fact || lesson.funFact || lesson.did_you_know || '')}</div>
+        <div class="lesson-footer">
+          <button class="btn-mark-read ${completed ? 'done' : ''}" data-index="${i}" aria-pressed="${completed}">
+            ${completed ? '✅ Completed' : 'Mark as read'}
+          </button>
+        </div>
       </div>
     </div>`;
 }
@@ -462,6 +491,10 @@ function handleMarkRead(btn) {
   }
 
   updateLessonCounter(progress);
+
+  // Update stats strip
+  const streakData = getStreakData();
+  renderStatsStrip(streakData);
 
   // Check if all 3 now complete
   if (progress.completed.every(Boolean)) {
