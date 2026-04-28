@@ -594,9 +594,11 @@ ul     { list-style: none; }
 .hub-cta-secondary {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center; /* centre the icon + label */
+  gap: 10px;
+  position: relative;      /* arrow anchors to right edge */
   width: 100%;
-  padding: 14px 20px;
+  padding: 14px 44px;      /* extra right pad so text never overlaps arrow */
   background: transparent;
   border: 1.5px solid var(--accent);
   border-radius: var(--radius-pill);
@@ -618,9 +620,11 @@ ul     { list-style: none; }
 .hub-cta-tertiary {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center; /* centre the icon + label */
+  gap: 10px;
+  position: relative;      /* arrow anchors to right edge */
   width: 100%;
-  padding: 12px 20px;
+  padding: 12px 44px;      /* extra right pad so text never overlaps arrow */
   background: transparent;
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
@@ -638,13 +642,16 @@ ul     { list-style: none; }
   transform: translateY(-1px);
 }
 
-/* Shared icon / label / arrow */
+/* Shared icon / label */
 .hub-cta-icon  { font-size: 1.1rem; flex-shrink: 0; }
-.hub-cta-label { flex: 1; min-width: 0; }
-.hub-cta-arr   {
+.hub-cta-label { flex: unset; white-space: nowrap; }
+
+/* Arrow — pinned to right edge so it never shifts the centre */
+.hub-cta-arr {
+  position: absolute;
+  right: 20px;
   font-size: 0.9rem;
   opacity: 0.55;
-  flex-shrink: 0;
   transition: transform var(--t), opacity var(--t);
 }
 .hub-cta-secondary:hover .hub-cta-arr,
