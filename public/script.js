@@ -1096,9 +1096,320 @@ function escapeHtml(str) {
 }
 
 // ══════════════════════════════════════════════════════════════
+// LINEAR TIMER BAR
+// ══════════════════════════════════════════════════════════════
+
+function updateLinearTimer() {
+  const fill = $('timer-linear-fill');
+  if (!fill) return;
+  const cfg = DIFFICULTY_CONFIG[state.selectedDifficulty];
+  if (!cfg || cfg.practice) {
+    fill.style.width = '100%';
+    fill.className   = 'timer-linear-fill';
+    return;
+  }
+  const pct = state.maxTime > 0 ? (state.timeLeft / state.maxTime) * 100 : 100;
+  fill.style.width = `${pct}%`;
+  fill.className   = 'timer-linear-fill';
+  if (pct <= 25)      fill.classList.add('danger');
+  else if (pct <= 50) fill.classList.add('warn');
+}
+
+// Patch updateTimerUI to also drive the linear bar
+const _origUpdateTimerUI = updateTimerUI;
+function updateTimerUI() {
+  _origUpdateTimerUI();
+  updateLinearTimer();
+}
+
+// Reset linear bar on each new question
+const _origResetTimerColor = resetTimerColor;
+function resetTimerColor() {
+  _origResetTimerColor();
+  const fill = $('timer-linear-fill');
+  if (fill) {
+    fill.style.width  = '100%';
+    fill.className    = 'timer-linear-fill';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// DARK / LIGHT MODE TOGGLE
+// ══════════════════════════════════════════════════════════════
+
+function getCurrentTheme() {
+  return localStorage.getItem('aiChallenge_theme') || 'dark';
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const isDark = theme === 'dark';
+  const icon   = isDark ? '🌙' : '☀️';
+  const metaEl = document.getElementById('meta-theme-color');
+  if (metaEl) metaEl.setAttribute('content', isDark ? '#07060c' : '#f0eff8');
+  [$('theme-toggle'), $('theme-toggle-game')].forEach(btn => {
+    if (btn) btn.textContent = icon;
+  });
+  localStorage.setItem('aiChallenge_theme', theme);
+}
+
+function toggleTheme() {
+  applyTheme(getCurrentTheme() === 'dark' ? 'light' : 'dark');
+}
+
+[$('theme-toggle'), $('theme-toggle-game')].forEach(btn => {
+  if (btn) btn.addEventListener('click', toggleTheme);
+});
+
+applyTheme(getCurrentTheme()); // apply saved preference on load
+
+// ══════════════════════════════════════════════════════════════
+// ACHIEVEMENTS SYSTEM
+// ══════════════════════════════════════════════════════════════
+
+const ACHIEVEMENTS = [
+  { id: 'first_win',     icon: '🎯', name: 'First Win',      desc: 'Complete any round',                    check: s => s.gamesPlayed >= 1 },
+  { id: 'perfect',       icon: '💎', name: 'Perfect Score',   desc: 'Score 10/10 correct',                  check: s => s.perfectScores >= 1 },
+  { id: 'speed_demon',   icon: '⚡', name: 'Speed Demon',     desc: 'Finish round with avg >8s remaining',   check: s => s.speedRounds >= 1 },
+  { id: 'veteran',       icon: '🎖️', name: 'Veteran',         desc: 'Play 10 rounds',                       check: s => s.gamesPlayed >= 10 },
+  { id: 'streak_legend', icon: '🔥', name: 'Streak Legend',   desc: 'Get a 5-answer streak',                check: s => s.maxStreakEver >= 5 },
+  { id: 'scholar',       icon: '📚', name: 'Scholar',         desc: 'Complete all 5 topic levels',          check: s => s.levelsCompleted >= 5 },
+  { id: 'ai_master',     icon: '🧠', name: 'AI Master',       desc: '90%+ accuracy on Advanced difficulty', check: s => s.advancedPasses >= 1 },
+  { id: 'centurion',     icon: '💯', name: 'Centurion',       desc: 'Score 1000+ points in a single round', check: s => s.topScore >= 1000 },
+];
+
+function getAchievementStats() {
+  try { return JSON.parse(localStorage.getItem('aiChallenge_achStats') || '{}'); }
+  catch { return {}; }
+}
+
+function saveAchievementStats(stats) {
+  localStorage.setItem('aiChallenge_achStats', JSON.stringify(stats));
+}
+
+function getUnlockedAchievements() {
+  try { return JSON.parse(localStorage.getItem('aiChallenge_unlocked') || '[]'); }
+  catch { return []; }
+}
+
+function saveUnlockedAchievements(list) {
+  localStorage.setItem('aiChallenge_unlocked', JSON.stringify(list));
+}
+
+function showAchievementToast(ach) {
+  const toast = $('achievement-toast');
+  if (!toast) return;
+  $('ach-toast-icon').textContent = ach.icon;
+  $('ach-toast-name').textContent = ach.name;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+function checkAndAwardAchievements(roundData) {
+  // Update cumulative stats
+  const stats    = getAchievementStats();
+  const unlocked = getUnlockedAchievements();
+
+  stats.gamesPlayed       = (stats.gamesPlayed || 0) + 1;
+  stats.perfectScores     = (stats.perfectScores || 0) + (roundData.correctCount === 10 ? 1 : 0);
+  stats.maxStreakEver     = Math.max(stats.maxStreakEver || 0, roundData.maxStreak);
+  stats.topScore          = Math.max(stats.topScore || 0, roundData.score);
+  stats.advancedPasses    = (stats.advancedPasses || 0) +
+    (roundData.difficulty === 'Advanced' && roundData.accuracy >= 90 ? 1 : 0);
+
+  // Speed: avg time remaining > 8s per question (non-practice)
+  if (!roundData.isPractice && roundData.avgTimeLeft > 8) {
+    stats.speedRounds = (stats.speedRounds || 0) + 1;
+  }
+
+  // Levels completed: track unique levels passed
+  if (roundData.accuracy >= 70 && !roundData.isPractice) {
+    const done = new Set(JSON.parse(localStorage.getItem('aiChallenge_levelsCompleted') || '[]'));
+    done.add(roundData.level);
+    localStorage.setItem('aiChallenge_levelsCompleted', JSON.stringify([...done]));
+    stats.levelsCompleted = done.size;
+  }
+
+  saveAchievementStats(stats);
+
+  // Check which achievements are newly unlocked
+  const newlyUnlocked = [];
+  ACHIEVEMENTS.forEach(ach => {
+    if (!unlocked.includes(ach.id) && ach.check(stats)) {
+      unlocked.push(ach.id);
+      newlyUnlocked.push(ach);
+    }
+  });
+
+  saveUnlockedAchievements(unlocked);
+
+  // Show toasts sequentially (1.5s apart)
+  newlyUnlocked.forEach((ach, i) => {
+    setTimeout(() => showAchievementToast(ach), i * 1600);
+  });
+
+  return newlyUnlocked;
+}
+
+function renderAchievementsPanel() {
+  const panel = $('achievements-panel');
+  const grid  = $('achievements-grid');
+  if (!panel || !grid) return;
+
+  const unlocked = getUnlockedAchievements();
+  if (unlocked.length === 0) { panel.style.display = 'none'; return; }
+
+  panel.style.display = 'block';
+  grid.innerHTML = ACHIEVEMENTS.map(ach => {
+    const isUnlocked = unlocked.includes(ach.id);
+    return `<div class="ach-chip ${isUnlocked ? 'unlocked' : ''}">
+      <span class="ach-chip-icon">${isUnlocked ? ach.icon : '🔒'}</span>
+      <div class="ach-chip-info">
+        <span class="ach-chip-name">${ach.name}</span>
+        <span class="ach-chip-desc">${ach.desc}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// DAILY CHALLENGE
+// ══════════════════════════════════════════════════════════════
+
+function getDailyCountdown() {
+  const now    = new Date();
+  const endOfDay = new Date(now);
+  endOfDay.setHours(23, 59, 59, 999);
+  const ms   = endOfDay - now;
+  const h    = Math.floor(ms / 3600000);
+  const m    = Math.floor((ms % 3600000) / 60000);
+  return `Resets in ${h}h ${m}m`;
+}
+
+function initDailyChallenge() {
+  const badge = $('dcb-countdown');
+  if (badge) badge.textContent = getDailyCountdown();
+  // update every minute
+  setInterval(() => { if (badge) badge.textContent = getDailyCountdown(); }, 60000);
+}
+
+$('daily-challenge-btn').addEventListener('click', async () => {
+  const btn = $('daily-challenge-btn');
+  btn.style.opacity = '0.6';
+  btn.style.pointerEvents = 'none';
+
+  try {
+    const data = await fetch('/api/daily-challenge').then(r => r.json());
+    if (!data || data.length === 0) {
+      alert('Daily challenge not available right now. Try again later.');
+      return;
+    }
+
+    // Set up state as a normal game but with daily questions
+    state.selectedLevel      = 'Daily Challenge';
+    state.selectedDifficulty = 'Intermediate';
+    state.questions          = data;
+    Object.assign(state, {
+      currentIndex: 0, score: 0, correctCount: 0, wrongCount: 0,
+      streak: 0, maxStreak: 0, answerHistory: [], scoreSaved: false,
+      powerUps: { fiftyFifty: true, extraTime: true, hint: true },
+      roundStartTime: Date.now()
+    });
+
+    $('active-level-badge').textContent = '📅 Daily';
+    $('active-diff-badge').textContent  = 'Challenge';
+    $('score-display').textContent      = '0';
+    $('correct-count').textContent      = '0';
+    $('wrong-count').textContent        = '0';
+    ['pu-fifty', 'pu-time', 'pu-hint'].forEach(id => {
+      $(id).disabled = false;
+      $(id).classList.remove('used');
+    });
+    $('game-screen').classList.remove('practice-mode');
+    $('pu-time').style.display = '';
+    $('streak-display').style.display = 'none';
+
+    showScreen('game');
+    loadQuestion();
+  } catch (err) {
+    alert('Could not load daily challenge. Please try again.');
+    console.error(err);
+  } finally {
+    btn.style.opacity = '';
+    btn.style.pointerEvents = '';
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// HOOK RESULTS SCREEN — award achievements + render panel
+// ══════════════════════════════════════════════════════════════
+
+const _origShowResults = showResults;
+function showResults() {
+  _origShowResults();
+
+  const { correctCount, maxStreak, score, selectedDifficulty, selectedLevel, questions } = state;
+  const accuracy   = Math.round((correctCount / questions.length) * 100);
+  const isPractice = DIFFICULTY_CONFIG[selectedDifficulty] && DIFFICULTY_CONFIG[selectedDifficulty].practice;
+
+  // Calculate average time remaining (only for non-practice timed games)
+  const cfg = DIFFICULTY_CONFIG[selectedDifficulty] || {};
+  const avgTimeLeft = !isPractice && cfg.time
+    ? Math.round((state.timeLeft || 0))   // rough proxy; full tracking would need per-Q data
+    : 0;
+
+  checkAndAwardAchievements({
+    correctCount, maxStreak, score, accuracy,
+    difficulty: selectedDifficulty, level: selectedLevel,
+    isPractice, avgTimeLeft
+  });
+
+  renderAchievementsPanel();
+}
+
+// ══════════════════════════════════════════════════════════════
+// PWA — Install prompt
+// ══════════════════════════════════════════════════════════════
+
+let _deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _deferredInstallPrompt = e;
+  const banner = $('pwa-banner');
+  if (banner) banner.classList.add('visible');
+});
+
+const pwaInstallBtn  = $('pwa-install-btn');
+const pwaDismissBtn  = $('pwa-dismiss-btn');
+const pwaBanner      = $('pwa-banner');
+
+if (pwaInstallBtn) {
+  pwaInstallBtn.addEventListener('click', async () => {
+    if (!_deferredInstallPrompt) return;
+    _deferredInstallPrompt.prompt();
+    const { outcome } = await _deferredInstallPrompt.userChoice;
+    if (outcome === 'accepted') pwaBanner.classList.remove('visible');
+    _deferredInstallPrompt = null;
+  });
+}
+
+if (pwaDismissBtn) {
+  pwaDismissBtn.addEventListener('click', () => pwaBanner.classList.remove('visible'));
+}
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════
 
 loadLeaderboardPreview();
 updateLevelCards();
 checkForSession();
+initDailyChallenge();

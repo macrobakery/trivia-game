@@ -9,6 +9,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Geist:wght@300..700&family=JetBrains+Mono:wght@400..600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#07060c" id="meta-theme-color" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 </head>
 <body>
 
@@ -123,6 +127,21 @@
 
       </div><!-- /splash-selections -->
 
+      <!-- Daily Challenge -->
+      <button class="daily-challenge-btn" id="daily-challenge-btn">
+        <div class="dcb-left">
+          <span class="dcb-icon">📅</span>
+          <div>
+            <div class="dcb-title">Daily Challenge</div>
+            <div class="dcb-sub">Same 10 questions for everyone today — global ranking</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="dcb-badge" id="dcb-countdown">Loading…</span>
+          <span class="dcb-arrow">→</span>
+        </div>
+      </button>
+
       <!-- Start button -->
       <button id="start-btn" class="btn-primary" disabled>
         <span id="start-btn-spinner" class="start-spinner" style="display:none">⟳</span>
@@ -143,10 +162,21 @@
 
     </div><!-- /splash-content -->
 
+    <!-- PWA install banner (shown by JS when installable) -->
+    <div id="pwa-banner" class="pwa-banner">
+      <div class="pwa-banner-text">📱 <span>Install AI Challenge as an app for offline play</span></div>
+      <div class="pwa-banner-actions">
+        <button class="btn-primary" id="pwa-install-btn" style="padding:8px 16px;font-size:0.8rem">Install</button>
+        <button class="btn-ghost-sm" id="pwa-dismiss-btn">Dismiss</button>
+      </div>
+    </div>
+
     <div class="splash-meta">
-      <span>v1.0</span>
+      <span>v2.0</span>
       <span class="dot">·</span>
       <span>AI App Builder Challenge</span>
+      <span class="dot">·</span>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">🌙</button>
     </div>
 
   </div><!-- /start-screen -->
@@ -162,6 +192,7 @@
       <div class="qbar-side">
         <button class="btn-ghost-sm" id="reset-btn" title="Restart game">↺ Restart</button>
         <button class="btn-ghost-sm" id="sound-toggle" title="Toggle sound" aria-label="Toggle sound">🔊</button>
+        <button class="theme-toggle" id="theme-toggle-game" title="Toggle light/dark mode">🌙</button>
         <div class="round-pill" id="progress-label">Question 1 of 10</div>
       </div>
       <div class="qbar-center">
@@ -190,9 +221,14 @@
       </div>
     </header>
 
-    <!-- ── Thin progress bar ── -->
+    <!-- ── Thin question progress bar ── -->
     <div class="progress-thin-track">
       <div class="progress-fill" id="progress-fill" style="width:10%"></div>
+    </div>
+
+    <!-- ── Linear timer bar (wider, colour-transitions) ── -->
+    <div class="timer-linear-track">
+      <div class="timer-linear-fill" id="timer-linear-fill"></div>
     </div>
 
     <!-- ── Body: orb + question ── -->
@@ -355,6 +391,12 @@
         <button class="btn-ghost"   id="review-btn">📋 Review Answers</button>
       </div>
 
+      <!-- Achievements panel (shown if any unlocked) -->
+      <div id="achievements-panel" class="achievements-panel" style="display:none">
+        <div class="achievements-panel-header">🏅 Achievements Unlocked</div>
+        <div class="achievements-grid" id="achievements-grid"></div>
+      </div>
+
       <!-- Answer review (toggled) -->
       <div id="review-section" class="review-section" style="display:none">
         <div id="review-list"></div>
@@ -402,6 +444,15 @@
       <div id="lb-table-content">
         <p style="color:var(--ink-faint);text-align:center;padding:16px 0;font-size:13px">Loading…</p>
       </div>
+    </div>
+  </div>
+
+  <!-- Achievement toast notification -->
+  <div id="achievement-toast" class="achievement-toast" aria-live="polite">
+    <span class="achievement-toast-icon" id="ach-toast-icon">🏅</span>
+    <div class="achievement-toast-body">
+      <span class="achievement-toast-label">Achievement Unlocked!</span>
+      <span class="achievement-toast-name" id="ach-toast-name"></span>
     </div>
   </div>
 

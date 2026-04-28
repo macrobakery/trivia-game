@@ -5,10 +5,11 @@
 
 require('dotenv').config(); // load .env file if present
 
-const express   = require('express');
-const path      = require('path');
-const fs        = require('fs');
-const initSqlJs = require('sql.js');
+const express      = require('express');
+const path         = require('path');
+const fs           = require('fs');
+const initSqlJs    = require('sql.js');
+const rateLimit    = require('express-rate-limit');
 
 // Anthropic client — optional, requires ANTHROPIC_API_KEY env var
 let anthropic = null;
@@ -32,6 +33,26 @@ const DB_PATH = process.env.VERCEL
   : path.join(__dirname, 'database.db');
 
 app.use(express.json());
+
+// ── Rate Limiting ──
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests — please slow down.' }
+});
+const hintLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 6, // max 6 AI hint requests per minute per IP
+  message: { error: 'AI hint rate limit reached. Wait a moment.' }
+});
+const scoreLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 20, // max 20 score saves per hour per IP
+  message: { error: 'Too many score submissions. Try again later.' }
+});
+app.use('/api/', apiLimiter);
 
 // ── Database instance (set during async init) ──
 let db;
@@ -436,6 +457,27 @@ app.delete('/api/questions/:id', adminAuth, (req, res) => {
   res.json({ message: 'Question deleted successfully.' });
 });
 
+// PUT /api/questions/:id — update a question (admin)
+app.put('/api/questions/:id', adminAuth, (req, res) => {
+  const { id } = req.params;
+  const { question_text, option_a, option_b, option_c, option_d, correct_option, level, difficulty, explanation, hint } = req.body;
+  if (!question_text || !option_a || !option_b || !option_c || !option_d || !correct_option || !level || !difficulty || !explanation || !hint) {
+    return res.status(400).json({ error: 'All fields are required.' });
+  }
+  dbRun(
+    `UPDATE questions SET question_text=?,option_a=?,option_b=?,option_c=?,option_d=?,correct_option=?,level=?,difficulty=?,explanation=?,hint=? WHERE id=?`,
+    [question_text, option_a, option_b, option_c, option_d, correct_option, level, difficulty, explanation, hint, id]
+  );
+  res.json({ message: 'Question updated.' });
+});
+
+// DELETE /api/questions/:id — delete a question (admin)
+app.delete('/api/questions/:id', adminAuth, (req, res) => {
+  const { id } = req.params;
+  dbRun('DELETE FROM questions WHERE id = ?', [id]);
+  res.json({ message: 'Question deleted.' });
+});
+
 // POST /api/questions/:id/flag — report a question issue
 app.post('/api/questions/:id/flag', (req, res) => {
   const { id }     = req.params;
@@ -447,8 +489,8 @@ app.post('/api/questions/:id/flag', (req, res) => {
   res.json({ message: 'Question flagged. Thank you for the report.' });
 });
 
-// POST /api/scores — save a player score
-app.post('/api/scores', (req, res) => {
+// POST /api/scores — save a player score (rate-limited)
+app.post('/api/scores', scoreLimiter, (req, res) => {
   const { player_name, score, correct_answers, accuracy, level, difficulty } = req.body;
   if (!player_name || score === undefined || correct_answers === undefined) {
     return res.status(400).json({ error: 'player_name, score, and correct_answers are required.' });
@@ -485,6 +527,59 @@ app.delete('/api/leaderboard', adminAuth, (req, res) => {
   res.json({ message: 'Leaderboard cleared successfully.' });
 });
 
+// GET /api/leaderboard/export — CSV download (admin)
+app.get('/api/leaderboard/export', adminAuth, (req, res) => {
+  const scores = dbAll('SELECT * FROM scores ORDER BY score DESC');
+  const header = 'Rank,Player,Score,Correct,Accuracy,Level,Difficulty,Date\n';
+  const rows   = scores.map((s, i) =>
+    `${i + 1},"${(s.player_name || '').replace(/"/g, '""')}",${s.score},${s.correct_answers},${s.accuracy}%,"${s.level}","${s.difficulty}","${s.created_at}"`
+  ).join('\n');
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="leaderboard.csv"');
+  res.send(header + rows);
+});
+
+// GET /api/analytics — stats for admin dashboard
+app.get('/api/analytics', adminAuth, (req, res) => {
+  const totalGames    = dbGet('SELECT COUNT(*) AS c FROM scores');
+  const avgScore      = dbGet('SELECT AVG(score) AS avg, MAX(score) AS max FROM scores');
+  const byLevel       = dbAll('SELECT level, COUNT(*) AS games, AVG(score) AS avg_score, AVG(accuracy) AS avg_acc FROM scores GROUP BY level ORDER BY avg_score DESC');
+  const byDifficulty  = dbAll('SELECT difficulty, COUNT(*) AS games, AVG(score) AS avg_score FROM scores GROUP BY difficulty ORDER BY avg_score DESC');
+  const recentScores  = dbAll('SELECT player_name, score, level, difficulty, created_at FROM scores ORDER BY created_at DESC LIMIT 20');
+  const flaggedCount  = dbGet('SELECT COUNT(*) AS c FROM flagged_questions');
+  const questionCount = dbGet('SELECT COUNT(*) AS c FROM questions');
+  res.json({
+    totalGames:    totalGames ? totalGames.c : 0,
+    avgScore:      avgScore   ? Math.round(avgScore.avg || 0) : 0,
+    maxScore:      avgScore   ? avgScore.max : 0,
+    byLevel,
+    byDifficulty,
+    recentScores,
+    flaggedCount:  flaggedCount  ? flaggedCount.c  : 0,
+    questionCount: questionCount ? questionCount.c : 0
+  });
+});
+
+// GET /api/daily-challenge — same 10 questions for everyone today (seeded by date)
+app.get('/api/daily-challenge', (req, res) => {
+  // Use today's date string as a deterministic seed
+  const today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+  const seed  = today.split('').reduce((n, c) => n + c.charCodeAt(0), 0);
+
+  // Seeded pseudo-random shuffle (mulberry32)
+  function seededShuffle(arr, s) {
+    const a   = [...arr];
+    let   rng = s;
+    const rand = () => { rng |= 0; rng = rng + 0x6D2B79F5 | 0; let t = Math.imul(rng ^ rng >>> 15, 1 | rng); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+
+  const all       = dbAll('SELECT * FROM questions WHERE difficulty = ?', ['Intermediate']);
+  const shuffled  = seededShuffle(all, seed);
+  res.json(shuffled.slice(0, 10));
+});
+
 // GET /api/flagged — view flagged questions (admin)
 app.get('/api/flagged', adminAuth, (req, res) => {
   res.json(dbAll(`
@@ -500,7 +595,7 @@ app.get('/api/flagged', adminAuth, (req, res) => {
 // AI HINT ENDPOINT
 // ============================================================
 
-app.post('/api/ai-hint', async (req, res) => {
+app.post('/api/ai-hint', hintLimiter, async (req, res) => {
   const { question_text, option_a, option_b, option_c, option_d, level, difficulty } = req.body;
 
   if (!question_text) return res.status(400).json({ error: 'question_text is required.' });

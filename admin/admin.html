@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin — AI App Builder Challenge</title>
   <link rel="stylesheet" href="/admin/admin.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -129,6 +130,8 @@
       <div class="tab-bar">
         <button class="tab-btn active" data-tab="questions">📋 Questions</button>
         <button class="tab-btn" data-tab="leaderboard">🏆 Leaderboard</button>
+        <button class="tab-btn" data-tab="analytics">📊 Analytics</button>
+        <button class="tab-btn" data-tab="flagged">⚑ Flagged</button>
       </div>
 
       <!-- Questions Tab -->
@@ -170,10 +173,31 @@
       <div id="tab-leaderboard" class="tab-content">
         <div class="lb-actions-bar">
           <h3>All Scores</h3>
-          <button id="clear-lb-btn" class="btn-danger">🗑 Clear Leaderboard</button>
+          <div style="display:flex;gap:8px">
+            <a id="export-csv-btn" href="/api/leaderboard/export" class="btn-outline-sm" download>⬇ Export CSV</a>
+            <button id="clear-lb-btn" class="btn-danger">🗑 Clear All</button>
+          </div>
         </div>
         <div id="admin-lb-content">
           <div class="loading-msg">Loading scores…</div>
+        </div>
+      </div>
+
+      <!-- Analytics Tab -->
+      <div id="tab-analytics" class="tab-content">
+        <div class="analytics-grid" id="analytics-grid">
+          <div class="loading-msg">Loading analytics…</div>
+        </div>
+      </div>
+
+      <!-- Flagged Questions Tab -->
+      <div id="tab-flagged" class="tab-content">
+        <div class="lb-actions-bar">
+          <h3>Flagged Questions</h3>
+          <span id="flagged-count" style="font-size:0.8rem;color:#888"></span>
+        </div>
+        <div id="flagged-list">
+          <div class="loading-msg">Loading flagged questions…</div>
         </div>
       </div>
 

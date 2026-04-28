@@ -369,6 +369,183 @@ function escHtml(str) {
 }
 
 // ════════════════════════════════════════════════════════════
+// TAB — hook analytics + flagged on tab click
+// ════════════════════════════════════════════════════════════
+
+// Extend existing tab-btn listener to handle new tabs
+$$('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.tab === 'analytics') loadAnalytics();
+    if (btn.dataset.tab === 'flagged')   loadFlagged();
+  });
+});
+
+// ════════════════════════════════════════════════════════════
+// ANALYTICS
+// ════════════════════════════════════════════════════════════
+
+let _chartLevel = null;
+let _chartDiff  = null;
+
+async function loadAnalytics() {
+  const grid = $('analytics-grid');
+  if (!grid) return;
+  grid.innerHTML = '<div class="loading-msg">Loading analytics…</div>';
+
+  try {
+    const d = await fetch('/api/analytics').then(r => r.json());
+
+    grid.innerHTML = `
+      <!-- KPI cards -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-value">${d.totalGames}</div>
+          <div class="kpi-label">Total Games</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">${d.avgScore}</div>
+          <div class="kpi-label">Avg Score</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">${d.maxScore || 0}</div>
+          <div class="kpi-label">Top Score</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">${d.questionCount}</div>
+          <div class="kpi-label">Questions</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value">${d.flaggedCount}</div>
+          <div class="kpi-label">Flagged</div>
+        </div>
+      </div>
+
+      <!-- Charts row -->
+      <div class="charts-row">
+        <div class="chart-box">
+          <div class="chart-title">Games by Level</div>
+          <canvas id="chart-level" height="220"></canvas>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title">Games by Difficulty</div>
+          <canvas id="chart-diff" height="220"></canvas>
+        </div>
+      </div>
+
+      <!-- Recent games table -->
+      <div class="chart-box" style="grid-column:1/-1">
+        <div class="chart-title">Recent Games</div>
+        <table class="lb-admin-table" style="margin-top:10px">
+          <thead><tr><th>Player</th><th>Score</th><th>Level</th><th>Difficulty</th><th>Date</th></tr></thead>
+          <tbody>
+            ${(d.recentScores || []).map(s => `
+              <tr>
+                <td>${escHtml(s.player_name)}</td>
+                <td class="score-td">${s.score}</td>
+                <td>${escHtml(s.level)}</td>
+                <td>${escHtml(s.difficulty)}</td>
+                <td>${new Date(s.created_at).toLocaleString()}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    // Chart — by level
+    if (_chartLevel) _chartLevel.destroy();
+    _chartLevel = new Chart($('chart-level'), {
+      type: 'bar',
+      data: {
+        labels: (d.byLevel || []).map(r => r.level.replace('Deployment and Responsible AI', 'Deploy & Ethics')),
+        datasets: [{
+          label: 'Games played',
+          data: (d.byLevel || []).map(r => r.games),
+          backgroundColor: 'hsl(270 90% 65% / 0.7)',
+          borderColor: 'hsl(270 90% 70%)',
+          borderWidth: 1,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#aaa', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.06)' } },
+          y: { ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.06)' }, beginAtZero: true }
+        }
+      }
+    });
+
+    // Chart — by difficulty
+    if (_chartDiff) _chartDiff.destroy();
+    _chartDiff = new Chart($('chart-diff'), {
+      type: 'doughnut',
+      data: {
+        labels: (d.byDifficulty || []).map(r => r.difficulty),
+        datasets: [{
+          data: (d.byDifficulty || []).map(r => r.games),
+          backgroundColor: [
+            'hsl(142 68% 50% / 0.7)',
+            'hsl(40 95% 58% / 0.7)',
+            'hsl(0 82% 62% / 0.7)'
+          ],
+          borderColor: ['hsl(142 68% 50%)', 'hsl(40 95% 58%)', 'hsl(0 82% 62%)'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#aaa', padding: 12, font: { size: 11 } } }
+        }
+      }
+    });
+
+  } catch (err) {
+    grid.innerHTML = '<div class="loading-msg">Error loading analytics.</div>';
+    console.error(err);
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// FLAGGED QUESTIONS
+// ════════════════════════════════════════════════════════════
+
+async function loadFlagged() {
+  const list = $('flagged-list');
+  if (!list) return;
+  list.innerHTML = '<div class="loading-msg">Loading…</div>';
+
+  try {
+    const items = await fetch('/api/flagged').then(r => r.json());
+    const count = $('flagged-count');
+    if (count) count.textContent = `${items.length} report${items.length === 1 ? '' : 's'}`;
+
+    if (!items || items.length === 0) {
+      list.innerHTML = '<div class="loading-msg">No flagged questions. 🎉</div>';
+      return;
+    }
+
+    list.innerHTML = items.map(item => `
+      <div class="flagged-item">
+        <div class="flagged-header">
+          <span class="flagged-meta">${escHtml(item.level)} · ${escHtml(item.difficulty)}</span>
+          <span class="flagged-count-badge">⚑ ${item.flag_count} report${item.flag_count === 1 ? '' : 's'}</span>
+        </div>
+        <p class="flagged-question">${escHtml(item.question_text)}</p>
+        <div class="flagged-footer">
+          <span style="font-size:0.72rem;color:#888">Reported: ${new Date(item.created_at).toLocaleString()}</span>
+          <button class="btn-ghost" style="font-size:0.72rem;padding:4px 10px" onclick="editQuestion(${item.question_id})">✏️ Edit Question</button>
+        </div>
+      </div>
+    `).join('');
+
+  } catch {
+    list.innerHTML = '<div class="loading-msg">Error loading flagged questions.</div>';
+  }
+}
+
+// ════════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════════
 loadQuestions();

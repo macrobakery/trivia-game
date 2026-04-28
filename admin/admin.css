@@ -548,3 +548,126 @@ button { cursor: pointer; border: none; outline: none; }
   .filters-bar { gap: 8px; }
   .filter-group select { min-width: 150px; }
 }
+
+/* ════════════════════════════════════════════
+   ANALYTICS TAB
+════════════════════════════════════════════ */
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+}
+
+.kpi-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.kpi-card {
+  background: var(--bg-card2);
+  border: 1px solid var(--border-sub);
+  border-radius: var(--radius);
+  padding: 18px 16px;
+  text-align: center;
+}
+
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1.1;
+}
+
+.kpi-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+
+.charts-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.chart-box {
+  background: var(--bg-card2);
+  border: 1px solid var(--border-sub);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.chart-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 700px) {
+  .kpi-row      { grid-template-columns: repeat(3, 1fr); }
+  .charts-row   { grid-template-columns: 1fr; }
+  .analytics-grid { grid-template-columns: 1fr; }
+}
+
+/* ════════════════════════════════════════════
+   FLAGGED QUESTIONS TAB
+════════════════════════════════════════════ */
+
+.flagged-item {
+  background: var(--bg-card2);
+  border: 1px solid var(--border-sub);
+  border-left: 3px solid var(--warning);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin: 12px 16px;
+}
+
+.flagged-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.flagged-meta {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.flagged-count-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  background: rgba(245,158,11,0.12);
+  color: var(--warning);
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 99px;
+}
+
+.flagged-question {
+  font-size: 0.9rem;
+  color: var(--white);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.flagged-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
