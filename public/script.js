@@ -784,10 +784,18 @@ function showResults() {
   const rankRow = $('res-rank-row');
   if (rankRow) rankRow.style.display = 'none';
 
-  // Hide review section until toggled
+  // Auto-show review section if there are wrong answers, otherwise hide
   const rv = $('review-section');
-  if (rv) rv.style.display = 'none';
-  $('review-btn').textContent = '📋 Review Answers';
+  if (rv) {
+    if (wrongCount > 0) {
+      renderReview('wrong');
+      rv.style.display = 'block';
+      $('review-btn').textContent = '📋 Hide Review';
+    } else {
+      rv.style.display = 'none';
+      $('review-btn').textContent = '📋 Review Answers';
+    }
+  }
 
   // Re-arm save button; hide in practice mode (nothing to save)
   $('save-score-btn').textContent = '💾 Save Score';
@@ -819,7 +827,8 @@ $('review-btn').addEventListener('click', () => {
   const btn     = $('review-btn');
   const hidden  = section.style.display === 'none' || !section.style.display;
   if (hidden) {
-    renderReview();
+    const defaultFilter = state.wrongCount > 0 ? 'wrong' : 'all';
+    renderReview(defaultFilter);
     section.style.display = 'block';
     btn.textContent = '📋 Hide Review';
     setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
@@ -829,12 +838,42 @@ $('review-btn').addEventListener('click', () => {
   }
 });
 
+// Review filter buttons
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.review-filter-btn');
+  if (!btn) return;
+  document.querySelectorAll('.review-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderReview(btn.dataset.filter);
+});
+
 // ── Answer Review renderer ─────────────────────────────────────
-function renderReview() {
-  const list = $('review-list');
+function renderReview(filter = 'wrong') {
+  const list    = $('review-list');
+  const summary = $('review-summary');
   if (!list) return;
 
-  list.innerHTML = state.answerHistory.map((h, i) => {
+  const wrongItems   = state.answerHistory.filter(h => !h.isCorrect);
+  const displayItems = filter === 'wrong' ? wrongItems : state.answerHistory;
+
+  // Summary line
+  if (summary) {
+    const wc = wrongItems.length;
+    if (wc === 0) {
+      summary.innerHTML = '<span class="review-perfect">🎉 Perfect score — all answers correct!</span>';
+    } else {
+      summary.innerHTML = `<span class="review-missed">You missed <strong>${wc}</strong> question${wc > 1 ? 's' : ''} — study these before your next attempt:</span>`;
+    }
+  }
+
+  if (displayItems.length === 0) {
+    list.innerHTML = '<p style="text-align:center;color:var(--ink-faint);padding:24px 0;font-size:0.85rem">No wrong answers to show — well done! 🎉</p>';
+    return;
+  }
+
+  list.innerHTML = displayItems.map((h, _) => {
+    // Find original question number from full history
+    const originalIdx = state.answerHistory.indexOf(h);
     const opts = ['A','B','C','D'].map(opt => {
       const isCorrect  = opt === h.correctOption;
       const isSelected = opt === h.selectedOption && !h.isCorrect;
@@ -845,18 +884,21 @@ function renderReview() {
       </div>`;
     }).join('');
 
-    const status = h.selectedOption === null ? '⏱ Timed out'
-                 : h.isCorrect ? '✓ Correct' : '✗ Wrong';
+    const status    = h.selectedOption === null ? '⏱ Timed out'
+                    : h.isCorrect ? '✓ Correct' : '✗ Wrong';
     const statusCls = h.isCorrect ? 'ri-status-correct' : 'ri-status-wrong';
 
     return `<div class="review-item ${h.isCorrect ? 'ri-correct' : 'ri-wrong'}">
       <div class="review-item-header">
-        <span class="ri-num">Q${i + 1}</span>
+        <span class="ri-num">Q${originalIdx + 1}</span>
         <span class="ri-status ${statusCls}">${status}</span>
       </div>
       <p class="ri-question">${escapeHtml(h.question)}</p>
       <div class="ri-opts">${opts}</div>
-      <p class="ri-explanation">${escapeHtml(h.explanation)}</p>
+      <div class="ri-explanation-box">
+        <span class="ri-exp-label">💡 Why:</span>
+        <span>${escapeHtml(h.explanation)}</span>
+      </div>
     </div>`;
   }).join('');
 }
@@ -1028,31 +1070,107 @@ function launchConfetti() {
 
 $('share-score-btn').addEventListener('click', shareScore);
 
+function _shareText() {
+  const { score, correctCount, selectedLevel, selectedDifficulty, questions } = state;
+  const total    = questions.length;
+  const accuracy = Math.round((correctCount / total) * 100);
+  const badge    = BADGES.find(b => correctCount >= b.min && correctCount <= b.max) || BADGES[0];
+  return (
+    `🤖 AI App Builder Challenge\n` +
+    `${badge.icon} ${badge.name}\n` +
+    `Score: ${score} pts  |  ${correctCount}/${total} correct  |  ${accuracy}%\n` +
+    `Level: ${selectedLevel}  ·  ${selectedDifficulty}\n` +
+    `Can you beat me? 👉 ${window.location.origin}`
+  );
+}
+
 function shareScore() {
   const { score, correctCount, selectedLevel, selectedDifficulty, questions } = state;
   const total    = questions.length;
   const accuracy = Math.round((correctCount / total) * 100);
   const badge    = BADGES.find(b => correctCount >= b.min && correctCount <= b.max) || BADGES[0];
-  const text =
-    `🤖 AI App Builder Challenge\n` +
-    `${badge.icon} ${badge.name}\n` +
-    `Score: ${score} pts  |  ${correctCount}/${total} correct  |  ${accuracy}%\n` +
-    `Level: ${selectedLevel}  ·  ${selectedDifficulty}\n` +
-    `Can you beat me? Play at ${window.location.origin}`;
 
-  if (navigator.share) {
-    navigator.share({ title: 'AI Challenge Score', text }).catch(() => {});
-  } else {
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = $('share-score-btn');
-      const original = btn.textContent;
-      btn.textContent = '✅ Copied!';
-      setTimeout(() => { btn.textContent = original; }, 2000);
-    }).catch(() => {
-      alert('Could not copy to clipboard. Please copy manually:\n\n' + text);
-    });
+  // ── Populate the visual card ──────────────────────────────
+  $('sc-badge-icon').textContent  = badge.icon;
+  $('sc-badge-name').textContent  = badge.name;
+  $('sc-score').textContent       = score.toLocaleString() + ' pts';
+  $('sc-accuracy').textContent    = accuracy + '%';
+  $('sc-correct-disp').textContent = `${correctCount}/${total}`;
+  $('sc-level-pill').textContent  = selectedLevel || '—';
+  $('sc-diff-pill').textContent   = selectedDifficulty || '—';
+
+  // Show streak row only if streak > 1
+  const streakRow = $('sc-streak-row');
+  if (streakRow) {
+    if (state.maxStreak > 1) {
+      $('sc-streak-val').textContent = `🔥 ${state.maxStreak}`;
+      streakRow.style.display = 'flex';
+    } else {
+      streakRow.style.display = 'none';
+    }
   }
+
+  // ── Open the modal ────────────────────────────────────────
+  $('share-modal').style.display = 'flex';
+
+  // ── Wire up share buttons (once — remove old listeners) ──
+  const nativeBtn   = $('share-native-btn');
+  const xBtn        = $('share-x-btn');
+  const linkedinBtn = $('share-linkedin-btn');
+  const copyBtn     = $('share-copy-btn');
+
+  // Replace nodes to clear any previous listeners
+  [nativeBtn, xBtn, linkedinBtn, copyBtn].forEach(btn => {
+    if (!btn) return;
+    const clone = btn.cloneNode(true);
+    btn.parentNode.replaceChild(clone, btn);
+  });
+
+  const text = _shareText();
+
+  // Native share (mobile)
+  const nb = $('share-native-btn');
+  if (navigator.share) {
+    nb.style.display = '';
+    nb.addEventListener('click', () => navigator.share({ title: 'AI Challenge Score', text }).catch(() => {}));
+  } else {
+    nb.style.display = 'none';
+  }
+
+  // X / Twitter
+  $('share-x-btn').addEventListener('click', () => {
+    const encoded = encodeURIComponent(text);
+    window.open(`https://twitter.com/intent/tweet?text=${encoded}`, '_blank', 'noopener');
+  });
+
+  // LinkedIn
+  $('share-linkedin-btn').addEventListener('click', () => {
+    const url  = encodeURIComponent(window.location.origin);
+    const title = encodeURIComponent('AI App Builder Challenge');
+    const summary = encodeURIComponent(text);
+    window.open(`https://www.linkedin.com/shareArticle?mini=true&url=${url}&title=${title}&summary=${summary}`, '_blank', 'noopener');
+  });
+
+  // Copy text
+  const cpBtn = $('share-copy-btn');
+  cpBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = cpBtn.textContent;
+      cpBtn.textContent = '✅ Copied!';
+      setTimeout(() => { cpBtn.textContent = orig; }, 2000);
+    }).catch(() => {
+      alert('Could not copy. Here is the text:\n\n' + text);
+    });
+  });
 }
+
+// ── Share modal close ──────────────────────────────────────
+$('share-modal-close').addEventListener('click', () => {
+  $('share-modal').style.display = 'none';
+});
+$('share-modal').addEventListener('click', e => {
+  if (e.target === $('share-modal')) $('share-modal').style.display = 'none';
+});
 
 // ══════════════════════════════════════════════════════════════
 // FLAG / REPORT QUESTION

@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Geist:wght@300..700&family=JetBrains+Mono:wght@400..600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="tour.css" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#07060c" id="meta-theme-color" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -184,7 +185,7 @@
     </div>
 
     <div class="splash-meta">
-      <span>v2.0</span>
+      <span>v4.1</span>
       <span class="dot">·</span>
       <span>AI App Builder Challenge</span>
       <span class="dot">·</span>
@@ -411,6 +412,14 @@
 
       <!-- Answer review (toggled) -->
       <div id="review-section" class="review-section" style="display:none">
+        <!-- Review header + filter -->
+        <div class="review-header">
+          <div class="review-summary" id="review-summary"></div>
+          <div class="review-filters" id="review-filters">
+            <button class="review-filter-btn active" data-filter="wrong">Wrong only</button>
+            <button class="review-filter-btn"        data-filter="all">All answers</button>
+          </div>
+        </div>
         <div id="review-list"></div>
       </div>
 
@@ -424,6 +433,59 @@
 
   </div><!-- /results-screen -->
 
+
+  <!-- ════════════════════════════════════════
+       MODAL · SHARE SCORE CARD
+  ════════════════════════════════════════ -->
+  <div id="share-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true">
+    <div class="modal-box share-modal-box">
+      <div class="modal-header-row">
+        <h3>📤 Share Your Score</h3>
+        <button class="btn-ghost-sm" id="share-modal-close">✕</button>
+      </div>
+
+      <!-- Visual score card preview -->
+      <div class="share-card" id="share-card-preview">
+        <div class="sc-app">🤖 AI App Builder Challenge</div>
+        <div class="sc-badge-row">
+          <span class="sc-badge-icon" id="sc-badge-icon">🏗️</span>
+          <span class="sc-badge-name" id="sc-badge-name">AI Architect</span>
+        </div>
+        <div class="sc-stats-row">
+          <div class="sc-stat">
+            <div class="sc-stat-val" id="sc-score">—</div>
+            <div class="sc-stat-lbl">Score</div>
+          </div>
+          <div class="sc-divider"></div>
+          <div class="sc-stat">
+            <div class="sc-stat-val" id="sc-accuracy">—</div>
+            <div class="sc-stat-lbl">Accuracy</div>
+          </div>
+          <div class="sc-divider"></div>
+          <div class="sc-stat">
+            <div class="sc-stat-val" id="sc-correct-disp">—</div>
+            <div class="sc-stat-lbl">Correct</div>
+          </div>
+        </div>
+        <div class="sc-meta-row">
+          <span class="sc-level-pill" id="sc-level-pill"></span>
+          <span class="sc-diff-pill"  id="sc-diff-pill"></span>
+        </div>
+        <div class="sc-streak-row" id="sc-streak-row" style="display:none">
+          <span id="sc-streak-val">🔥 0</span> in-game streak
+        </div>
+        <div class="sc-url">ai-app-builder-challenge.vercel.app</div>
+      </div>
+
+      <!-- Share action buttons -->
+      <div class="share-actions">
+        <button class="btn-primary"  id="share-native-btn">📤 Share</button>
+        <button class="btn-ghost"    id="share-x-btn">𝕏 Post to X</button>
+        <button class="btn-ghost"    id="share-linkedin-btn">💼 LinkedIn</button>
+        <button class="btn-ghost"    id="share-copy-btn">📋 Copy Text</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ════════════════════════════════════════
        MODAL · SAVE SCORE
@@ -475,5 +537,6 @@
   </div>
 
   <script src="script.js"></script>
+  <script src="tour.js"></script>
 </body>
 </html>
