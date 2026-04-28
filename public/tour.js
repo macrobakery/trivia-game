@@ -132,16 +132,28 @@ function _showStep(stepIdx) {
   // Position tooltip
   _positionTooltip(tip, target, s.position);
 
-  // Fade in
-  tip.style.opacity   = '0';
-  tip.style.transform = 'translateY(10px)';
-  requestAnimationFrame(() => {
+  // Fade in — centred steps must NOT have their transform overridden
+  if (!target) {
+    // Centred: opacity fade only, keep the translate(-50%,-50%) untouched
+    tip.style.opacity = '0';
     requestAnimationFrame(() => {
-      tip.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
-      tip.style.opacity    = '1';
-      tip.style.transform  = 'translateY(0)';
+      requestAnimationFrame(() => {
+        tip.style.transition = 'opacity 0.22s ease';
+        tip.style.opacity    = '1';
+      });
     });
-  });
+  } else {
+    // Positioned: slide up + fade
+    tip.style.opacity   = '0';
+    tip.style.transform = 'translateY(10px)';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        tip.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
+        tip.style.opacity    = '1';
+        tip.style.transform  = 'translateY(0)';
+      });
+    });
+  }
 }
 
 function _positionTooltip(tip, target, hint) {

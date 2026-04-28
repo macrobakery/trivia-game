@@ -17,8 +17,8 @@
   position: fixed;
   z-index: 9995;
   width: 300px;
-  max-width: calc(100vw - 24px);
-  left: 12px !important; /* mobile override — JS positions, we clamp */
+  max-width: calc(100vw - 32px);
+  /* left/top set entirely by JS — no !important override */
   background: var(--modal-bg, hsl(265 22% 10%));
   border: 1px solid var(--border-hi, rgba(255,255,255,0.18));
   border-radius: 18px;
@@ -31,7 +31,6 @@
 
 @media (min-width: 480px) {
   .tour-tooltip {
-    left: auto !important;
     width: 320px;
   }
 }
