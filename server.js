@@ -586,7 +586,7 @@ app.post('/api/ai-hint', hintLimiter, async (req, res) => {
 
   try {
     const message = await anthropic.messages.create({
-      model:      'claude-3-5-haiku-20241022',
+      model:      'claude-haiku-4-5',
       max_tokens: 120,
       system: `You are a helpful tutor for an AI app development quiz.
 Give a concise hint (1–2 sentences) that guides the student's thinking WITHOUT revealing the correct answer.
@@ -644,7 +644,7 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
 
   try {
     const stream = await anthropic.messages.stream({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5',
       max_tokens: 600,
       system: `You are Alex, a friendly and encouraging AI tutor for complete beginners learning about artificial intelligence and machine learning.
 
@@ -728,7 +728,7 @@ Return ONLY a valid JSON array, no other text:
 
   try {
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5',
       max_tokens: 4000,
       messages: [{ role: 'user', content: prompt }]
     });
