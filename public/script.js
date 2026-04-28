@@ -287,11 +287,16 @@ function updateStreakUI() {
 // START SCREEN
 // ══════════════════════════════════════════════════════════════
 
+// Default level + difficulty (used when no previous choice exists)
+const PLAY_DEFAULT_LEVEL = 'AI Foundations';
+const PLAY_DEFAULT_DIFF  = 'Intermediate';
+
 $$('.level-card').forEach(btn => {
   btn.addEventListener('click', () => {
     $$('.level-card').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     state.selectedLevel = btn.dataset.level;
+    localStorage.setItem('aiChallenge_lastLevel', state.selectedLevel);
     updateStartButton();
   });
 });
@@ -301,6 +306,7 @@ $$('.diff-card').forEach(btn => {
     $$('.diff-card').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     state.selectedDifficulty = btn.dataset.difficulty;
+    localStorage.setItem('aiChallenge_lastDifficulty', state.selectedDifficulty);
     updateStartButton();
   });
 });
@@ -308,14 +314,47 @@ $$('.diff-card').forEach(btn => {
 function updateStartButton() {
   const btn  = $('start-btn');
   const text = $('start-btn-text');
-  if (state.selectedLevel && state.selectedDifficulty) {
-    btn.disabled     = false;
-    text.textContent = `Start — ${state.selectedLevel} · ${state.selectedDifficulty}`;
-  } else {
-    btn.disabled     = true;
-    text.textContent = 'Select Level & Difficulty';
+  // Always enabled — defaults are loaded on startup
+  btn.disabled = false;
+
+  const levelChip = $('play-level-chip');
+  const diffChip  = $('play-diff-chip');
+  if (levelChip) levelChip.textContent = state.selectedLevel  || PLAY_DEFAULT_LEVEL;
+  if (diffChip)  diffChip.textContent  = state.selectedDifficulty || PLAY_DEFAULT_DIFF;
+
+  if (text && !btn.classList.contains('loading')) {
+    text.textContent = '🎮 Play a Game';
   }
 }
+
+// Load last-used level + difficulty from localStorage (or use defaults)
+function loadPlayDefaults() {
+  state.selectedLevel      = localStorage.getItem('aiChallenge_lastLevel')      || PLAY_DEFAULT_LEVEL;
+  state.selectedDifficulty = localStorage.getItem('aiChallenge_lastDifficulty') || PLAY_DEFAULT_DIFF;
+  $$('.level-card').forEach(b => b.classList.toggle('selected', b.dataset.level === state.selectedLevel));
+  $$('.diff-card').forEach(b  => b.classList.toggle('selected', b.dataset.difficulty === state.selectedDifficulty));
+  updateStartButton();
+}
+loadPlayDefaults();
+
+// ── Customize modal ───────────────────────────────────────────
+function openCustomizeModal() {
+  $('customize-modal').style.display = 'flex';
+}
+function closeCustomizeModal() {
+  $('customize-modal').style.display = 'none';
+}
+
+$('customize-btn').addEventListener('click', openCustomizeModal);
+$('customize-modal-close').addEventListener('click', closeCustomizeModal);
+$('customize-cancel-btn').addEventListener('click', closeCustomizeModal);
+$('customize-modal').addEventListener('click', e => {
+  if (e.target === $('customize-modal')) closeCustomizeModal();
+});
+$('customize-apply-btn').addEventListener('click', () => {
+  closeCustomizeModal();
+  startGame();
+});
 
 $('start-btn').addEventListener('click', startGame);
 $('open-lb-btn').addEventListener('click', () => openLeaderboardModal());
@@ -340,7 +379,7 @@ async function startGame() {
   btn.classList.add('loading');
   if (spinner) spinner.style.display = 'inline-block';
   if (arrow)   arrow.style.display   = 'none';
-  text.textContent = 'Loading questions…';
+  text.textContent = 'Loading…';
 
   const isPractice = DIFFICULTY_CONFIG[state.selectedDifficulty].practice;
 

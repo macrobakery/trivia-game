@@ -87,79 +87,20 @@
         </div>
       </div>
 
-      <!-- Quiz divider -->
-      <div class="quiz-section-divider"><span>🎮 Play a Quiz</span></div>
-
-      <!-- Selection area -->
-      <div class="splash-selections">
-
-        <!-- Level Selection -->
-        <div class="selection-block">
-          <div class="ctrl-lbl"><span class="step-num">1</span> Choose Your Level</div>
-          <div class="levels-grid">
-            <button class="level-card" data-level="AI Foundations">
-              <span class="lc-glyph">◐</span>
-              <span class="lc-num">Level 1</span>
-              <span class="lc-name">AI Foundations</span>
-            </button>
-            <button class="level-card" data-level="Data Preparation">
-              <span class="lc-glyph">◇</span>
-              <span class="lc-num">Level 2</span>
-              <span class="lc-name">Data Preparation</span>
-            </button>
-            <button class="level-card" data-level="Model Building">
-              <span class="lc-glyph">◈</span>
-              <span class="lc-num">Level 3</span>
-              <span class="lc-name">Model Building</span>
-            </button>
-            <button class="level-card" data-level="AI App Development">
-              <span class="lc-glyph">◉</span>
-              <span class="lc-num">Level 4</span>
-              <span class="lc-name">AI App Development</span>
-            </button>
-            <button class="level-card" data-level="Deployment and Responsible AI">
-              <span class="lc-glyph">✦</span>
-              <span class="lc-num">Level 5</span>
-              <span class="lc-name">Deployment &amp; Ethics</span>
-            </button>
-          </div>
+      <!-- ── Play Section ── -->
+      <div class="play-section">
+        <button id="start-btn" class="btn-primary play-main-btn">
+          <span id="start-btn-spinner" class="start-spinner" style="display:none">⟳</span>
+          <span id="start-btn-text">🎮 Play a Game</span>
+          <span class="arrow" id="start-btn-arrow">→</span>
+        </button>
+        <div class="play-settings-row">
+          <span id="play-level-chip" class="play-setting-chip">AI Foundations</span>
+          <span class="play-setting-sep">·</span>
+          <span id="play-diff-chip" class="play-setting-chip">Intermediate</span>
+          <button class="btn-ghost-sm" id="customize-btn">⚙ Customize</button>
         </div>
-
-        <!-- Difficulty Selection -->
-        <div class="selection-block">
-          <div class="ctrl-lbl"><span class="step-num">2</span> Choose Difficulty</div>
-          <div class="diff-grid">
-            <button class="diff-card" data-difficulty="Beginner">
-              <span class="dc-glyph">🌱</span>
-              <span class="dc-name">Beginner</span>
-              <span class="dc-meta">25 sec · Basic concepts</span>
-            </button>
-            <button class="diff-card" data-difficulty="Intermediate">
-              <span class="dc-glyph">🔥</span>
-              <span class="dc-name">Intermediate</span>
-              <span class="dc-meta">18 sec · +25 pts bonus</span>
-            </button>
-            <button class="diff-card" data-difficulty="Advanced">
-              <span class="dc-glyph">⚡</span>
-              <span class="dc-name">Advanced</span>
-              <span class="dc-meta">12 sec · +50 pts bonus</span>
-            </button>
-            <button class="diff-card diff-card-practice" data-difficulty="Practice">
-              <span class="dc-glyph">🎓</span>
-              <span class="dc-name">Practice</span>
-              <span class="dc-meta">No timer · Learn freely</span>
-            </button>
-          </div>
-        </div>
-
-      </div><!-- /splash-selections -->
-
-      <!-- Start button -->
-      <button id="start-btn" class="btn-primary" disabled>
-        <span id="start-btn-spinner" class="start-spinner" style="display:none">⟳</span>
-        <span id="start-btn-text">Select Level &amp; Difficulty</span>
-        <span class="arrow" id="start-btn-arrow">→</span>
-      </button>
+      </div>
 
       <!-- Leaderboard preview -->
       <div class="lb-preview-box">
@@ -439,6 +380,78 @@
 
   </div><!-- /results-screen -->
 
+
+  <!-- ════════════════════════════════════════
+       MODAL · CUSTOMIZE GAME
+  ════════════════════════════════════════ -->
+  <div id="customize-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true">
+    <div class="modal-box customize-modal-box">
+      <div class="modal-header-row">
+        <h3>⚙ Customize Game</h3>
+        <button class="btn-ghost-sm" id="customize-modal-close">✕</button>
+      </div>
+
+      <!-- Level Selection -->
+      <div class="ctrl-lbl" style="margin-bottom:10px"><span class="step-num">1</span> Choose Your Level</div>
+      <div class="levels-grid">
+        <button class="level-card" data-level="AI Foundations">
+          <span class="lc-glyph">◐</span>
+          <span class="lc-num">Level 1</span>
+          <span class="lc-name">AI Foundations</span>
+        </button>
+        <button class="level-card" data-level="Data Preparation">
+          <span class="lc-glyph">◇</span>
+          <span class="lc-num">Level 2</span>
+          <span class="lc-name">Data Preparation</span>
+        </button>
+        <button class="level-card" data-level="Model Building">
+          <span class="lc-glyph">◈</span>
+          <span class="lc-num">Level 3</span>
+          <span class="lc-name">Model Building</span>
+        </button>
+        <button class="level-card" data-level="AI App Development">
+          <span class="lc-glyph">◉</span>
+          <span class="lc-num">Level 4</span>
+          <span class="lc-name">AI App Development</span>
+        </button>
+        <button class="level-card" data-level="Deployment and Responsible AI">
+          <span class="lc-glyph">✦</span>
+          <span class="lc-num">Level 5</span>
+          <span class="lc-name">Deployment &amp; Ethics</span>
+        </button>
+      </div>
+
+      <!-- Difficulty Selection -->
+      <div class="ctrl-lbl" style="margin-top:20px;margin-bottom:10px"><span class="step-num">2</span> Choose Difficulty</div>
+      <div class="diff-grid">
+        <button class="diff-card" data-difficulty="Beginner">
+          <span class="dc-glyph">🌱</span>
+          <span class="dc-name">Beginner</span>
+          <span class="dc-meta">25 sec · Basic concepts</span>
+        </button>
+        <button class="diff-card" data-difficulty="Intermediate">
+          <span class="dc-glyph">🔥</span>
+          <span class="dc-name">Intermediate</span>
+          <span class="dc-meta">18 sec · +25 pts bonus</span>
+        </button>
+        <button class="diff-card" data-difficulty="Advanced">
+          <span class="dc-glyph">⚡</span>
+          <span class="dc-name">Advanced</span>
+          <span class="dc-meta">12 sec · +50 pts bonus</span>
+        </button>
+        <button class="diff-card diff-card-practice" data-difficulty="Practice">
+          <span class="dc-glyph">🎓</span>
+          <span class="dc-name">Practice</span>
+          <span class="dc-meta">No timer · Learn freely</span>
+        </button>
+      </div>
+
+      <div class="modal-actions" style="margin-top:24px">
+        <button class="btn-primary" id="customize-apply-btn">▶ Play Now</button>
+        <button class="btn-ghost"   id="customize-cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ════════════════════════════════════════
        MODAL · SHARE SCORE CARD
