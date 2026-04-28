@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI News — AI Challenge</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;1,700&family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="news.css" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#07060c" />
+</head>
+<body>
+
+  <!-- Nebula background -->
+  <div class="bg">
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+    <div class="bg-blob bg-blob-3"></div>
+    <div class="bg-grain"></div>
+  </div>
+
+  <div class="news-page">
+
+    <header class="news-header">
+      <div>
+        <h1 class="news-page-title">📰 AI News</h1>
+        <p class="news-page-sub">What's happening in AI today</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="refresh-btn" class="btn-ghost-sm">↻ Refresh</button>
+        <button id="theme-toggle" class="theme-toggle">🌙</button>
+      </div>
+    </header>
+
+    <div class="news-date-row">
+      <span class="news-date" id="news-date">Loading…</span>
+      <span class="news-source" id="news-source"></span>
+    </div>
+
+    <div id="news-grid" class="news-grid">
+      <!-- Skeleton cards shown while loading -->
+      <div class="news-card skeleton-card">
+        <div class="skel skel-title"></div>
+        <div class="skel skel-body"></div>
+        <div class="skel skel-body short"></div>
+      </div>
+      <div class="news-card skeleton-card">
+        <div class="skel skel-title"></div>
+        <div class="skel skel-body"></div>
+        <div class="skel skel-body short"></div>
+      </div>
+      <div class="news-card skeleton-card">
+        <div class="skel skel-title"></div>
+        <div class="skel skel-body"></div>
+        <div class="skel skel-body short"></div>
+      </div>
+    </div>
+
+    <div id="news-error" class="news-error" style="display:none">
+      <span>😕</span>
+      <p>Could not load news. Check your connection.</p>
+      <button class="btn-ghost" id="retry-btn">Try Again</button>
+    </div>
+
+    <p class="news-footer-note">News sourced from Hacker News + Claude AI summary · Updates daily</p>
+
+  </div><!-- /.news-page -->
+
+  <!-- Bottom navigation (active = news) -->
+  <nav class="app-nav">
+    <a href="/" class="app-nav-item">
+      <span class="app-nav-icon">🏠</span>
+      <span class="app-nav-label">Home</span>
+    </a>
+    <a href="/lessons.html" class="app-nav-item">
+      <span class="app-nav-icon">📚</span>
+      <span class="app-nav-label">Learn</span>
+    </a>
+    <a href="/news.html" class="app-nav-item active">
+      <span class="app-nav-icon">📰</span>
+      <span class="app-nav-label">News</span>
+    </a>
+    <a href="/profile.html" class="app-nav-item">
+      <span class="app-nav-icon">👤</span>
+      <span class="app-nav-label">Profile</span>
+    </a>
+    <a href="/chat.html" class="app-nav-item">
+      <span class="app-nav-icon">🤖</span>
+      <span class="app-nav-label">Alex</span>
+    </a>
+  </nav>
+
+  <script src="news.js"></script>
+</body>
+</html>

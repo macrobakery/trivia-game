@@ -1,0 +1,568 @@
+/* ============================================================
+   lessons.css — Lesson Browser Styles
+   Depends on CSS variables defined in style.css
+   ============================================================ */
+
+/* ── Page Shell ─────────────────────────────────────────────── */
+
+.lessons-page {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 16px 16px 80px;
+  min-height: 100vh;
+}
+
+/* ── View System ─────────────────────────────────────────────── */
+
+.lessons-view {
+  display: none;
+  flex-direction: column;
+}
+
+.lessons-view.view-active {
+  display: flex;
+}
+
+/* ── Top Bar ─────────────────────────────────────────────────── */
+
+.lessons-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  margin-bottom: 16px;
+}
+
+.lessons-page-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.lessons-topic-header-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ── Total Progress Bar ─────────────────────────────────────── */
+
+.lessons-progress-bar-wrap {
+  margin-bottom: 24px;
+}
+
+.lessons-total-progress {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  margin-bottom: 8px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.lessons-total-track {
+  height: 5px;
+  background: var(--surface-2);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.lessons-total-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  border-radius: var(--radius-pill);
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 0%;
+}
+
+/* ── Topic List ─────────────────────────────────────────────── */
+
+.topic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── Topic Card ─────────────────────────────────────────────── */
+
+.topic-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  color: var(--ink);
+}
+
+.topic-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.28);
+  background: var(--surface-2);
+  border-color: var(--border-hi);
+}
+
+.topic-card.started {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.topic-card.done {
+  border-color: var(--green);
+  background: var(--green-dim);
+}
+
+.topic-icon {
+  font-size: 2rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.topic-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.topic-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 3px;
+  line-height: 1.3;
+}
+
+.topic-meta {
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  line-height: 1.4;
+}
+
+.topic-progress-ring-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.topic-ring-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.topic-ring-svg {
+  width: 38px;
+  height: 38px;
+  transform: rotate(-90deg);
+}
+
+.topic-ring-track {
+  fill: none;
+  stroke: var(--surface-2);
+  stroke-width: 3;
+}
+
+.topic-ring-fill {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.topic-card.done .topic-ring-fill { stroke: var(--green); }
+.topic-card.started .topic-ring-fill { stroke: var(--accent); }
+.topic-card:not(.started):not(.done) .topic-ring-fill { stroke: var(--border-hi); }
+
+.topic-done-badge {
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+
+/* ── Topic Progress Bar (in lesson list view) ─────────────── */
+
+.topic-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.topic-progress-track {
+  flex: 1;
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.topic-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 0%;
+}
+
+.topic-progress-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+/* ── Lesson List ─────────────────────────────────────────────── */
+
+.lesson-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Lesson Row ─────────────────────────────────────────────── */
+
+.lesson-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  color: var(--ink);
+}
+
+.lesson-row:hover:not(.locked) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.22);
+  background: var(--surface-2);
+  border-color: var(--border-hi);
+}
+
+.lesson-row.active {
+  border-color: var(--accent);
+}
+
+.lesson-row.done {
+  border-color: var(--green);
+}
+
+.lesson-row.locked {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.lesson-status-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border-hi);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.lesson-row.done .lesson-status-icon {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+  font-size: 0.72rem;
+}
+
+.lesson-row.active .lesson-status-icon {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+
+.lesson-row.locked .lesson-status-icon {
+  font-size: 0.62rem;
+}
+
+.lesson-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.lesson-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 2px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lesson-meta {
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+}
+
+/* ── Lesson Detail Article ──────────────────────────────────── */
+
+.lesson-article {
+  padding: 0 0 20px;
+}
+
+.lesson-title-main {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.25;
+  margin-bottom: 12px;
+}
+
+.lesson-intro {
+  font-size: 0.9rem;
+  color: var(--ink-faint);
+  line-height: 1.7;
+  margin: 14px 0 20px;
+}
+
+.lesson-points {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.lesson-point-card {
+  padding: 14px 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.point-heading {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.point-body {
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+  line-height: 1.65;
+}
+
+.lesson-takeaway {
+  padding: 14px 16px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+}
+
+.takeaway-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.takeaway-text {
+  font-size: 0.82rem;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+/* ── Lesson Actions ─────────────────────────────────────────── */
+
+.lesson-actions {
+  display: flex;
+  gap: 10px;
+  padding: 16px 0 24px;
+}
+
+.btn-done {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  padding: 13px 20px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: inherit;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-done:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px var(--accent-glow);
+}
+
+.btn-done.completed {
+  background: var(--green);
+  box-shadow: none;
+  cursor: default;
+}
+
+.btn-done.completed:hover {
+  filter: none;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-next-lesson {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  padding: 13px 20px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: inherit;
+  background: transparent;
+  color: var(--ink-faint);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-next-lesson:hover {
+  background: var(--surface-2);
+  border-color: var(--border-hi);
+  color: var(--ink);
+}
+
+/* ── Duration Badge ─────────────────────────────────────────── */
+
+.lesson-duration-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--ink-faint);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+/* ── Bottom Navigation ──────────────────────────────────────── */
+
+.app-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: stretch;
+  background: rgba(7, 6, 12, 0.88);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+[data-theme="light"] .app-nav {
+  background: rgba(240, 239, 248, 0.92);
+}
+
+.app-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 10px 4px;
+  text-decoration: none;
+  color: var(--ink-faint);
+  transition: color 0.15s ease;
+  min-height: 56px;
+}
+
+.app-nav-item:hover {
+  color: var(--ink);
+}
+
+.app-nav-item.active {
+  color: var(--accent);
+}
+
+.app-nav-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.app-nav-label {
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* ── Color accent variations for topic icons ────────────────── */
+
+.topic-color-accent .topic-ring-fill  { stroke: var(--accent); }
+.topic-color-cyan .topic-ring-fill    { stroke: var(--cyan); }
+.topic-color-green .topic-ring-fill   { stroke: var(--green); }
+.topic-color-gold .topic-ring-fill    { stroke: var(--gold); }
+.topic-color-red .topic-ring-fill     { stroke: var(--red); }
+
+.topic-color-accent.started { border-color: var(--accent); background: var(--accent-dim); }
+.topic-color-cyan.started   { border-color: var(--cyan); background: var(--cyan-dim); }
+.topic-color-green.started  { border-color: var(--green); background: var(--green-dim); }
+.topic-color-gold.started   { border-color: var(--gold); background: hsl(40 95% 58% / 0.1); }
+.topic-color-red.started    { border-color: var(--red); background: var(--red-dim); }
+
+.topic-color-accent.done { border-color: var(--green); background: var(--green-dim); }
+.topic-color-cyan.done   { border-color: var(--green); background: var(--green-dim); }
+.topic-color-green.done  { border-color: var(--green); background: var(--green-dim); }
+.topic-color-gold.done   { border-color: var(--green); background: var(--green-dim); }
+.topic-color-red.done    { border-color: var(--green); background: var(--green-dim); }
+
+/* ── Responsive ─────────────────────────────────────────────── */
+
+@media (max-width: 420px) {
+  .lessons-page {
+    padding: 12px 12px 80px;
+  }
+
+  .lesson-title-main {
+    font-size: 1.2rem;
+  }
+
+  .topic-card {
+    padding: 14px 14px;
+    gap: 12px;
+  }
+
+  .lesson-title {
+    white-space: normal;
+  }
+}

@@ -16,16 +16,24 @@
 .tour-tooltip {
   position: fixed;
   z-index: 9995;
-  width: 320px;
-  max-width: calc(100vw - 32px);
+  width: 300px;
+  max-width: calc(100vw - 24px);
+  left: 12px !important; /* mobile override — JS positions, we clamp */
   background: var(--modal-bg, hsl(265 22% 10%));
   border: 1px solid var(--border-hi, rgba(255,255,255,0.18));
   border-radius: 18px;
-  padding: 22px 24px 20px;
+  padding: 22px 22px 18px;
   box-shadow:
     0 24px 64px rgba(0,0,0,0.6),
     0 0 0 1px rgba(124,106,255,0.15);
   /* transition set by JS on each step */
+}
+
+@media (min-width: 480px) {
+  .tour-tooltip {
+    left: auto !important;
+    width: 320px;
+  }
 }
 
 /* ── Progress dots ── */

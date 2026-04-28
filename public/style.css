@@ -164,7 +164,7 @@ ul     { list-style: none; }
 .screen.results {
   align-items: center;
   justify-content: flex-start;
-  padding: 52px 20px 64px;
+  padding: 28px 16px 100px; /* bottom pad = bottom nav + space */
   gap: 0;
 }
 
@@ -2247,4 +2247,269 @@ button, a, input, select {
   .share-actions {
     grid-template-columns: 1fr;
   }
+}
+
+/* ══════════════════════════════════════════════
+   BOTTOM APP NAVIGATION
+   Shared across all pages
+══════════════════════════════════════════════ */
+
+.app-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 400;
+  display: flex;
+  align-items: stretch;
+  background: rgba(7, 6, 12, 0.96);
+  backdrop-filter: saturate(1.5) blur(20px);
+  -webkit-backdrop-filter: saturate(1.5) blur(20px);
+  border-top: 1px solid var(--border);
+  height: calc(60px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.app-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 4px;
+  color: var(--ink-faint);
+  text-decoration: none;
+  transition: color var(--t);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+}
+.app-nav-item:hover  { color: var(--ink); }
+.app-nav-item.active { color: var(--accent); }
+
+.app-nav-icon  { font-size: 1.25rem; line-height: 1; }
+.app-nav-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.48rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+[data-theme="light"] .app-nav {
+  background: rgba(240, 239, 248, 0.96);
+}
+
+/* ══════════════════════════════════════════════
+   HUB HOME — new splash layout
+══════════════════════════════════════════════ */
+
+/* Top bar: greeting + theme toggle */
+.hub-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 680px;
+  margin-bottom: 16px;
+}
+.hub-greeting {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+.hub-greeting span {
+  color: var(--ink-faint);
+  font-weight: 400;
+  font-size: 0.78rem;
+  display: block;
+  margin-top: 1px;
+}
+
+/* Hero card: Daily Learning Hub */
+.hub-hero-card {
+  display: block;
+  width: 100%;
+  max-width: 680px;
+  padding: 20px 22px 18px;
+  background: linear-gradient(135deg,
+    hsl(25 100% 50% / 0.14) 0%,
+    hsl(345 100% 55% / 0.08) 100%);
+  border: 1px solid hsl(25 100% 50% / 0.38);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--ink);
+  transition: all var(--t);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 0;
+}
+.hub-hero-card::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, hsl(25 100% 50% / 0.12), transparent 65%);
+  pointer-events: none;
+}
+.hub-hero-card:hover {
+  border-color: hsl(25 100% 50% / 0.65);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px hsl(25 100% 50% / 0.15);
+}
+.hub-hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.hub-hero-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: #ff6b35;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.hub-hero-streak {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #ff6b35;
+  font-family: 'JetBrains Mono', monospace;
+}
+.hub-hero-title {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+.hub-hero-sub {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.hub-hero-cta {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #ff6b35;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Quick-action tiles: News, Lessons, Daily Challenge */
+.hub-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  max-width: 680px;
+}
+
+.hub-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 16px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--ink);
+  transition: all var(--t);
+  min-height: 80px;
+}
+.hub-tile:hover {
+  background: var(--surface-2);
+  border-color: var(--border-hi);
+  transform: translateY(-2px);
+}
+.hub-tile-icon  { font-size: 1.6rem; line-height: 1; }
+.hub-tile-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.hub-tile-sub {
+  font-size: 0.6rem;
+  color: var(--ink-faint);
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* Quiz section divider */
+.quiz-section-divider {
+  width: 100%;
+  max-width: 680px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0;
+}
+.quiz-section-divider span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+.quiz-section-divider::before,
+.quiz-section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Compact splash orb on mobile */
+@media (max-width: 600px) {
+  .splash-orb { margin-bottom: 14px; }
+  .splash-orb .ai-orb-container { width: 64px; height: 64px; }
+  .splash-orb .ai-orb-core      { width: 64px; height: 64px; }
+  .title-display { font-size: clamp(1.8rem, 8vw, 2.8rem); }
+  .lede { font-size: 0.82rem; }
+  .splash-content { gap: 14px; }
+
+  /* Level cards: 2 cols + last card full width */
+  .levels-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  /* Difficulty: 2×2 */
+  .diff-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  /* Results screen */
+  .screen.splash,
+  .screen.results { padding: 20px 14px 100px; }
+}
+
+@media (max-width: 380px) {
+  .hub-tiles { grid-template-columns: repeat(3, 1fr); gap: 7px; }
+  .hub-tile  { padding: 12px 4px; min-height: 70px; }
+  .hub-tile-icon { font-size: 1.3rem; }
+  .hub-tile-title { font-size: 0.68rem; }
+  .hub-tile-sub { display: none; }
+}
+
+/* Ensure question screen content doesn't hide behind bottom nav */
+.qfoot {
+  padding-bottom: max(16px, calc(env(safe-area-inset-bottom) + 16px));
+}
+
+/* Results screen bottom clearance */
+.results-actions {
+  margin-bottom: 0;
+  padding-bottom: 4px;
 }

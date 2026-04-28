@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learn AI · AI Challenge</title>
+  <meta name="theme-color" content="#07060c" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;1,700&family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="lessons.css" />
+</head>
+<body>
+
+  <!-- Nebula background -->
+  <div class="bg">
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+    <div class="bg-blob bg-blob-3"></div>
+    <div class="bg-grain"></div>
+  </div>
+
+  <div class="lessons-page">
+
+    <!-- ── View 1: Topic overview ── -->
+    <div id="view-topics" class="lessons-view view-active">
+      <header class="lessons-topbar">
+        <h1 class="lessons-page-title">📚 Learn AI</h1>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">🌙</button>
+      </header>
+
+      <div class="lessons-progress-bar-wrap">
+        <div class="lessons-total-progress">
+          <span id="total-done">0</span> of <span id="total-lessons">25</span> lessons complete
+        </div>
+        <div class="lessons-total-track">
+          <div class="lessons-total-fill" id="total-fill"></div>
+        </div>
+      </div>
+
+      <div class="topic-list" id="topic-list">
+        <!-- JS renders topic cards -->
+      </div>
+    </div>
+
+    <!-- ── View 2: Lessons within a topic ── -->
+    <div id="view-lessons" class="lessons-view">
+      <header class="lessons-topbar">
+        <button class="btn-ghost-sm lessons-back" id="back-to-topics">← Topics</button>
+        <div class="lessons-topic-header-info">
+          <span id="topic-header-icon"></span>
+          <span id="topic-header-title"></span>
+        </div>
+      </header>
+
+      <div class="topic-progress-wrap">
+        <div class="topic-progress-track">
+          <div class="topic-progress-fill" id="topic-fill"></div>
+        </div>
+        <span class="topic-progress-label" id="topic-progress-label">0 / 5</span>
+      </div>
+
+      <div class="lesson-list" id="lesson-list">
+        <!-- JS renders lesson rows -->
+      </div>
+    </div>
+
+    <!-- ── View 3: Lesson detail ── -->
+    <div id="view-detail" class="lessons-view">
+      <header class="lessons-topbar">
+        <button class="btn-ghost-sm lessons-back" id="back-to-lesson-list">← Back</button>
+        <span class="lesson-duration-badge" id="lesson-duration"></span>
+      </header>
+
+      <article class="lesson-article" id="lesson-article">
+        <!-- JS renders lesson content -->
+      </article>
+
+      <div class="lesson-actions" id="lesson-actions">
+        <!-- JS renders action buttons -->
+      </div>
+    </div>
+
+  </div><!-- /.lessons-page -->
+
+  <!-- Bottom navigation (active = lessons) -->
+  <nav class="app-nav">
+    <a href="/" class="app-nav-item">
+      <span class="app-nav-icon">🏠</span>
+      <span class="app-nav-label">Home</span>
+    </a>
+    <a href="/lessons.html" class="app-nav-item active">
+      <span class="app-nav-icon">📚</span>
+      <span class="app-nav-label">Learn</span>
+    </a>
+    <a href="/news.html" class="app-nav-item">
+      <span class="app-nav-icon">📰</span>
+      <span class="app-nav-label">News</span>
+    </a>
+    <a href="/profile.html" class="app-nav-item">
+      <span class="app-nav-icon">👤</span>
+      <span class="app-nav-label">Profile</span>
+    </a>
+    <a href="/chat.html" class="app-nav-item">
+      <span class="app-nav-icon">🤖</span>
+      <span class="app-nav-label">Alex</span>
+    </a>
+  </nav>
+
+  <script src="lessons.js"></script>
+</body>
+</html>

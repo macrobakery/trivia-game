@@ -218,7 +218,7 @@
 
     /* ── Input area ── */
     .chat-input-area {
-      padding: 12px 16px 16px;
+      padding: 12px 16px calc(16px + 60px + env(safe-area-inset-bottom));
       border-top: 1px solid var(--border);
       background: rgba(7,6,12,0.85);
       backdrop-filter: blur(14px);
@@ -572,5 +572,14 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
     }
   </script>
+
+  <!-- Bottom App Navigation -->
+  <nav class="app-nav" style="position:fixed;bottom:0;left:0;right:0;z-index:400">
+    <a href="/"             class="app-nav-item"><span class="app-nav-icon">🏠</span><span class="app-nav-label">Home</span></a>
+    <a href="/lessons.html" class="app-nav-item"><span class="app-nav-icon">📚</span><span class="app-nav-label">Learn</span></a>
+    <a href="/news.html"    class="app-nav-item"><span class="app-nav-icon">📰</span><span class="app-nav-label">News</span></a>
+    <a href="/profile.html" class="app-nav-item"><span class="app-nav-icon">👤</span><span class="app-nav-label">Profile</span></a>
+    <a href="/chat.html"    class="app-nav-item active"><span class="app-nav-icon">🤖</span><span class="app-nav-label">Alex</span></a>
+  </nav>
 </body>
 </html>

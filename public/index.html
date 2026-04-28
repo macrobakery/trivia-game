@@ -30,22 +30,49 @@
   ════════════════════════════════════════ -->
   <div id="start-screen" class="screen splash active">
 
-    <!-- AI Orb (splash) -->
-    <div class="splash-orb">
-      <div class="ai-orb-container" data-state="speaking">
-        <div class="ai-orb-halo"></div>
-        <div class="ai-orb-core">
-          <div class="ai-orb-band1"></div>
-          <div class="ai-orb-band2"></div>
-          <div class="ai-orb-spec"></div>
-        </div>
+    <!-- ── Hub top bar: greeting + theme toggle ── -->
+    <div class="hub-topbar">
+      <div class="hub-greeting" id="hub-greeting">
+        AI Challenge
+        <span id="hub-greeting-sub">Learn, quiz, and stay sharp every day</span>
       </div>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
     </div>
 
-    <!-- Title block -->
+    <!-- ── Hero: Daily Learning Hub ── -->
+    <a href="/learn.html" class="hub-hero-card" id="daily-hub-btn">
+      <div class="hub-hero-top">
+        <span class="hub-hero-label">📚 Daily Learning Hub</span>
+        <span class="hub-hero-streak">🔥 <span id="hub-streak-num">0</span></span>
+      </div>
+      <div class="hub-hero-title">Continue Today's Session</div>
+      <div class="hub-hero-sub">Fresh AI trends + 3 micro-lessons, generated every morning</div>
+      <div class="hub-hero-cta">Start learning today →</div>
+    </a>
+
+    <!-- ── Quick-action tiles ── -->
+    <div class="hub-tiles">
+      <a href="/lessons.html" class="hub-tile">
+        <span class="hub-tile-icon">🎓</span>
+        <span class="hub-tile-title">Lessons</span>
+        <span class="hub-tile-sub">25 structured lessons</span>
+      </a>
+      <a href="/news.html" class="hub-tile">
+        <span class="hub-tile-icon">📰</span>
+        <span class="hub-tile-title">AI News</span>
+        <span class="hub-tile-sub">Today's top stories</span>
+      </a>
+      <button class="hub-tile" id="daily-challenge-btn" style="border:none">
+        <span class="hub-tile-icon">🏆</span>
+        <span class="hub-tile-title">Daily Quiz</span>
+        <span class="hub-tile-sub" id="dcb-countdown">Loading…</span>
+      </button>
+    </div>
+
+    <!-- ── Main content: quiz + leaderboard ── -->
     <div class="splash-content">
 
-      <!-- Resume banner — shown when a saved session is detected -->
+      <!-- Resume banner -->
       <div id="resume-banner" class="resume-banner" style="display:none" role="alert">
         <div class="resume-info">
           <span class="resume-icon">⚡</span>
@@ -60,11 +87,10 @@
         </div>
       </div>
 
-      <div class="eyebrow">A trivia game powered by</div>
-      <h1 class="title-display">AI Challenge</h1>
-      <p class="lede">Answer questions, unlock levels, and master the AI app development process.</p>
+      <!-- Quiz divider -->
+      <div class="quiz-section-divider"><span>🎮 Play a Quiz</span></div>
 
-      <!-- Selection area (inline on splash) -->
+      <!-- Selection area -->
       <div class="splash-selections">
 
         <!-- Level Selection -->
@@ -128,33 +154,6 @@
 
       </div><!-- /splash-selections -->
 
-      <!-- Daily Learning Hub -->
-      <a href="/learn.html" class="daily-hub-btn" id="daily-hub-btn">
-        <div class="dhb-left">
-          <span class="dhb-streak" id="hub-streak-display">🔥 <span id="hub-streak-num">0</span></span>
-          <div>
-            <div class="dhb-title">Daily Learning Hub</div>
-            <div class="dhb-sub">Today's AI trends + 3 micro-lessons — stay sharp every day</div>
-          </div>
-        </div>
-        <span class="dhb-arrow">→</span>
-      </a>
-
-      <!-- Daily Challenge -->
-      <button class="daily-challenge-btn" id="daily-challenge-btn">
-        <div class="dcb-left">
-          <span class="dcb-icon">📅</span>
-          <div>
-            <div class="dcb-title">Daily Challenge</div>
-            <div class="dcb-sub">Same 10 questions for everyone today — global ranking</div>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="dcb-badge" id="dcb-countdown">Loading…</span>
-          <span class="dcb-arrow">→</span>
-        </div>
-      </button>
-
       <!-- Start button -->
       <button id="start-btn" class="btn-primary" disabled>
         <span id="start-btn-spinner" class="start-spinner" style="display:none">⟳</span>
@@ -173,9 +172,15 @@
         </div>
       </div>
 
+      <div class="splash-meta">
+        <span>v4.3</span>
+        <span class="dot">·</span>
+        <span>AI App Builder Challenge</span>
+      </div>
+
     </div><!-- /splash-content -->
 
-    <!-- PWA install banner (shown by JS when installable) -->
+    <!-- PWA install banner -->
     <div id="pwa-banner" class="pwa-banner">
       <div class="pwa-banner-text">📱 <span>Install AI Challenge as an app for offline play</span></div>
       <div class="pwa-banner-actions">
@@ -184,15 +189,14 @@
       </div>
     </div>
 
-    <div class="splash-meta">
-      <span>v4.2</span>
-      <span class="dot">·</span>
-      <span>AI App Builder Challenge</span>
-      <span class="dot">·</span>
-      <a href="/profile.html" class="btn-ghost-sm profile-meta-link" title="My Profile">👤 Profile</a>
-      <span class="dot">·</span>
-      <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">🌙</button>
-    </div>
+    <!-- ── Bottom App Navigation ── -->
+    <nav class="app-nav">
+      <a href="/"            class="app-nav-item active"><span class="app-nav-icon">🏠</span><span class="app-nav-label">Home</span></a>
+      <a href="/lessons.html" class="app-nav-item"><span class="app-nav-icon">📚</span><span class="app-nav-label">Learn</span></a>
+      <a href="/news.html"    class="app-nav-item"><span class="app-nav-icon">📰</span><span class="app-nav-label">News</span></a>
+      <a href="/profile.html" class="app-nav-item"><span class="app-nav-icon">👤</span><span class="app-nav-label">Profile</span></a>
+      <a href="/chat.html"    class="app-nav-item"><span class="app-nav-icon">🤖</span><span class="app-nav-label">Alex</span></a>
+    </nav>
 
   </div><!-- /start-screen -->
 

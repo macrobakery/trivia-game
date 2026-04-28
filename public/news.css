@@ -1,0 +1,292 @@
+/* ============================================================
+   AI News Page — news.css
+   Cosmic dark · Fraunces · Geist · JetBrains Mono
+   ============================================================ */
+
+/* ── Page layout ─────────────────────────────────────────── */
+
+.news-page {
+  position: relative;
+  z-index: 1;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 20px 16px 90px;
+}
+
+/* ── Header ──────────────────────────────────────────────── */
+
+.news-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.news-page-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+}
+
+.news-page-sub {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+
+/* ── Date / source row ───────────────────────────────────── */
+
+.news-date-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.news-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.news-source {
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  opacity: 0.6;
+}
+
+/* ── Grid ────────────────────────────────────────────────── */
+
+.news-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── News card ───────────────────────────────────────────── */
+
+.news-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--accent); /* overridden per-index below */
+  padding: 20px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.news-card:hover {
+  border-color: var(--border-hi);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.18);
+  transform: translateY(-2px);
+}
+
+/* Per-card accent colors cycling through brand palette */
+.news-card:nth-child(1)  { border-left-color: var(--accent); }
+.news-card:nth-child(2)  { border-left-color: var(--cyan); }
+.news-card:nth-child(3)  { border-left-color: var(--green); }
+.news-card:nth-child(4)  { border-left-color: var(--gold); }
+.news-card:nth-child(5)  { border-left-color: var(--red); }
+.news-card:nth-child(6)  { border-left-color: var(--accent); }
+.news-card:nth-child(7)  { border-left-color: var(--cyan); }
+.news-card:nth-child(8)  { border-left-color: var(--green); }
+.news-card:nth-child(9)  { border-left-color: var(--gold); }
+.news-card:nth-child(10) { border-left-color: var(--red); }
+
+/* ── Card inner elements ─────────────────────────────────── */
+
+.news-card-emoji {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.news-card-headline {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.news-card-plain {
+  font-size: 0.85rem;
+  color: var(--ink);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.news-card-why-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.news-card-why {
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.news-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 7px 14px;
+  background: var(--accent-dim);
+  border: 1px solid hsl(270 90% 70% / 0.22);
+  border-radius: var(--radius-pill);
+  transition: filter 0.18s ease, transform 0.18s ease;
+}
+
+.news-card-link:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.news-card-link-arrow {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+/* ── Error state ─────────────────────────────────────────── */
+
+.news-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.news-error span {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.news-error p {
+  color: var(--ink-faint);
+  font-size: 0.9rem;
+}
+
+/* ── Skeleton shimmer ────────────────────────────────────── */
+
+.skeleton-card {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.skel {
+  background: var(--surface-2);
+  border-radius: 6px;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skel-title {
+  height: 20px;
+  margin-bottom: 10px;
+}
+
+.skel-body {
+  height: 14px;
+  margin-bottom: 6px;
+}
+
+.skel-body.short {
+  width: 60%;
+}
+
+@keyframes shimmer {
+  0%   { opacity: 0.4; }
+  50%  { opacity: 0.9; }
+  100% { opacity: 0.4; }
+}
+
+/* ── Footer note ─────────────────────────────────────────── */
+
+.news-footer-note {
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  opacity: 0.5;
+  margin-top: 20px;
+}
+
+/* ── Bottom Navigation ───────────────────────────────────── */
+
+.app-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 400;
+  display: flex;
+  align-items: stretch;
+  background: rgba(7, 6, 12, 0.95);
+  border-top: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  height: calc(60px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+[data-theme="light"] .app-nav {
+  background: rgba(240, 239, 248, 0.95);
+}
+
+.app-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 4px;
+  text-decoration: none;
+  color: var(--ink-faint);
+  transition: color 0.15s ease;
+}
+
+.app-nav-item:hover {
+  color: var(--ink);
+}
+
+.app-nav-item.active {
+  color: var(--accent);
+}
+
+.app-nav-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.app-nav-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.5rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Responsive tweaks ───────────────────────────────────── */
+
+@media (max-width: 420px) {
+  .news-page-title { font-size: 1.2rem; }
+  .news-card { padding: 16px; }
+  .news-card-headline { font-size: 1rem; }
+}
