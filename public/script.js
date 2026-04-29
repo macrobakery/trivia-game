@@ -562,6 +562,14 @@ function loadQuestion() {
   $('hint-box').style.display      = 'none';
   $('hint-text').textContent       = '';
   $('feedback-area').style.display = 'none';
+
+  // Trigger slide-in animation
+  const qprompt = document.querySelector('.qprompt');
+  if (qprompt) {
+    qprompt.classList.remove('question-enter');
+    void qprompt.offsetWidth; // force reflow
+    qprompt.classList.add('question-enter');
+  }
   // Reset ELI5 for the new question
   const eli5Box = $('eli5-box');
   const eli5Btn = $('eli5-btn');
