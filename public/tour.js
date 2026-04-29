@@ -12,9 +12,9 @@ const TOUR_STEPS = [
     position: 'center'
   },
   {
-    target:   '#daily-hub-btn',
-    title:    'Start here every day 🔥',
-    text:     "The Daily Learning Hub shows today's real AI trends from the web + 3 micro-lessons generated fresh each morning. Visit daily to build your streak!",
+    target:   '.hub-cta-stack',
+    title:    'Your daily launchpad 🚀',
+    text:     'Play a quiz, dive into AI lessons, or catch the latest AI news — all from right here. New content every day!',
     position: 'bottom'
   },
   {
