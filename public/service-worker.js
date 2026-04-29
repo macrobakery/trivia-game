@@ -3,12 +3,28 @@
 // Caches static assets for offline / instant load
 // ============================================================
 
-const CACHE_NAME   = 'ai-challenge-v2';
+const CACHE_NAME   = 'ai-challenge-v5';
 const STATIC_ASSETS = [
   '/',
   '/style.css',
   '/script.js',
-  '/manifest.json'
+  '/manifest.json',
+  '/tour.css',
+  '/tour.js',
+  '/leaderboard.html',
+  '/news.html',
+  '/news.css',
+  '/news.js',
+  '/profile.html',
+  '/profile.css',
+  '/profile.js',
+  '/lessons.html',
+  '/lessons.css',
+  '/lessons.js',
+  '/chat.html',
+  '/learn.html',
+  '/learn.css',
+  '/og-image.svg'
 ];
 
 // Install: pre-cache static assets

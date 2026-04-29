@@ -2042,6 +2042,20 @@ loadLeaderboardPreview();
 updateLevelCards();
 checkForSession();
 initHubStreakDisplay();
+
+// ── PWA Shortcuts handler ──────────────────────────────────────
+(function handlePWAShortcut() {
+  const params = new URLSearchParams(window.location.search);
+  const shortcut = params.get('shortcut');
+  if (!shortcut) return;
+  // Remove the param from history so it doesn't replay on refresh
+  history.replaceState({}, '', '/');
+  if (shortcut === 'play') {
+    setTimeout(() => $('start-btn')?.click(), 300);
+  } else if (shortcut === 'daily') {
+    setTimeout(() => $('daily-challenge-btn')?.click(), 300);
+  }
+})();
 initWeakSpotsBtn();
 initHomeStatsStrip();
 

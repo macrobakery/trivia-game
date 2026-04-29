@@ -1,7 +1,7 @@
 {
-  "name": "AI App Builder Challenge",
+  "name": "AI Challenge — Daily Quiz & Learning",
   "short_name": "AI Challenge",
-  "description": "An interactive trivia game to master AI app development concepts.",
+  "description": "Quiz yourself on AI daily. Get instant explanations from Alex, your AI tutor. Track streaks, beat the leaderboard, and stay sharp.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#07060c",
@@ -16,5 +16,35 @@
     }
   ],
   "categories": ["education", "games"],
-  "screenshots": []
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Play a Game",
+      "short_name": "Play",
+      "description": "Start a new AI trivia round",
+      "url": "/?shortcut=play",
+      "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text y='80' font-size='80'>🎮</text></svg>", "sizes": "96x96" }]
+    },
+    {
+      "name": "Daily Challenge",
+      "short_name": "Daily",
+      "description": "Today's challenge — same 10 questions for all players",
+      "url": "/?shortcut=daily",
+      "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text y='80' font-size='80'>🗓</text></svg>", "sizes": "96x96" }]
+    },
+    {
+      "name": "AI News",
+      "short_name": "News",
+      "description": "Today's AI news explained in plain English",
+      "url": "/news.html",
+      "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text y='80' font-size='80'>📰</text></svg>", "sizes": "96x96" }]
+    },
+    {
+      "name": "Leaderboard",
+      "short_name": "Rank",
+      "description": "See top AI trivia players worldwide",
+      "url": "/leaderboard.html",
+      "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text y='80' font-size='80'>🏆</text></svg>", "sizes": "96x96" }]
+    }
+  ]
 }
