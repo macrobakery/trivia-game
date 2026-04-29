@@ -2607,7 +2607,7 @@ async function startDailyChallenge() {
 // ══════════════════════════════════════════════════════════════
 
 function initHomeStatsStrip() {
-  const strip    = $('hub-stats-strip');
+  const strip = $('hub-stats-strip');
   if (!strip) return;
 
   try {
@@ -2617,7 +2617,7 @@ function initHomeStatsStrip() {
     const games      = total.games || 0;
     const answered   = total.answered || 0;
     const correct    = total.correct  || 0;
-    const accuracy   = answered > 0 ? Math.round(correct / answered * 100) + '%' : '—';
+    const accuracy   = answered > 0 ? Math.round(correct / answered * 100) + '%' : null;
     const streakCnt  = streak.count || 0;
 
     // Lessons done
@@ -2627,11 +2627,10 @@ function initHomeStatsStrip() {
       lessonsDone = Object.values(lp).filter(Boolean).length;
     } catch {}
 
-    if (games > 0 || streakCnt > 0 || lessonsDone > 0) {
-      $('hs-streak').textContent   = `🔥 ${streakCnt} day${streakCnt !== 1 ? 's' : ''}`;
-      $('hs-accuracy').textContent = accuracy !== '—' ? `🎯 ${accuracy}` : `📚 ${lessonsDone}/25`;
-      $('hs-games').textContent    = `${games} game${games !== 1 ? 's' : ''}`;
-      strip.style.display = 'flex';
-    }
+    // Always show — new users see friendly defaults
+    $('hs-streak').textContent   = `🔥 ${streakCnt} day${streakCnt !== 1 ? 's' : ''}`;
+    $('hs-accuracy').textContent = accuracy ? `🎯 ${accuracy}` : (lessonsDone > 0 ? `📚 ${lessonsDone}/25` : '🎯 Start playing!');
+    $('hs-games').textContent    = games > 0 ? `${games} game${games !== 1 ? 's' : ''}` : 'Your profile →';
+    // strip is already visible by default (no display:none in HTML)
   } catch (_) {}
 }

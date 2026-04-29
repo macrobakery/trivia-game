@@ -51,9 +51,9 @@
       <button class="theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
     </div>
 
-    <!-- ── Mini stats strip (streak + today's games) ── -->
-    <div class="hub-stats-strip" id="hub-stats-strip" style="display:none">
-      <span class="hub-stat-item" id="hs-streak">🔥 0</span>
+    <!-- ── Mini stats strip (always visible) ── -->
+    <div class="hub-stats-strip" id="hub-stats-strip">
+      <span class="hub-stat-item" id="hs-streak">🔥 0 days</span>
       <span class="hub-stat-sep">·</span>
       <span class="hub-stat-item" id="hs-accuracy">🎯 —</span>
       <span class="hub-stat-sep">·</span>
@@ -88,40 +88,10 @@
         </div>
       </div>
 
-      <!-- ── CTA Stack: three core actions ── -->
+      <!-- ── CTA Stack: simplified, clear hierarchy ── -->
       <div class="hub-cta-stack">
 
-        <!-- 1st — Primary: Play a Game (filled, purple) -->
-        <div class="hub-cta-primary">
-          <button id="start-btn" class="btn-primary play-main-btn">
-            <span id="start-btn-spinner" class="start-spinner" style="display:none">⟳</span>
-            <span id="start-btn-text">🎮 Play a Game</span>
-            <span class="arrow" id="start-btn-arrow">→</span>
-          </button>
-          <div class="play-settings-row">
-            <span id="play-level-chip" class="play-setting-chip">AI Foundations</span>
-            <span class="play-setting-sep">·</span>
-            <span id="play-diff-chip" class="play-setting-chip">Intermediate</span>
-            <button class="btn-ghost-sm" id="customize-btn">⚙ Customize</button>
-          </div>
-        </div>
-
-        <!-- 2nd — Secondary: Learn AI (outlined) -->
-        <a href="/lessons.html" class="hub-cta-secondary">
-          <span class="hub-cta-icon">🎓</span>
-          <span class="hub-cta-label">Learn AI</span>
-          <span class="hub-cta-arr">→</span>
-        </a>
-
-        <!-- 2.5 — Weak spots practice (shown only if there are stored wrong answers) -->
-        <button class="hub-cta-weakspots" id="weak-spots-btn" style="display:none">
-          <span class="hub-cta-icon">🎯</span>
-          <span class="hub-cta-label">Practice Weak Spots</span>
-          <span class="ws-count" id="ws-count">0</span>
-          <span class="hub-cta-arr">→</span>
-        </button>
-
-        <!-- 2.7 — Daily Challenge (gold, resets at midnight) -->
+        <!-- 1st — Daily Challenge HERO (gold, most prominent) -->
         <button class="hub-cta-daily" id="daily-challenge-btn">
           <span class="hub-cta-icon">🗓</span>
           <div class="hub-cta-daily-inner">
@@ -132,19 +102,44 @@
           <span class="hub-cta-arr">→</span>
         </button>
 
-        <!-- 3rd — Tertiary: Latest AI News (ghost) -->
-        <a href="/news.html" class="hub-cta-tertiary">
-          <span class="hub-cta-icon">📰</span>
-          <span class="hub-cta-label">Catch up with the latest AI news</span>
-          <span class="hub-cta-arr">→</span>
-        </a>
+        <!-- 2nd — Custom Game (secondary, outlined) -->
+        <div class="hub-cta-primary">
+          <button id="start-btn" class="btn-primary play-main-btn">
+            <span id="start-btn-spinner" class="start-spinner" style="display:none">⟳</span>
+            <span id="start-btn-text">🎮 Custom Game</span>
+            <span class="arrow" id="start-btn-arrow">→</span>
+          </button>
+          <div class="play-settings-row">
+            <span id="play-level-chip" class="play-setting-chip">AI Foundations</span>
+            <span class="play-setting-sep">·</span>
+            <span id="play-diff-chip" class="play-setting-chip">Intermediate</span>
+            <button class="btn-ghost-sm" id="customize-btn">⚙ Customize</button>
+          </div>
+        </div>
 
-        <!-- 4th — Leaderboard ghost link -->
-        <a href="/leaderboard.html" class="hub-cta-leaderboard">
-          <span class="hub-cta-icon">🏆</span>
-          <span>View Leaderboard</span>
+        <!-- 3rd — Quick-access 3-column grid: Learn · News · Alex -->
+        <div class="hub-quick-links">
+          <a href="/lessons.html" class="hub-quick-link">
+            <span class="hub-quick-icon">📚</span>
+            <span>Learn</span>
+          </a>
+          <a href="/news.html" class="hub-quick-link">
+            <span class="hub-quick-icon">📰</span>
+            <span>AI News</span>
+          </a>
+          <a href="/chat.html" class="hub-quick-link">
+            <span class="hub-quick-icon">🤖</span>
+            <span>Ask Alex</span>
+          </a>
+        </div>
+
+        <!-- Weak spots practice (shown only if there are stored wrong answers) -->
+        <button class="hub-cta-weakspots" id="weak-spots-btn" style="display:none">
+          <span class="hub-cta-icon">🎯</span>
+          <span class="hub-cta-label">Practice Weak Spots</span>
+          <span class="ws-count" id="ws-count">0</span>
           <span class="hub-cta-arr">→</span>
-        </a>
+        </button>
 
       </div>
 
@@ -543,7 +538,7 @@
       </div>
 
       <div class="modal-actions" style="margin-top:24px">
-        <button class="btn-primary" id="customize-apply-btn">▶ Play Now</button>
+        <button class="btn-primary" id="customize-apply-btn">🎮 Play Now</button>
         <button class="btn-ghost"   id="customize-cancel-btn">Cancel</button>
       </div>
     </div>
