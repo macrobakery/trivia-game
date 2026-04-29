@@ -764,9 +764,11 @@ function handleAnswer(selectedOption) {
     const streakBonus = state.streak >= 3 ? (state.streak - 2) * 20 : 0;
     const points      = cfg.practice ? 0 : 100 + timeBonus + diffBonus + streakBonus;
 
+    const oldScore = state.score;
     state.score        += points;
     state.correctCount += 1;
-    $('score-display').textContent = state.score;
+    animateScoreUpdate(oldScore, state.score);
+    showPointsPopup(points, state.streak >= 3);
     $('correct-count').textContent = state.correctCount;
 
     setOrbState('correct');
@@ -1466,6 +1468,42 @@ function showCelebration() {
   el.innerHTML = '<div class="celebrate-text">✓</div>';
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 700);
+}
+
+// ── Animated score count-up ────────────────────────────────────
+function animateScoreUpdate(from, to) {
+  const el = $('score-display');
+  if (!el) { if (el) el.textContent = to; return; }
+  const diff = to - from;
+  if (diff <= 0) { el.textContent = to; return; }
+  const duration = Math.min(550, diff * 2.5);
+  const startTime = performance.now();
+  function tick(now) {
+    const p = Math.min(1, (now - startTime) / duration);
+    const eased = 1 - Math.pow(1 - p, 3); // cubic ease-out
+    el.textContent = Math.round(from + diff * eased);
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ── Floating +N pts popup near score counter ───────────────────
+function showPointsPopup(points, hasStreak) {
+  if (points <= 0) return;
+  const scoreEl = $('score-display');
+  if (!scoreEl) return;
+  const rect = scoreEl.getBoundingClientRect();
+  const popup = document.createElement('div');
+  popup.className = 'points-popup' + (hasStreak ? ' points-popup-streak' : '');
+  popup.textContent = '+' + points;
+  popup.style.left = (rect.left + rect.width / 2) + 'px';
+  popup.style.top  = rect.top + 'px';
+  document.body.appendChild(popup);
+  requestAnimationFrame(() => {
+    popup.style.transform = 'translate(-50%, -44px)';
+    popup.style.opacity   = '0';
+  });
+  setTimeout(() => popup.remove(), 720);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2255,6 +2293,12 @@ function renderDailyGoals() {
     titleEl.textContent = all ? '🎉 All goals done!' : `Today's Goals (${[gameDone,newsDone,lessonDone].filter(Boolean).length}/3)`;
     if (all) titleEl.style.color = 'var(--green)';
     else     titleEl.style.color = '';
+  }
+
+  // Confetti burst the first time all goals are done in this session
+  if (all && !renderDailyGoals._confettiShown) {
+    renderDailyGoals._confettiShown = true;
+    setTimeout(launchConfetti, 300);
   }
 }
 

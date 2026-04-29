@@ -311,13 +311,44 @@ function renderNews(data) {
 
 // ── Data fetching ─────────────────────────────────────────────
 
-async function loadNews() {
+// ── Client-side session cache ─────────────────────────────────
+const NEWS_CACHE_KEY = 'aiChallenge_newsCache';
+
+function getTodayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function loadCachedNews() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(NEWS_CACHE_KEY) || 'null');
+    if (cached && cached.date === getTodayStr() && cached.data) return cached.data;
+  } catch {}
+  return null;
+}
+
+function saveNewsCache(data) {
+  try {
+    localStorage.setItem(NEWS_CACHE_KEY, JSON.stringify({ date: getTodayStr(), data }));
+  } catch {}
+}
+
+async function loadNews(forceRefresh = false) {
   const grid     = document.getElementById('news-grid');
   const errorBox = document.getElementById('news-error');
   const dateEl   = document.getElementById('news-date');
   const sourceEl = document.getElementById('news-source');
 
   errorBox.style.display = 'none';
+
+  // Use cached news if available and not force-refreshing
+  if (!forceRefresh) {
+    const cached = loadCachedNews();
+    if (cached) {
+      renderNews(cached);
+      return;
+    }
+  }
+
   dateEl.textContent     = 'Loading…';
   sourceEl.textContent   = '';
   grid.innerHTML = `
@@ -343,6 +374,7 @@ async function loadNews() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
+    saveNewsCache(data); // persist for the rest of the day
     renderNews(data);
   } catch (err) {
     console.error('[news] Failed to load:', err);
@@ -361,7 +393,7 @@ document.getElementById('news-filter-bar').addEventListener('click', e => {
 
 // ── Button wiring ─────────────────────────────────────────────
 
-document.getElementById('refresh-btn').addEventListener('click', () => { loadNews(); });
+document.getElementById('refresh-btn').addEventListener('click', () => { loadNews(true); });
 document.getElementById('retry-btn').addEventListener('click', () => {
   document.getElementById('news-error').style.display = 'none';
   loadNews();

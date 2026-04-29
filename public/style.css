@@ -1542,6 +1542,29 @@ ul     { list-style: none; }
   100% { transform: scale(1)   rotate(0deg);   opacity: 0; }
 }
 
+/* ── Points popup (+N pts floating above score) ── */
+.points-popup {
+  position: fixed;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--green);
+  background: var(--green-dim);
+  border: 1px solid hsl(142 68% 50% / 0.35);
+  border-radius: var(--radius-pill);
+  padding: 3px 10px;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, 0);
+  transition: transform 0.65s cubic-bezier(0.2, 0, 0, 1), opacity 0.65s ease;
+  white-space: nowrap;
+}
+.points-popup.points-popup-streak {
+  color: var(--gold);
+  background: hsl(40 95% 58% / 0.14);
+  border-color: hsl(40 95% 58% / 0.35);
+}
+
 /* ── Confetti particle ── */
 .confetti-piece {
   position: fixed;
