@@ -1519,6 +1519,16 @@ ul     { list-style: none; }
 .lb-row-meta  { font-size: 0.67rem; color: var(--ink-faint); }
 .lb-row-score { font-weight: 800; color: var(--accent); font-size: 1rem; }
 
+/* Highlight player's own row */
+.lb-row.lb-row-you {
+  background: var(--accent-dim);
+  margin: 0 -16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  border-radius: var(--radius-sm);
+  border-color: var(--accent);
+}
+
 /* ── Celebration overlay ── */
 .celebrate-overlay {
   position: fixed;

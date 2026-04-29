@@ -1418,16 +1418,20 @@ async function loadLeaderboardTab(tab) {
 
 function renderLeaderboardRows(scores) {
   const ranks = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+  const myName = (localStorage.getItem('aiChallenge_playerName') || '').toLowerCase();
   if (!scores || scores.length === 0) return '<p class="lb-empty">No scores yet. Be the first!</p>';
-  return `<div class="lb-table">${scores.map((s, i) => `
-    <div class="lb-row">
+  return `<div class="lb-table">${scores.map((s, i) => {
+    const isYou = myName && s.player_name.toLowerCase() === myName;
+    return `
+    <div class="lb-row${isYou ? ' lb-row-you' : ''}">
       <div class="lb-row-rank">${ranks[i] || '#' + (i + 1)}</div>
       <div class="lb-row-info">
-        <div class="lb-row-name">${escapeHtml(s.player_name)}</div>
+        <div class="lb-row-name">${escapeHtml(s.player_name)}${isYou ? ' <span style="color:var(--accent);font-size:0.68rem">(you)</span>' : ''}</div>
         <div class="lb-row-meta">${escapeHtml(s.level)} · ${escapeHtml(s.difficulty)} · ${s.correct_answers}/10 · ${s.accuracy}% · ${new Date(s.created_at).toLocaleDateString()}</div>
       </div>
       <div class="lb-row-score">${s.score}</div>
-    </div>`).join('')}</div>`;
+    </div>`;
+  }).join('')}</div>`;
 }
 
 function closeLeaderboardModal() { $('lb-modal').style.display = 'none'; }
