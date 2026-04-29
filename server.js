@@ -1192,49 +1192,55 @@ app.get('/api/ai-trends', learnLimiter, async (req, res) => {
     const hnTop = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json');
     const ids   = await hnTop.json();
 
-    // 2. Fetch details for first 60 stories in parallel
+    // 2. Fetch details for first 80 stories in parallel (wider net for AI stories)
     const stories = await Promise.all(
-      ids.slice(0, 60).map(id =>
+      ids.slice(0, 80).map(id =>
         fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(r => r.json()).catch(() => null)
       )
     );
 
     // 3. Filter for AI-related stories by title keywords
-    const AI_KEYWORDS = ['ai', 'llm', 'gpt', 'claude', 'gemini', 'mistral', 'openai', 'anthropic',
+    const AI_KEYWORDS = [
+      'ai', 'llm', 'gpt', 'claude', 'gemini', 'mistral', 'openai', 'anthropic',
       'neural', 'machine learning', 'deep learning', 'generative', 'diffusion', 'transformer',
-      'chatbot', 'model', 'training', 'inference', 'robotics', 'automation'];
-    const aiStories = stories.filter(s =>
-      s && s.title && AI_KEYWORDS.some(kw => s.title.toLowerCase().includes(kw))
-    ).slice(0, 6);
+      'chatbot', 'model', 'training', 'inference', 'robotics', 'automation', 'rag',
+      'agent', 'copilot', 'stable diffusion', 'midjourney', 'multimodal', 'embedding',
+      'fine-tun', 'foundation model', 'hugging face', 'langchain', 'llamaindex', 'ollama',
+    ];
+    const aiStories = stories
+      .filter(s => s && s.title && AI_KEYWORDS.some(kw => s.title.toLowerCase().includes(kw)))
+      .sort((a, b) => (b.score || 0) - (a.score || 0)) // highest score first
+      .slice(0, 8);
 
     // 4. Build prompt — use real stories if found, otherwise ask Claude for curated picks
+    const targetCount = aiStories.length >= 4 ? 5 : 3;
     let prompt;
-    if (aiStories.length >= 2) {
-      prompt = `Here are today's top AI-related stories trending on Hacker News:
+    if (aiStories.length >= 3) {
+      prompt = `Here are today's top AI-related stories trending on Hacker News (sorted by score):
 
 ${aiStories.map((s, i) => `${i + 1}. "${s.title}"${s.url ? ` — ${s.url}` : ''} (${s.score || 0} upvotes)`).join('\n')}
 
-Summarise the 3 most interesting ones for a complete beginner. Avoid jargon.`;
+Pick the ${targetCount} most interesting and varied stories and summarise each for a complete beginner. Prioritise diversity — pick from different AI domains if possible. Avoid jargon.`;
     } else {
-      prompt = `Share 3 of the most significant recent AI developments or breakthroughs that a beginner learning AI would find interesting and relevant in ${new Date().getFullYear()}. Focus on things that have happened in the last 6-12 months.`;
+      prompt = `Share ${targetCount} of the most significant and recent AI developments or breakthroughs that a beginner learning AI would find interesting and relevant in ${new Date().getFullYear()}. Cover different areas: models, applications, tools, research, ethics. Focus on things that have happened in the last 6-12 months.`;
     }
 
     prompt += `
 
-Return ONLY a valid JSON array with exactly 3 items:
+Return ONLY a valid JSON array with exactly ${targetCount} items:
 [
   {
-    "headline": "Short punchy title (max 10 words)",
+    "headline": "Short punchy title (max 12 words)",
     "emoji": "one relevant emoji",
-    "plain_english": "2-3 sentences explaining this to a 15-year-old — no jargon",
-    "why_it_matters": "One sentence on why this matters for AI's future",
+    "plain_english": "2-3 sentences explaining this to a 15-year-old — no jargon, conversational tone",
+    "why_it_matters": "One clear sentence on why this matters for AI's future or for people building AI apps",
     "source_url": "original URL or empty string"
   }
 ]`;
 
     const message = await anthropic.messages.create({
       model: 'claude-haiku-4-5',
-      max_tokens: 1200,
+      max_tokens: 2000,
       messages: [{ role: 'user', content: prompt }]
     });
 
@@ -1244,8 +1250,8 @@ Return ONLY a valid JSON array with exactly 3 items:
 
     const result = {
       trends:   data,
-      source:   aiStories.length >= 2 ? 'hackernews' : 'ai_curated',
-      fallback: aiStories.length < 2,
+      source:   aiStories.length >= 3 ? 'hackernews' : 'ai_curated',
+      fallback: aiStories.length < 3,
       date:     today
     };
 
