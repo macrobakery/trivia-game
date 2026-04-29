@@ -29,6 +29,14 @@
 </head>
 <body>
 
+  <!-- Inline theme restore — must run before CSS paint to prevent flash -->
+  <script>
+    (function(){
+      const t = localStorage.getItem('aiChallenge_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+
   <!-- ── Animated nebula background ── -->
   <div class="bg" aria-hidden="true">
     <div class="bg-blob bg-blob-1"></div>
