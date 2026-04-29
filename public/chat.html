@@ -681,20 +681,23 @@
       }
     } catch { messages = []; }
 
-    // ── Pre-fill from URL ?q= parameter ──
+    // ── Pre-fill (and auto-send) from URL ?q= parameter ──
+    // When arriving from "Ask Alex" on a lesson, auto-send so the user
+    // gets the answer immediately without having to press send again.
     (function handleURLQuestion() {
       const params = new URLSearchParams(window.location.search);
       const q = params.get('q');
       if (!q) return;
-      // Clean URL
+      // Clean URL without reloading
       history.replaceState({}, '', '/chat.html');
-      // Set textarea value and focus
+      // Hide empty state; fill textarea
+      const emptyEl = document.getElementById('chat-empty');
+      if (emptyEl) emptyEl.style.display = 'none';
       inputEl.value = q;
+      updateCharCounter();
       autoResize();
-      inputEl.focus();
-      // Briefly highlight the textarea to draw attention
-      inputEl.style.background = 'hsl(270 90% 70% / 0.12)';
-      setTimeout(() => { inputEl.style.background = ''; }, 1200);
+      // Auto-send after a short delay so the UI is fully painted
+      setTimeout(() => sendMessage(), 320);
     })();
 
     // ── Suggested chips (fill input, let user edit before sending) ──

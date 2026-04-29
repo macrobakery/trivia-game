@@ -192,6 +192,21 @@
     }
     .lb-cta-btn { min-width: 220px; }
 
+    /* ── Weekly reset strip ── */
+    .lb-reset-strip {
+      display: flex; align-items: center; gap: 8px;
+      background: hsl(270 60% 18% / 0.5);
+      border: 1px solid hsl(270 60% 40% / 0.35);
+      border-radius: var(--radius);
+      padding: 8px 14px; margin-bottom: 16px;
+      font-size: 0.78rem; color: var(--ink-faint);
+    }
+    .lb-reset-strip strong {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent); font-weight: 700;
+    }
+    .lb-reset-icon { font-size: 1rem; }
+
     /* ── Refresh time ── */
     .lb-refresh-row {
       display: flex; align-items: center; justify-content: flex-end;
@@ -293,6 +308,12 @@
     <div class="lb-tabs" role="tablist">
       <button class="lb-tab active" data-tab="alltime" role="tab" aria-selected="true">All Time</button>
       <button class="lb-tab" data-tab="weekly" role="tab" aria-selected="false">This Week</button>
+    </div>
+
+    <!-- Weekly reset countdown (visible only on weekly tab) -->
+    <div class="lb-reset-strip" id="lb-reset-strip" style="display:none" aria-live="polite">
+      <span class="lb-reset-icon">⏱</span>
+      <span class="lb-reset-text">Resets in <strong id="lb-reset-countdown">—</strong></span>
     </div>
 
     <!-- Filters -->
@@ -500,6 +521,48 @@
     $('lb-your-rank-score').textContent  = best.score.toLocaleString() + ' pts';
   }
 
+  // ── Weekly reset countdown ─────────────────────────────────────
+  let _countdownTimer = null;
+
+  function getNextMonday() {
+    const now = new Date();
+    // Compute next Monday 00:00:00 UTC
+    const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const day = d.getUTCDay(); // 0=Sun, 1=Mon … 6=Sat
+    const daysUntilMon = day === 0 ? 1 : (8 - day) % 7 || 7;
+    d.setUTCDate(d.getUTCDate() + daysUntilMon);
+    return d;
+  }
+
+  function updateWeeklyCountdown() {
+    const el = $('lb-reset-countdown');
+    if (!el) return;
+    const diff = getNextMonday() - Date.now();
+    if (diff <= 0) { el.textContent = 'now!'; return; }
+    const td = Math.floor(diff / 86400000);
+    const th = Math.floor((diff % 86400000) / 3600000);
+    const tm = Math.floor((diff % 3600000) / 60000);
+    const ts = Math.floor((diff % 60000) / 1000);
+    el.textContent = td > 0
+      ? `${td}d ${String(th).padStart(2,'0')}h ${String(tm).padStart(2,'0')}m`
+      : `${String(th).padStart(2,'0')}:${String(tm).padStart(2,'0')}:${String(ts).padStart(2,'0')}`;
+  }
+
+  function syncResetStrip() {
+    const strip = $('lb-reset-strip');
+    if (!strip) return;
+    if (_tab === 'weekly') {
+      strip.style.display = 'flex';
+      updateWeeklyCountdown();
+      if (!_countdownTimer) {
+        _countdownTimer = setInterval(updateWeeklyCountdown, 1000);
+      }
+    } else {
+      strip.style.display = 'none';
+      if (_countdownTimer) { clearInterval(_countdownTimer); _countdownTimer = null; }
+    }
+  }
+
   // ── Tab switching ──────────────────────────────────────────────
   document.querySelectorAll('.lb-tab').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -508,6 +571,7 @@
         b.classList.toggle('active', b === btn);
         b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
       });
+      syncResetStrip();
       loadBoard();
     });
   });
@@ -532,6 +596,7 @@
   $('lb-refresh-btn').addEventListener('click', loadBoard);
 
   // ── Init ───────────────────────────────────────────────────────
+  syncResetStrip();
   loadBoard();
   </script>
 
