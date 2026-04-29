@@ -542,6 +542,103 @@ if ('serviceWorker' in navigator) {
   });
 })();
 
+// ── Keyboard navigation ───────────────────────────────────────
+// J / K  — next / previous card (scrolls to and highlights card)
+// B      — bookmark focused card
+// R      — mark focused card as read
+// O      — open article link
+// /      — focus the search input
+
+(function initKeyboardNav() {
+  let _focusedIdx = -1;
+
+  function getVisibleCards() {
+    return [...document.querySelectorAll('.news-card:not(.skeleton-card)')]
+      .filter(c => c.style.display !== 'none');
+  }
+
+  function focusCard(idx) {
+    const cards = getVisibleCards();
+    if (!cards.length) return;
+    _focusedIdx = Math.max(0, Math.min(cards.length - 1, idx));
+
+    // Remove previous focus highlight
+    document.querySelectorAll('.news-card.kb-focused').forEach(c => c.classList.remove('kb-focused'));
+
+    const card = cards[_focusedIdx];
+    card.classList.add('kb-focused');
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  document.addEventListener('keydown', e => {
+    // Ignore when user is typing in an input
+    if (e.target.matches('input, textarea, select, [contenteditable]')) return;
+    // Ignore modifier combos
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+    const key = e.key.toLowerCase();
+
+    if (key === '/') {
+      e.preventDefault();
+      const searchInput = document.getElementById('news-search-input');
+      if (searchInput) { searchInput.focus(); searchInput.select(); }
+      return;
+    }
+
+    if (key === 'j' || key === 'arrowdown') {
+      e.preventDefault();
+      const cards = getVisibleCards();
+      focusCard(_focusedIdx < 0 ? 0 : _focusedIdx + 1);
+      return;
+    }
+    if (key === 'k' || key === 'arrowup') {
+      e.preventDefault();
+      focusCard(_focusedIdx <= 0 ? 0 : _focusedIdx - 1);
+      return;
+    }
+
+    if (_focusedIdx < 0) return;
+    const card = getVisibleCards()[_focusedIdx];
+    if (!card) return;
+
+    if (key === 'b') {
+      // Toggle bookmark
+      e.preventDefault();
+      card.querySelector('.news-bm-btn')?.click();
+      return;
+    }
+    if (key === 'r') {
+      // Mark as read
+      e.preventDefault();
+      const hl = card.dataset.headline || '';
+      if (hl && !isRead(hl)) {
+        markRead(hl);
+        card.classList.add('news-card-read');
+        const actions = card.querySelector('.news-card-actions');
+        if (actions && !actions.querySelector('.news-read-badge')) {
+          const badge = document.createElement('span');
+          badge.className = 'news-read-badge';
+          badge.textContent = '✓ Read';
+          actions.prepend(badge);
+        }
+        updateUnreadBadge();
+      }
+      return;
+    }
+    if (key === 'o' || key === 'enter') {
+      // Open article link
+      e.preventDefault();
+      const link = card.querySelector('.news-card-link');
+      if (link) { link.click(); }
+      return;
+    }
+  });
+
+  // Show keyboard hint on desktop
+  const hint = document.getElementById('news-kb-hint');
+  if (hint && !('ontouchstart' in window)) hint.style.display = 'block';
+})();
+
 // ── Boot ──────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
