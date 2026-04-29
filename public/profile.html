@@ -59,6 +59,13 @@
           <button class="btn-ghost-sm" id="edit-name-btn" title="Change name">✏️</button>
         </div>
         <div class="prof-badge-name" id="prof-badge-name">AI Rookie</div>
+        <!-- Next badge progress -->
+        <div class="prof-badge-progress" id="prof-badge-progress">
+          <div class="pbp-bar-track">
+            <div class="pbp-bar-fill" id="pbp-bar-fill" style="width:0%"></div>
+          </div>
+          <div class="pbp-label" id="pbp-label">0 / 4 correct → Prompt Explorer 🔍</div>
+        </div>
         <div class="prof-games-played" id="prof-games-played">0 games played</div>
       </div>
     </header>
@@ -150,6 +157,15 @@
         <div class="prof-daily-info" id="prof-daily-info">Loading…</div>
         <a href="/" id="prof-daily-cta" class="btn-ghost-sm">Play →</a>
       </div>
+    </section>
+
+    <!-- ── Game History ── -->
+    <section class="prof-section" id="prof-game-history-section" style="display:none">
+      <div class="prof-section-header">
+        <span class="prof-section-title">🎮 Recent Games</span>
+        <span class="prof-section-sub" id="gh-game-count">0 games</span>
+      </div>
+      <div id="prof-game-history-list"></div>
     </section>
 
     <!-- ── CTA ── -->

@@ -93,12 +93,7 @@ function renderHeader() {
   const levelStats = read('aiChallenge_levelStats', {});
   const games      = levelStats._total ? levelStats._total.games : (achStats.gamesPlayed || 0);
 
-  // Best quiz correctCount proxy: use topScore mapping or just show first badge
-  // We don't store per-game correctCount, so derive from achStats
   const topScore = achStats.topScore || 0;
-  // Map topScore → approximate correct count for badge (rough: 100pts/q beginner)
-  const badge = BADGES[BADGES.length - 1]; // show highest unlocked or just highest
-  // Better: check achievements to derive badge
   const unlocked = read('aiChallenge_unlocked', []);
   let badgeObj = BADGES[0];
   if (achStats.perfectScores >= 1) badgeObj = BADGES[3];
@@ -109,6 +104,38 @@ function renderHeader() {
   $('prof-name').textContent      = escapeHtml(name);
   $('prof-badge-name').textContent = badgeObj.name;
   $('prof-games-played').textContent = `${games} game${games !== 1 ? 's' : ''} played`;
+
+  // ── Next-badge progress bar ──
+  renderBadgeProgress(badgeObj, topScore);
+}
+
+function renderBadgeProgress(currentBadge, topScore) {
+  const barFill = $('pbp-bar-fill');
+  const lbl     = $('pbp-label');
+  if (!barFill || !lbl) return;
+
+  const curIdx  = BADGES.indexOf(currentBadge);
+  const isMax   = curIdx >= BADGES.length - 1;
+
+  if (isMax) {
+    barFill.style.width = '100%';
+    barFill.classList.add('pbp-maxed');
+    lbl.textContent = '🏆 Maximum badge reached — AI Architect!';
+    return;
+  }
+
+  // Thresholds for badges mapped to topScore
+  const thresholds = [0, 400, 700, Infinity]; // score needed for each badge index
+  const curMin  = thresholds[curIdx];
+  const nextMin = thresholds[curIdx + 1];
+  const next    = BADGES[curIdx + 1];
+  const range   = nextMin - curMin;
+  const prog    = Math.max(0, topScore - curMin);
+  const pct     = Math.min(100, Math.round((prog / range) * 100));
+
+  barFill.style.width = pct + '%';
+  barFill.classList.remove('pbp-maxed');
+  lbl.textContent = `${topScore} / ${nextMin} pts → ${next.name} ${next.icon}`;
 }
 
 // ── Render stats row ───────────────────────────────────────────
@@ -430,6 +457,45 @@ document.addEventListener('click', e => {
   }
 });
 
+// ── Game History ───────────────────────────────────────────────
+function renderGameHistory() {
+  const section   = $('prof-game-history-section');
+  const listEl    = $('prof-game-history-list');
+  const countEl   = $('gh-game-count');
+  if (!section || !listEl) return;
+
+  const history = read('aiChallenge_gameHistory', []);
+  if (!history.length) { section.style.display = 'none'; return; }
+
+  section.style.display = '';
+  if (countEl) countEl.textContent = `${history.length} game${history.length !== 1 ? 's' : ''}`;
+
+  const DIFF_ICONS = { Beginner: '🌱', Intermediate: '🔥', Advanced: '⚡', Practice: '🎓' };
+
+  listEl.innerHTML = history.slice(0, 10).map(g => {
+    const pct      = g.accuracy !== undefined ? g.accuracy : (g.total ? Math.round((g.correct / g.total) * 100) : 0);
+    const perfect  = g.correct === g.total;
+    const diffKey  = (g.difficulty || '').toLowerCase();
+    const diffIcon = DIFF_ICONS[g.difficulty] || '🎮';
+    const date     = g.date ? new Date(g.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+    const level    = g.level === 'Deployment and Responsible AI' ? 'Deployment & Ethics' : (g.level || '—');
+
+    return `
+      <div class="gh-row ${perfect ? 'gh-perfect' : ''}">
+        <div class="gh-icon">${diffIcon}</div>
+        <div class="gh-info">
+          <div class="gh-level">${escapeHtml(level)}<span class="gh-diff-chip gh-diff-${diffKey}">${g.difficulty || ''}</span></div>
+          <div class="gh-meta">${g.correct || 0}/${g.total || 10} correct · ${date}${perfect ? ' · 🌟 Perfect' : ''}</div>
+        </div>
+        <div class="gh-score-col">
+          <div class="gh-score-pts">${(g.score || 0).toLocaleString()}</div>
+          <div class="gh-acc">${pct}%</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
 // ── Init ───────────────────────────────────────────────────────
 renderHeader();
 renderStats();
@@ -438,6 +504,7 @@ renderLevelRecords();
 renderLessonsProgress();
 renderAchievements();
 renderDailyChallenge();
+renderGameHistory();
 fetchGlobalRank();
 
 // Register service worker

@@ -3155,6 +3155,23 @@ button, a, input, select {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Live countdown dot */
+.daily-live-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  margin-right: 4px;
+  vertical-align: middle;
+  margin-bottom: 1px;
+  animation: daily-dot-pulse 2s ease-in-out infinite;
+}
+@keyframes daily-dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
+}
 .daily-done-chip {
   flex-shrink: 0;
   font-family: 'JetBrains Mono', monospace;

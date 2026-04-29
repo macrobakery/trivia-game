@@ -2930,7 +2930,9 @@ function _updateDailyCountdown() {
   const ms = midnight - now;
   const h  = Math.floor(ms / 3600000);
   const m  = Math.floor((ms % 3600000) / 60000);
-  sub.textContent = `Resets in ${h}h ${m}m · Same 10 questions for all players`;
+  const s  = Math.floor((ms % 60000) / 1000);
+  const pad = n => String(n).padStart(2, '0');
+  sub.innerHTML = `<span class="daily-live-dot"></span> Resets in ${h}:${pad(m)}:${pad(s)} · Same 10 questions for all players`;
 }
 
 async function startDailyChallenge() {
@@ -2994,8 +2996,8 @@ async function startDailyChallenge() {
   if (!btn) return;
   btn.addEventListener('click', startDailyChallenge);
   updateDailyChallengeUI();
-  // Update countdown every minute
-  setInterval(_updateDailyCountdown, 60_000);
+  // Update countdown every second for live feel
+  setInterval(_updateDailyCountdown, 1000);
 })();
 
 // ══════════════════════════════════════════════════════════════

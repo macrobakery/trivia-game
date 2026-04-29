@@ -396,6 +396,115 @@
   line-height: 1.45;
 }
 
+/* ── Next badge progress bar ── */
+.prof-badge-progress {
+  margin: 6px 0 2px;
+}
+
+.pbp-bar-track {
+  height: 5px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.pbp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), hsl(200 100% 60%));
+  border-radius: var(--radius-pill);
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pbp-bar-fill.pbp-maxed {
+  background: linear-gradient(90deg, var(--gold), hsl(50 100% 60%));
+}
+
+.pbp-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.3px;
+}
+
+/* ── Game history ── */
+.gh-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  transition: border-color var(--t);
+}
+.gh-row:last-child { margin-bottom: 0; }
+.gh-row:hover { border-color: var(--border-hi); }
+.gh-row.gh-perfect { border-color: var(--gold); }
+
+.gh-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: center;
+}
+
+.gh-info { flex: 1; min-width: 0; }
+
+.gh-level {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.gh-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--ink-faint);
+}
+
+.gh-score-col {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.gh-score-pts {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.1;
+}
+
+.gh-acc {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--ink-faint);
+}
+
+.gh-diff-chip {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 6px;
+}
+
+.gh-diff-beginner     { background: hsl(142 50% 30% / 0.25); color: var(--green); }
+.gh-diff-intermediate { background: hsl(35 100% 40% / 0.2);  color: var(--gold); }
+.gh-diff-advanced     { background: hsl(0 80% 40% / 0.2);    color: var(--red); }
+.gh-diff-practice     { background: var(--accent-dim);        color: var(--accent); }
+
 /* ── Share button ── */
 .prof-share-btn {
   display: inline-flex;
