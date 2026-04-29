@@ -2212,9 +2212,8 @@ function renderDailyGoals() {
   const newsDone   = localStorage.getItem('aiChallenge_lastNewsRead') === today;
   const lessonDone = localStorage.getItem('aiChallenge_lastLessonDone') === today;
 
-  const anyGoal = gameDone || newsDone || lessonDone;
-  goals.style.display = anyGoal ? 'block' : 'none';
-  if (!anyGoal) return;
+  // Always show daily goals so new users understand the platform's daily habit
+  goals.style.display = 'block';
 
   function setGoal(id, checkId, done) {
     const item  = $(id);
