@@ -1031,7 +1031,7 @@ function renderLessonDetail(topic, lesson) {
       <p class="lesson-intro">${lesson.intro}</p>
       <div class="lesson-points">
         ${lesson.points.map((point, i) => `
-          <div class="lesson-point-card">
+          <div class="lesson-point-card" style="animation-delay:${i * 0.07}s">
             <div class="point-num">${i + 1} / ${lesson.points.length}</div>
             <div class="point-heading">${point.heading}</div>
             <div class="point-body">${point.body}</div>
@@ -1044,6 +1044,9 @@ function renderLessonDetail(topic, lesson) {
       </div>
     `;
   }
+
+  // Reading progress bar
+  initReadingProgress();
 
   // Action buttons
   renderLessonActions(topic, lesson);
@@ -1098,6 +1101,10 @@ function renderLessonActions(topic, lesson) {
   if (quizLevel) {
     html += `<a class="btn-quiz-topic" href="/?level=${encodeURIComponent(quizLevel)}" title="Practice quiz on ${topic.title}">🎮 Practice Quiz</a>`;
   }
+
+  // Ask Alex — pre-fill with lesson title
+  const alexQ = encodeURIComponent(`Can you explain "${lesson.title}" from the ${topic.title} topic in simple terms? Give me a real-world analogy.`);
+  html += `<a class="btn-ask-alex-lesson" href="/chat.html?q=${alexQ}" title="Ask Alex about this lesson">🤖 Ask Alex</a>`;
 
   container.innerHTML = html;
 
@@ -1173,6 +1180,36 @@ function showLessonDetail(topicId, lessonId) {
   currentLessonId = lessonId;
   renderLessonDetail(topic, lesson);
   setActiveView('view-detail');
+}
+
+/* ──────────────────────────────────────────────────────────────
+   READING PROGRESS BAR
+────────────────────────────────────────────────────────────── */
+
+let _rpScrollHandler = null;
+
+function initReadingProgress() {
+  const fill   = document.getElementById('lrp-fill');
+  const detail = document.getElementById('view-detail');
+  if (!fill || !detail) return;
+
+  // Remove old listener if any
+  if (_rpScrollHandler) {
+    detail.removeEventListener('scroll', _rpScrollHandler);
+  }
+
+  // Reset to 0
+  fill.style.width = '0%';
+
+  _rpScrollHandler = () => {
+    const scrollTop  = detail.scrollTop;
+    const scrollH    = detail.scrollHeight - detail.clientHeight;
+    if (scrollH <= 0) { fill.style.width = '100%'; return; }
+    const pct = Math.min(100, Math.round((scrollTop / scrollH) * 100));
+    fill.style.width = pct + '%';
+  };
+
+  detail.addEventListener('scroll', _rpScrollHandler, { passive: true });
 }
 
 /* ──────────────────────────────────────────────────────────────

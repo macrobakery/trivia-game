@@ -376,6 +376,27 @@
   color: var(--ink-faint);
 }
 
+/* ── Reading progress bar ──────────────────────────────────── */
+
+.lesson-read-progress {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--surface-2);
+  z-index: 10;
+  margin: 0 -20px 16px;
+}
+
+.lrp-fill {
+  height: 100%;
+  background: linear-gradient(to right, var(--accent), var(--cyan));
+  width: 0%;
+  transition: width 0.1s linear;
+  border-radius: 0 2px 2px 0;
+}
+
 /* ── Lesson Detail Article ──────────────────────────────────── */
 
 .lesson-article {
@@ -411,7 +432,13 @@
   padding: 20px 20px;
   background: var(--surface-2);
   border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
   border-radius: var(--radius-sm);
+  animation: pointCardIn 0.3s ease both;
+}
+@keyframes pointCardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .point-num {
@@ -562,6 +589,32 @@
 
 .btn-quiz-topic:hover {
   background: hsl(40 95% 58% / 0.12);
+  filter: brightness(1.1);
+}
+
+/* ── Ask Alex lesson button ─────────────────────────────────── */
+
+.btn-ask-alex-lesson {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  background: transparent;
+  color: var(--cyan);
+  border: 1px solid var(--cyan);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-ask-alex-lesson:hover {
+  background: hsl(185 80% 50% / 0.12);
   filter: brightness(1.1);
 }
 
