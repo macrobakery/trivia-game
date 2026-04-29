@@ -532,6 +532,10 @@ async function startGame() {
     roundStartTime: Date.now()
   });
 
+  // Reset answer dots
+  const dotsEl = $('answer-dots');
+  if (dotsEl) dotsEl.innerHTML = '';
+
   $('active-level-badge').textContent = state.selectedLevel;
   $('active-diff-badge').textContent  = state.selectedDifficulty;
   $('score-display').textContent      = '0';
@@ -576,6 +580,8 @@ function loadQuestion() {
   $('progress-label').textContent = `Question ${num} of ${state.questions.length}`;
   $('q-num').textContent          = `Question ${num}`;
   $('q-cat').textContent          = q.level;
+
+  updateAnswerDots();
   $('q-text').textContent         = q.question_text;
 
   $('opt-a-text').textContent = q.option_a;
@@ -734,6 +740,41 @@ document.addEventListener('keydown', e => {
   }
 });
 
+// ── Answer indicator dots ──────────────────────────────────────
+function updateAnswerDots(result) {
+  const dotsEl = $('answer-dots');
+  if (!dotsEl) return;
+
+  const total = state.questions.length || 10;
+  const idx   = state.currentIndex;
+
+  // Build or rebuild dots if count changed
+  if (dotsEl.children.length !== total) {
+    dotsEl.innerHTML = '';
+    for (let i = 0; i < total; i++) {
+      const dot = document.createElement('span');
+      dot.className = 'answer-dot';
+      dotsEl.appendChild(dot);
+    }
+  }
+
+  const dots = dotsEl.querySelectorAll('.answer-dot');
+
+  // Apply history-based classes for already-answered questions
+  state.answerHistory.forEach((h, i) => {
+    if (dots[i]) {
+      dots[i].classList.remove('dot-current','dot-correct','dot-wrong','dot-timeout');
+      dots[i].classList.add(h.isCorrect ? 'dot-correct' : 'dot-wrong');
+    }
+  });
+
+  // Current question indicator (unless already answered)
+  const histLen = state.answerHistory.length;
+  if (!state.answered && dots[histLen]) {
+    dots[histLen].classList.add('dot-current');
+  }
+}
+
 function handleAnswer(selectedOption) {
   if (state.answered) return;
   state.answered = true;
@@ -753,6 +794,7 @@ function handleAnswer(selectedOption) {
   });
 
   highlightOptions(selectedOption, correct);
+  updateAnswerDots(); // refresh dots to reflect answered state
 
   if (isRight) {
     state.streak++;
@@ -817,6 +859,7 @@ function handleTimeout() {
 
   setOrbState('wrong');
   updateStreakUI();
+  updateAnswerDots(); // mark timeout in dots
   showFeedback('timeout', `⏱ Time's up! The answer was ${correct}`, q.explanation);
   streamExplanation(q, null);
   recordWrongQuestion(q);
