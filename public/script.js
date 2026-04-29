@@ -423,7 +423,7 @@ function updateStartButton() {
   if (diffChip)  diffChip.textContent  = state.selectedDifficulty || PLAY_DEFAULT_DIFF;
 
   if (text && !btn.classList.contains('loading')) {
-    text.textContent = '🎮 Play a Game';
+    text.textContent = '🎮 Custom Game';
   }
 }
 
