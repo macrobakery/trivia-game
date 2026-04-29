@@ -207,15 +207,67 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 16px;
+      gap: 20px;
       text-align: center;
-      padding: 40px 24px;
+      padding: 28px 20px 20px;
       color: var(--ink-faint);
+      overflow-y: auto;
     }
-    .chat-empty-icon { font-size: 3.2rem; opacity: 0.65; }
-    .chat-empty-title { font-size: 1.15rem; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
-    .chat-empty-sub   { font-size: 0.86rem; max-width: 340px; line-height: 1.65; }
+    .chat-empty-icon { font-size: 2.8rem; opacity: 0.65; }
+    .chat-empty-title { font-size: 1.1rem; font-weight: 700; color: var(--ink); letter-spacing: -0.01em; }
+    .chat-empty-sub   { font-size: 0.84rem; max-width: 340px; line-height: 1.65; margin-top: -4px; }
+
+    /* ── Starter topic cards grid ── */
+    .starter-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      width: 100%;
+      max-width: 520px;
+      margin-top: 4px;
+    }
+    .starter-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      text-align: left;
+      cursor: default;
+      transition: border-color var(--t), background var(--t);
+    }
+    .starter-card:hover { border-color: var(--border-hi); background: var(--surface-2); }
+    .starter-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .starter-card-icon { font-size: 1.1rem; }
+    .starter-card-title {
+      font-size: 0.73rem;
+      font-weight: 700;
+      color: var(--ink);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .starter-q {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--accent);
+      text-decoration: none;
+      padding: 4px 0;
+      cursor: pointer;
+      border: none;
+      background: none;
+      text-align: left;
+      width: 100%;
+      font-family: inherit;
+      line-height: 1.45;
+      transition: opacity var(--t);
+    }
+    .starter-q:hover { opacity: 0.75; }
+    .starter-q + .starter-q { border-top: 1px solid var(--border); }
 
     /* ── Input area ── */
     .chat-input-area {
@@ -440,7 +492,47 @@
       <div class="chat-empty" id="chat-empty">
         <div class="chat-empty-icon">🤖</div>
         <div class="chat-empty-title">Hi! I'm Alex, your AI Tutor</div>
-        <div class="chat-empty-sub">Ask me anything about AI, machine learning, or the concepts in the trivia game. I'll explain everything in plain English — no experience needed!</div>
+        <div class="chat-empty-sub">Ask me anything about AI. I explain everything in plain English — no experience needed.</div>
+
+        <!-- Starter topic cards -->
+        <div class="starter-grid">
+          <div class="starter-card">
+            <div class="starter-card-header">
+              <span class="starter-card-icon">◐</span>
+              <span class="starter-card-title">AI Basics</span>
+            </div>
+            <button class="starter-q" data-q="What is machine learning and how does it differ from regular programming?">What is machine learning?</button>
+            <button class="starter-q" data-q="How do neural networks work? Explain it simply.">How do neural networks work?</button>
+            <button class="starter-q" data-q="What is the difference between AI, machine learning, and deep learning?">AI vs ML vs deep learning?</button>
+          </div>
+          <div class="starter-card">
+            <div class="starter-card-header">
+              <span class="starter-card-icon">◈</span>
+              <span class="starter-card-title">Model Training</span>
+            </div>
+            <button class="starter-q" data-q="What is overfitting in machine learning and how do you fix it?">What is overfitting?</button>
+            <button class="starter-q" data-q="Explain gradient descent in simple terms.">How does gradient descent work?</button>
+            <button class="starter-q" data-q="What does a training vs validation vs test split mean?">What is train/val/test split?</button>
+          </div>
+          <div class="starter-card">
+            <div class="starter-card-header">
+              <span class="starter-card-icon">◉</span>
+              <span class="starter-card-title">AI Apps & LLMs</span>
+            </div>
+            <button class="starter-q" data-q="What is a large language model (LLM) and how does it work?">What is an LLM?</button>
+            <button class="starter-q" data-q="What is prompt engineering and how do I write good prompts?">How do I write good prompts?</button>
+            <button class="starter-q" data-q="What is Retrieval-Augmented Generation (RAG) and when should I use it?">What is RAG?</button>
+          </div>
+          <div class="starter-card">
+            <div class="starter-card-header">
+              <span class="starter-card-icon">✦</span>
+              <span class="starter-card-title">Ethics & Safety</span>
+            </div>
+            <button class="starter-q" data-q="What is bias in AI and why does it matter?">What is AI bias?</button>
+            <button class="starter-q" data-q="What is AI alignment and why is it an important problem?">What is AI alignment?</button>
+            <button class="starter-q" data-q="How do companies deploy AI models responsibly in production?">Responsible AI deployment?</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -528,12 +620,25 @@
       setTimeout(() => { inputEl.style.background = ''; }, 1200);
     })();
 
-    // ── Suggested chips ──
+    // ── Suggested chips (fill input, let user edit before sending) ──
     document.querySelectorAll('.suggestion-chip').forEach(chip => {
       chip.addEventListener('click', () => {
-        inputEl.value = chip.textContent;
+        // Strip leading emoji/icon characters
+        const text = chip.textContent.replace(/^[\p{Emoji}\s]+/u, '').trim();
+        inputEl.value = text || chip.textContent.trim();
         inputEl.focus();
         autoResize();
+      });
+    });
+
+    // ── Starter-q buttons (auto-send immediately) ──
+    document.querySelectorAll('.starter-q').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const q = btn.dataset.q;
+        if (!q) return;
+        inputEl.value = q;
+        autoResize();
+        sendMessage();
       });
     });
 
