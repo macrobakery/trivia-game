@@ -129,10 +129,11 @@ function updateUnreadBadge() {
   }
 }
 
-// ── Active filter ─────────────────────────────────────────────
+// ── Active filter + search ────────────────────────────────────
 
 let _activeFilter  = 'all';
 let _cachedTrends  = [];
+let _searchQuery   = '';
 
 function setFilter(f) {
   _activeFilter = f;
@@ -143,29 +144,70 @@ function setFilter(f) {
 }
 
 function applyFilter() {
+  const q     = _searchQuery.trim().toLowerCase();
   const cards = document.querySelectorAll('.news-card:not(.skeleton-card)');
+
   cards.forEach(card => {
     const headline = card.dataset.headline || '';
     let show = true;
+
+    // Filter check
     if (_activeFilter === 'unread')     show = !isRead(headline);
     if (_activeFilter === 'bookmarked') show = isBookmarked(headline);
+
+    // Search check (headline + body text)
+    if (show && q) {
+      const fullText = (card.textContent || '').toLowerCase();
+      show = fullText.includes(q);
+    }
+
     card.style.display = show ? '' : 'none';
   });
 
   // Empty state message
   const visible = [...document.querySelectorAll('.news-card:not(.skeleton-card)')].filter(c => c.style.display !== 'none');
   const grid = document.getElementById('news-grid');
-  const existing = grid.querySelector('.news-filter-empty');
-  if (existing) existing.remove();
 
-  if (visible.length === 0 && _activeFilter !== 'all') {
+  // Remove old empty messages
+  grid.querySelectorAll('.news-filter-empty, .news-search-no-results').forEach(e => e.remove());
+
+  if (visible.length === 0) {
     const msg = document.createElement('p');
-    msg.className = 'news-filter-empty';
-    const label = _activeFilter === 'unread' ? 'unread stories' : 'saved stories';
-    msg.textContent = `No ${label} right now.`;
-    grid.appendChild(msg);
+    if (q) {
+      msg.className   = 'news-search-no-results';
+      msg.textContent = `No stories matching "${_searchQuery}".`;
+    } else if (_activeFilter !== 'all') {
+      msg.className = 'news-filter-empty';
+      const label = _activeFilter === 'unread' ? 'unread stories' : 'saved stories';
+      msg.textContent = `No ${label} right now.`;
+    }
+    if (msg.textContent) grid.appendChild(msg);
   }
 }
+
+// ── Wire search input ─────────────────────────────────────────
+
+(function initSearch() {
+  const input    = document.getElementById('news-search-input');
+  const clearBtn = document.getElementById('news-search-clear');
+  if (!input) return;
+
+  input.addEventListener('input', () => {
+    _searchQuery = input.value;
+    if (clearBtn) clearBtn.style.display = _searchQuery ? '' : 'none';
+    applyFilter();
+  });
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      input.value  = '';
+      _searchQuery = '';
+      clearBtn.style.display = 'none';
+      input.focus();
+      applyFilter();
+    });
+  }
+})();
 
 // ── Render ────────────────────────────────────────────────────
 
