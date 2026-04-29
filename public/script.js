@@ -2465,6 +2465,7 @@ initHomeStatsStrip();
 renderDailyGoals();
 initWelcomeBanner();
 checkStreakMilestone();
+initStreakRescue();
 
 // ── Social proof: players active today ────────────────────────
 (function loadSocialProof() {
@@ -2512,6 +2513,83 @@ const STREAK_MILESTONES = [
   { days: 60,  icon: '💎', label: '60-Day Diamond!',  big: true  },
   { days: 100, icon: '👑', label: '100-Day Master!',  big: true  },
 ];
+
+// ── Streak rescue banner ────────────────────────────────────────
+function initStreakRescue() {
+  const banner   = $('streak-rescue');
+  const titleEl  = $('sr-title');
+  const playBtn  = $('sr-play-btn');
+  const dismissBtn = $('sr-dismiss');
+  if (!banner) return;
+
+  // Dismiss if user clicked it this session
+  const DISMISS_KEY = 'aiChallenge_srDismissed';
+  if (localStorage.getItem(DISMISS_KEY) === _todayStr()) {
+    banner.style.display = 'none';
+    return;
+  }
+
+  // Check conditions: streak >= 2, last visit was YESTERDAY, today not already played
+  let streakData;
+  try { streakData = JSON.parse(localStorage.getItem('aiChallenge_streak') || '{}'); } catch { return; }
+
+  const streakCount = streakData.count || 0;
+  const lastVisit   = streakData.lastVisit || null;
+
+  if (streakCount < 2) return; // not worth rescuing
+
+  // Compute yesterday's date string
+  const yesterday = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  })();
+
+  // Only show if last visit was yesterday (streak at risk) and not already played today
+  const playedToday = localStorage.getItem('aiChallenge_lastGameDone') === _todayStr();
+  if (lastVisit !== yesterday || playedToday) return;
+
+  // Show the banner
+  banner.style.display = 'flex';
+
+  // Live countdown to midnight
+  function updateCountdown() {
+    const now      = new Date();
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const ms       = midnight - now;
+    const h        = Math.floor(ms / 3600000);
+    const m        = Math.floor((ms % 3600000) / 60000);
+    const s        = Math.floor((ms % 60000) / 1000);
+    const pad      = n => String(n).padStart(2, '0');
+    if (titleEl) titleEl.textContent = `Your ${streakCount}-day streak ends in ${h}:${pad(m)}:${pad(s)}`;
+  }
+  updateCountdown();
+  const cdInterval = setInterval(updateCountdown, 1000);
+
+  // Play now → start daily challenge
+  if (playBtn) {
+    playBtn.addEventListener('click', () => {
+      clearInterval(cdInterval);
+      banner.style.display = 'none';
+      $('daily-challenge-btn')?.click();
+    });
+  }
+
+  // Dismiss
+  if (dismissBtn) {
+    dismissBtn.addEventListener('click', () => {
+      clearInterval(cdInterval);
+      banner.style.display = 'none';
+      try { localStorage.setItem(DISMISS_KEY, _todayStr()); } catch {}
+    });
+  }
+
+  // Auto-hide when daily challenge is completed
+  document.addEventListener('dailyChallengeComplete', () => {
+    clearInterval(cdInterval);
+    banner.style.display = 'none';
+  });
+}
 
 function checkStreakMilestone() {
   let streakData;
@@ -3048,6 +3126,8 @@ function isDailyDone() {
 function markDailyDone() {
   localStorage.setItem(DC_KEY, _todayStr());
   updateDailyChallengeUI();
+  // Notify streak rescue banner to hide
+  document.dispatchEvent(new CustomEvent('dailyChallengeComplete'));
 }
 
 function updateDailyChallengeUI() {
