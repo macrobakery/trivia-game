@@ -1088,6 +1088,39 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+// ── Touch swipe navigation in lesson detail (mobile) ───────────
+(function initSwipeNav() {
+  let startX = 0;
+  let startY = 0;
+
+  document.addEventListener('touchstart', e => {
+    startX = e.changedTouches[0].clientX;
+    startY = e.changedTouches[0].clientY;
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    const detailView = document.getElementById('view-detail');
+    if (!detailView || !detailView.classList.contains('view-active')) return;
+
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+
+    // Ignore mostly-vertical swipes (scrolling)
+    if (Math.abs(dy) > Math.abs(dx) * 1.5) return;
+    if (Math.abs(dx) < 50) return; // Too short
+
+    if (dx < 0) {
+      // Swipe left → next lesson
+      const nextBtn = document.getElementById('btn-next-lesson') || document.getElementById('btn-next-topic');
+      if (nextBtn) nextBtn.click();
+    } else {
+      // Swipe right → back
+      if (currentTopicId) showLessonList(currentTopicId);
+      else showTopics();
+    }
+  }, { passive: true });
+})();
+
 // ── Lesson search ──────────────────────────────────────────────
 (function initLessonsSearch() {
   const input = document.getElementById('lessons-search');

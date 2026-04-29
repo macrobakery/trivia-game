@@ -1855,10 +1855,11 @@ function updateLevelStats() {
   }
 
   // Global totals (including practice)
-  stats._total = stats._total || { answered: 0, correct: 0, games: 0 };
-  stats._total.answered += total;
-  stats._total.correct  += correctCount;
-  stats._total.games    += 1;
+  stats._total = stats._total || { answered: 0, correct: 0, games: 0, totalScore: 0 };
+  stats._total.answered   += total;
+  stats._total.correct    += correctCount;
+  stats._total.games      += 1;
+  if (!isPractice) stats._total.totalScore = (stats._total.totalScore || 0) + score;
 
   try { localStorage.setItem('aiChallenge_levelStats', JSON.stringify(stats)); } catch {}
 }

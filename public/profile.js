@@ -136,6 +136,15 @@ function renderStats() {
     const newsEl   = $('ps-news');
     if (newsEl) newsEl.textContent = newsRead.size;
   } catch { /* ignore */ }
+
+  // Total points accumulated across all games
+  const totalPtsEl = $('ps-total-pts');
+  if (totalPtsEl) {
+    const pts = (total.totalScore || 0);
+    totalPtsEl.textContent = pts >= 1000
+      ? (pts / 1000).toFixed(1).replace(/\.0$/, '') + 'k'
+      : pts.toLocaleString();
+  }
 }
 
 // ── Activity calendar ──────────────────────────────────────────
