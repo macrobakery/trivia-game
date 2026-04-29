@@ -855,3 +855,59 @@
 @media (hover: none) and (pointer: coarse) {
   .lesson-swipe-hint { display: block; }
 }
+
+/* ── Lesson completion celebration toast ────────────────── */
+.lesson-cel-toast {
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%) translateY(24px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: hsl(265 22% 12%);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 20px hsl(40 95% 58% / 0.2);
+  opacity: 0;
+  max-width: min(400px, calc(100vw - 32px));
+  cursor: pointer;
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.lesson-cel-toast.lesson-cel-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.lesson-cel-all {
+  border-color: var(--accent);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 28px hsl(270 90% 70% / 0.3);
+}
+.lesson-cel-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.lesson-cel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lesson-cel-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+.lesson-cel-all .lesson-cel-title {
+  color: var(--accent);
+}
+.lesson-cel-sub {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+}
+
+[data-theme="light"] .lesson-cel-toast {
+  background: #fff;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+}

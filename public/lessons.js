@@ -696,6 +696,7 @@ function getProgress() {
 
 function markDone(topicId, lessonId) {
   const progress = getProgress();
+  const wasAlreadyDone = !!progress[`${topicId}/${lessonId}`];
   progress[`${topicId}/${lessonId}`] = true;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
@@ -706,6 +707,107 @@ function markDone(topicId, lessonId) {
   } catch (e) {
     console.warn('Could not save progress:', e);
   }
+
+  if (!wasAlreadyDone) {
+    // Check for topic completion
+    const topic = CURRICULUM.find(t => t.id === topicId);
+    if (topic) {
+      const nowDone = topicDoneCount(topic);
+      const total   = topic.lessons.length;
+      if (nowDone === total) {
+        // All lessons in this topic completed
+        const allTotal = totalDoneCount();
+        const allMax   = CURRICULUM.reduce((s, t) => s + t.lessons.length, 0);
+        if (allTotal === allMax) {
+          setTimeout(() => showLessonCelebration('all', topic.title), 480);
+        } else {
+          setTimeout(() => showLessonCelebration('topic', topic.title), 480);
+        }
+      }
+    }
+  }
+}
+
+// ── Lesson completion celebration ──────────────────────────────
+function showLessonCelebration(type, topicTitle) {
+  const existing = document.querySelector('.lesson-cel-toast');
+  if (existing) existing.remove();
+
+  const isAll = type === 'all';
+  const toast = document.createElement('div');
+  toast.className = 'lesson-cel-toast' + (isAll ? ' lesson-cel-all' : '');
+
+  toast.innerHTML = isAll
+    ? `<span class="lesson-cel-icon">🎓</span>
+       <div class="lesson-cel-body">
+         <div class="lesson-cel-title">All 25 Lessons Done!</div>
+         <div class="lesson-cel-sub">You've completed the full AI curriculum!</div>
+       </div>`
+    : `<span class="lesson-cel-icon">🏆</span>
+       <div class="lesson-cel-body">
+         <div class="lesson-cel-title">Topic Complete!</div>
+         <div class="lesson-cel-sub">${topicTitle} finished — well done!</div>
+       </div>`;
+
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('lesson-cel-visible'));
+
+  const timer = setTimeout(() => dismissLessonToast(toast), 4500);
+  toast.addEventListener('click', () => { clearTimeout(timer); dismissLessonToast(toast); });
+
+  // Confetti for big milestones
+  if (isAll) lessonConfetti();
+}
+
+function dismissLessonToast(toast) {
+  toast.classList.remove('lesson-cel-visible');
+  setTimeout(() => toast.remove(), 380);
+}
+
+function lessonConfetti() {
+  const colors = [
+    'hsl(270 90% 70%)', 'hsl(200 100% 60%)', 'hsl(142 68% 50%)',
+    'hsl(40 95% 58%)',  'hsl(0 82% 62%)',     '#ffffff'
+  ];
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999';
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+
+  const particles = Array.from({ length: 80 }, () => ({
+    x: Math.random() * canvas.width,
+    y: -10 - Math.random() * 40,
+    vx: (Math.random() - 0.5) * 4,
+    vy: 2 + Math.random() * 4,
+    r: 5 + Math.random() * 5,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    rot: Math.random() * Math.PI * 2,
+    spin: (Math.random() - 0.5) * 0.2
+  }));
+
+  let frame = 0;
+  function tick() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x  += p.vx;
+      p.y  += p.vy;
+      p.vy += 0.12;
+      p.rot += p.spin;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = Math.max(0, 1 - frame / 100);
+      ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r * 0.5);
+      ctx.restore();
+    });
+    frame++;
+    if (frame < 120) requestAnimationFrame(tick);
+    else canvas.remove();
+  }
+  tick();
 }
 
 function isDone(topicId, lessonId) {
