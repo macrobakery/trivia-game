@@ -3,7 +3,7 @@
 // Caches static assets for offline / instant load
 // ============================================================
 
-const CACHE_NAME   = 'ai-challenge-v11';
+const CACHE_NAME   = 'ai-challenge-v12';
 const STATIC_ASSETS = [
   '/',
   '/style.css',
@@ -25,7 +25,8 @@ const STATIC_ASSETS = [
   '/learn.html',
   '/learn.css',
   '/offline.html',
-  '/og-image.svg'
+  '/og-image.svg',
+  '/icons/icon.svg'
 ];
 
 // Install: pre-cache static assets
@@ -82,8 +83,8 @@ self.addEventListener('push', event => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body:    data.body,
-      icon:    '/icons/icon-192.png',
-      badge:   '/icons/icon-192.png',
+      icon:    '/icons/icon.svg',
+      badge:   '/icons/icon.svg',
       data:    { url: data.url },
       vibrate: [200, 100, 200]
     })
