@@ -393,6 +393,22 @@
       }
     } catch { messages = []; }
 
+    // ── Pre-fill from URL ?q= parameter ──
+    (function handleURLQuestion() {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get('q');
+      if (!q) return;
+      // Clean URL
+      history.replaceState({}, '', '/chat.html');
+      // Set textarea value and focus
+      inputEl.value = q;
+      autoResize();
+      inputEl.focus();
+      // Briefly highlight the textarea to draw attention
+      inputEl.style.background = 'hsl(270 90% 70% / 0.12)';
+      setTimeout(() => { inputEl.style.background = ''; }, 1200);
+    })();
+
     // ── Suggested chips ──
     document.querySelectorAll('.suggestion-chip').forEach(chip => {
       chip.addEventListener('click', () => {

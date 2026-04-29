@@ -1273,6 +1273,15 @@ app.use('/admin', adminAuth, express.static(path.join(__dirname, 'admin')));
 // ============================================================
 app.use(express.static(path.join(__dirname, 'public')));
 
+// ── Custom 404 handler — serve the branded 404 page ──────────
+app.use((req, res) => {
+  // API routes return JSON 404
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Endpoint not found.' });
+  }
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
+});
+
 // ============================================================
 // INIT — ensure tables exist and seed if empty
 // ============================================================

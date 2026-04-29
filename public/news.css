@@ -448,3 +448,29 @@
   .news-card:nth-child(odd)  { border-left-color: var(--accent); }
   .news-card:nth-child(even) { border-left-color: var(--cyan); }
 }
+
+
+/* ── Card footer (read more + ask alex row) ── */
+.news-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+/* ── Ask Alex link ── */
+.news-ask-alex {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.75rem; font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 5px 12px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-pill, 99px);
+  transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.news-ask-alex:hover {
+  background: var(--accent-dim, hsl(270 90% 70% / 0.15));
+}

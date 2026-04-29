@@ -152,6 +152,9 @@ function renderCard(trend, index) {
        </a>`
     : '';
 
+  const alexQ    = encodeURIComponent(`Can you explain this AI news story to me? "${headline}"`);
+  const alexHtml = `<a class="news-ask-alex" href="/chat.html?q=${alexQ}" title="Ask Alex to explain this story">🤖 Ask Alex</a>`;
+
   const whyHtml = whyItMatters
     ? `<p class="news-card-why-label">Why it matters</p>
        <p class="news-card-why">${whyItMatters}</p>`
@@ -176,7 +179,10 @@ function renderCard(trend, index) {
       <h2 class="news-card-headline">${escapeHtml(headline)}</h2>
       <p class="news-card-plain">${plainEnglish}</p>
       ${whyHtml}
-      ${linkHtml}
+      <div class="news-card-footer">
+        ${linkHtml}
+        ${alexHtml}
+      </div>
     </article>
   `;
 }

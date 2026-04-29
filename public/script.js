@@ -1108,6 +1108,19 @@ function showResults() {
   $('save-score-btn').style.display = isPractice ? 'none' : '';
   $('share-score-btn').style.display = isPractice ? 'none' : '';
 
+  // Ask Alex — pre-fill with context about wrong answers
+  const alexBtn = $('ask-alex-results-btn');
+  if (alexBtn) {
+    if (wrongCount > 0) {
+      const wrongQs = state.answerHistory.filter(h => !h.isCorrect).slice(0, 2);
+      const topics  = wrongQs.map(h => h.question.slice(0, 60)).join('; ');
+      const qParam  = encodeURIComponent(`I just completed an AI quiz (${correctCount}/${total} correct) on "${selectedLevel}". Can you help me understand these topics I missed? ${topics}`);
+      alexBtn.href = `/chat.html?q=${qParam}`;
+    } else {
+      alexBtn.href = `/chat.html?q=${encodeURIComponent(`I just scored ${score} points on "${selectedLevel}"! What should I learn next in AI?`)}`;
+    }
+  }
+
   // Answer timeline dots
   const timelineEl = $('answer-timeline');
   if (timelineEl && state.answerHistory.length) {
@@ -1465,16 +1478,19 @@ function launchConfetti() {
 $('share-score-btn').addEventListener('click', shareScore);
 
 function _shareText() {
-  const { score, correctCount, selectedLevel, selectedDifficulty, questions } = state;
+  const { score, correctCount, maxStreak, selectedLevel, selectedDifficulty, questions } = state;
   const total    = questions.length;
   const accuracy = Math.round((correctCount / total) * 100);
   const badge    = BADGES.find(b => correctCount >= b.min && correctCount <= b.max) || BADGES[0];
+  const streakLine = maxStreak >= 3 ? `🔥 ${maxStreak}-answer streak\n` : '';
+  const perfEmoji  = correctCount === 10 ? '🏆 PERFECT SCORE!' : correctCount >= 8 ? '🔥 Excellent!' : correctCount >= 6 ? '👍 Good round!' : '💪 Getting there!';
   return (
-    `🤖 AI App Builder Challenge\n` +
-    `${badge.icon} ${badge.name}\n` +
-    `Score: ${score} pts  |  ${correctCount}/${total} correct  |  ${accuracy}%\n` +
-    `Level: ${selectedLevel}  ·  ${selectedDifficulty}\n` +
-    `Can you beat me? 👉 ${window.location.origin}`
+    `🤖 AI Challenge — ${selectedLevel}\n` +
+    `${perfEmoji}\n` +
+    `${badge.icon} ${badge.name} — ${score.toLocaleString()} pts\n` +
+    `${correctCount}/${total} correct · ${accuracy}% accuracy · ${selectedDifficulty}\n` +
+    `${streakLine}` +
+    `Think you can beat me? 👉 ${window.location.origin}`
   );
 }
 
