@@ -77,6 +77,11 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html  { scroll-behavior: smooth; }
 
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 body {
   font-family: 'Geist', system-ui, -apple-system, sans-serif;
   background: var(--bg);
@@ -84,6 +89,7 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   line-height: 1.6;
+  animation: pageIn 0.3s ease both;
 }
 
 button { font-family: inherit; cursor: pointer; border: none; outline: none; }
@@ -3373,4 +3379,19 @@ button, a, input, select {
 .cl-lesson-card:hover .cl-lesson-arrow {
   color: var(--accent);
   transform: translateX(4px);
+}
+
+/* All-lessons-done state */
+.cl-done-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: hsl(142 68% 50% / 0.08);
+  border: 1px solid hsl(142 68% 50% / 0.3);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+.cl-done-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
 }

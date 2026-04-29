@@ -2375,7 +2375,23 @@ function renderDailyGoals() {
     }
   }
 
-  if (!nextTopic) return; // All 25 lessons done — hide section
+  if (!nextTopic) {
+    // All 25 lessons done — show a celebration card
+    container.innerHTML = `
+      <div class="cl-header">
+        <span class="cl-title">📚 Learning Complete!</span>
+        <a href="/lessons.html" class="cl-see-all">Review →</a>
+      </div>
+      <div class="cl-done-card">
+        <span class="cl-done-icon">🎓</span>
+        <div class="cl-lesson-info">
+          <div class="cl-lesson-topic" style="color:var(--green)">All 25 lessons done!</div>
+          <div class="cl-lesson-title">You've mastered every topic.</div>
+        </div>
+      </div>`;
+    container.style.display = '';
+    return;
+  }
 
   const iconEl   = $('cl-lesson-icon');
   const topicEl  = $('cl-lesson-topic');
