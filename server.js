@@ -601,6 +601,38 @@ app.get('/api/analytics', adminAuth, async (req, res) => {
   });
 });
 
+// POST /api/questions/suggest — user submits a question for review
+app.post('/api/questions/suggest', apiLimiter, async (req, res) => {
+  const { question_text, option_a, option_b, option_c, option_d, correct_option, explanation, level } = req.body;
+  if (!question_text || !option_a || !option_b || !option_c || !option_d || !correct_option) {
+    return res.status(400).json({ error: 'All required fields must be filled.' });
+  }
+  const validLevels   = ['AI Foundations','Data Preparation','Model Building','AI App Development','Deployment and Responsible AI'];
+  const validOptions  = ['A','B','C','D'];
+  if (!validOptions.includes(correct_option.toUpperCase()))    return res.status(400).json({ error: 'Invalid correct_option.' });
+  const lvl = validLevels.includes(level) ? level : 'AI Foundations';
+
+  try {
+    await dbRun(
+      `INSERT INTO questions (question_text,option_a,option_b,option_c,option_d,correct_option,explanation,hint,level,difficulty,status)
+       VALUES (?,?,?,?,?,?,?,?,?,'Beginner','pending')`,
+      [
+        question_text.trim().slice(0,400),
+        option_a.trim().slice(0,200), option_b.trim().slice(0,200),
+        option_c.trim().slice(0,200), option_d.trim().slice(0,200),
+        correct_option.toUpperCase(),
+        (explanation||'').trim().slice(0,400),
+        '',
+        lvl
+      ]
+    );
+    res.json({ ok: true, message: 'Question submitted for review. Thank you!' });
+  } catch (err) {
+    console.error('Suggest error:', err.message);
+    res.status(500).json({ error: 'Could not save suggestion.' });
+  }
+});
+
 // GET /api/search?q=term — search quiz questions by text
 app.get('/api/search', async (req, res) => {
   const q = (req.query.q || '').trim();

@@ -1556,6 +1556,36 @@ ul     { list-style: none; }
 /* ── Practice mode: hide the timer ── */
 .practice-mode .timer-wrap { visibility: hidden; }
 
+/* ── Suggest a Question modal ── */
+.suggest-modal-box { max-width: 520px; }
+.suggest-intro {
+  font-size: 0.83rem; color: var(--ink-faint);
+  margin-bottom: 16px; line-height: 1.5;
+}
+.suggest-label {
+  display: block; font-size: 0.72rem; font-weight: 700;
+  color: var(--ink-faint); text-transform: uppercase;
+  letter-spacing: 0.4px; margin: 10px 0 4px;
+}
+.suggest-input, .suggest-textarea {
+  width: 100%; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 9px 12px; font-size: 0.85rem;
+  color: var(--ink); font-family: 'Geist', sans-serif;
+  outline: none; resize: vertical;
+  transition: border-color var(--t);
+}
+.suggest-input:focus, .suggest-textarea:focus { border-color: var(--accent); }
+.suggest-textarea { min-height: 70px; }
+.suggest-actions {
+  display: flex; gap: 10px; justify-content: flex-end;
+  margin-top: 18px;
+}
+.suggest-fine {
+  font-size: 0.7rem; color: var(--ink-faint);
+  margin-top: 10px; text-align: center;
+}
+
 /* ── Weak Spots practice button ── */
 .hub-cta-weakspots {
   display: flex; align-items: center; justify-content: center;

@@ -2071,6 +2071,59 @@ initDailyChallenge();
 initHubStreakDisplay();
 initWeakSpotsBtn();
 
+// ══════════════════════════════════════════════════════════════
+// SUGGEST A QUESTION MODAL
+// ══════════════════════════════════════════════════════════════
+
+$('suggest-btn').addEventListener('click', () => {
+  $('suggest-modal').style.display = 'flex';
+});
+$('suggest-modal-close').addEventListener('click', closeSuggestModal);
+$('suggest-cancel-btn').addEventListener('click', closeSuggestModal);
+$('suggest-modal').addEventListener('click', e => { if (e.target === $('suggest-modal')) closeSuggestModal(); });
+
+function closeSuggestModal() { $('suggest-modal').style.display = 'none'; }
+
+$('suggest-submit-btn').addEventListener('click', async () => {
+  const btn  = $('suggest-submit-btn');
+  const data = {
+    question_text:  $('sq-question').value.trim(),
+    option_a:       $('sq-a').value.trim(),
+    option_b:       $('sq-b').value.trim(),
+    option_c:       $('sq-c').value.trim(),
+    option_d:       $('sq-d').value.trim(),
+    correct_option: $('sq-correct').value,
+    level:          $('sq-level').value,
+    explanation:    $('sq-explanation').value.trim()
+  };
+  if (!data.question_text || !data.option_a || !data.option_b || !data.option_c || !data.option_d || !data.correct_option) {
+    btn.textContent = '⚠ Fill all required fields';
+    setTimeout(() => { btn.textContent = 'Submit Question →'; }, 2500);
+    return;
+  }
+  btn.disabled    = true;
+  btn.textContent = 'Submitting…';
+  try {
+    const res  = await fetch('/api/questions/suggest', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const json = await res.json();
+    if (json.ok) {
+      btn.textContent = '✅ Submitted! Thank you 🎉';
+      setTimeout(() => { closeSuggestModal(); btn.textContent = 'Submit Question →'; btn.disabled = false; }, 2200);
+      ['sq-question','sq-a','sq-b','sq-c','sq-d','sq-explanation'].forEach(id => { $(id).value = ''; });
+      $('sq-correct').value = '';
+    } else {
+      throw new Error(json.error || 'Failed');
+    }
+  } catch (_) {
+    btn.textContent = '⚠ Error — try again';
+    btn.disabled    = false;
+    setTimeout(() => { btn.textContent = 'Submit Question →'; }, 2500);
+  }
+});
+
 // ── Weak Spots button ──────────────────────────────────────────
 function initWeakSpotsBtn() {
   const btn   = $('weak-spots-btn');
