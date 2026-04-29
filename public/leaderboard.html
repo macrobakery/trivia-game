@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Leaderboard · AI Challenge</title>
+  <meta name="description" content="Global AI Challenge leaderboard — see the top players worldwide." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Geist:wght@300..700&family=JetBrains+Mono:wght@400..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#07060c" id="meta-theme-color" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <style>
+    /* ── Page layout ── */
+    .lb-page { max-width: 680px; margin: 0 auto; padding: 72px 16px 100px; }
+
+    /* ── Page header ── */
+    .lb-page-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 0 24px;
+    }
+    .lb-back {
+      display: flex; align-items: center; gap: 6px;
+      color: var(--ink-faint); font-size: 0.85rem;
+      text-decoration: none; padding: 6px 0;
+      transition: color var(--t);
+    }
+    .lb-back:hover { color: var(--ink); }
+    .lb-page-title {
+      flex: 1; text-align: center;
+      font-family: 'Fraunces', serif;
+      font-size: 1.4rem; font-weight: 700;
+      color: var(--ink); letter-spacing: -0.02em;
+    }
+    .lb-page-spacer { width: 60px; }
+
+    /* ── Tabs ── */
+    .lb-tabs {
+      display: flex; gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 4px; margin-bottom: 20px;
+    }
+    .lb-tab {
+      flex: 1; padding: 8px 12px;
+      background: transparent; border: none;
+      border-radius: var(--radius-pill);
+      font-size: 0.82rem; font-weight: 600;
+      color: var(--ink-faint); cursor: pointer;
+      transition: background var(--t), color var(--t);
+    }
+    .lb-tab.active {
+      background: var(--accent); color: #0a0013;
+    }
+
+    /* ── Filters ── */
+    .lb-filters {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
+    }
+    .lb-filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
+    .lb-filter-chip {
+      padding: 5px 12px; border-radius: var(--radius-pill);
+      border: 1px solid var(--border);
+      background: transparent; font-size: 0.75rem; font-weight: 600;
+      color: var(--ink-faint); cursor: pointer;
+      transition: all var(--t);
+    }
+    .lb-filter-chip.active {
+      border-color: var(--accent); color: var(--accent);
+      background: var(--accent-dim);
+    }
+    .lb-filter-sep {
+      width: 1px; background: var(--border); margin: 4px 4px;
+    }
+
+    /* ── Hero rank card (your score) ── */
+    .lb-your-rank {
+      background: linear-gradient(135deg, var(--accent-dim), transparent);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 14px 18px; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .lb-your-rank-icon { font-size: 1.6rem; }
+    .lb-your-rank-text { flex: 1; }
+    .lb-your-rank-title {
+      font-size: 0.78rem; font-weight: 700;
+      color: var(--accent); text-transform: uppercase;
+      letter-spacing: 0.5px; margin-bottom: 2px;
+    }
+    .lb-your-rank-detail {
+      font-size: 0.82rem; color: var(--ink-faint);
+    }
+    .lb-your-rank-score {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.3rem; font-weight: 700;
+      color: var(--ink);
+    }
+
+    /* ── Table ── */
+    .lb-full-table { display: flex; flex-direction: column; gap: 8px; }
+    .lb-full-row {
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      align-items: center; gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      transition: border-color var(--t), background var(--t);
+    }
+    .lb-full-row:hover { border-color: var(--border-hi); background: var(--surface-2); }
+    .lb-full-row.lb-row-gold   { border-color: var(--gold); background: hsl(40 95% 58% / 0.05); }
+    .lb-full-row.lb-row-silver { border-color: hsl(220 10% 60%); }
+    .lb-full-row.lb-row-bronze { border-color: hsl(25 60% 45%); }
+    .lb-full-row.lb-row-you    { border-color: var(--accent); background: var(--accent-dim); }
+
+    .lb-rank-cell {
+      font-size: 1.3rem; text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .lb-rank-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem; font-weight: 700;
+      color: var(--ink-faint); text-align: center;
+    }
+    .lb-info-cell { min-width: 0; }
+    .lb-player-name {
+      font-size: 0.92rem; font-weight: 700;
+      color: var(--ink); margin-bottom: 3px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .lb-player-meta {
+      font-size: 0.72rem; color: var(--ink-faint);
+      display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+    }
+    .lb-meta-pill {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--radius-pill); padding: 1px 7px;
+      font-size: 0.68rem;
+    }
+    .lb-score-cell {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.05rem; font-weight: 700;
+      color: var(--ink); text-align: right;
+      white-space: nowrap;
+    }
+    .lb-score-acc {
+      font-size: 0.68rem; color: var(--ink-faint);
+      text-align: right; margin-top: 2px;
+    }
+
+    /* ── Week label ── */
+    .lb-week-label {
+      font-size: 0.75rem; font-weight: 600;
+      color: var(--ink-faint); text-align: center;
+      padding: 6px 0 12px;
+      font-family: 'JetBrains Mono', monospace;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    /* ── Empty / loading states ── */
+    .lb-loading, .lb-empty-state {
+      text-align: center; padding: 48px 24px;
+      color: var(--ink-faint); font-size: 0.88rem;
+    }
+    .lb-empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .lb-empty-title { font-size: 1rem; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+    .lb-skeleton {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px; height: 68px;
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    /* ── CTA strip at bottom ── */
+    .lb-cta {
+      margin-top: 28px; text-align: center;
+      display: flex; flex-direction: column; gap: 10px; align-items: center;
+    }
+    .lb-cta-label {
+      font-size: 0.82rem; color: var(--ink-faint);
+    }
+    .lb-cta-btn { min-width: 220px; }
+
+    /* ── Refresh time ── */
+    .lb-refresh-row {
+      display: flex; align-items: center; justify-content: flex-end;
+      gap: 6px; margin-bottom: 12px;
+    }
+    .lb-refresh-time {
+      font-size: 0.7rem; color: var(--ink-faint);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .lb-refresh-btn {
+      background: none; border: none; cursor: pointer;
+      font-size: 0.8rem; color: var(--ink-faint); padding: 4px 6px;
+      border-radius: var(--radius-sm); transition: color var(--t), background var(--t);
+    }
+    .lb-refresh-btn:hover { color: var(--ink); background: var(--surface); }
+
+    /* ── Stats row at top ── */
+    .lb-stats-strip {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 8px; margin-bottom: 20px;
+    }
+    .lb-stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 12px 14px; text-align: center;
+    }
+    .lb-stat-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.2rem; font-weight: 700; color: var(--ink);
+      display: block; margin-bottom: 2px;
+    }
+    .lb-stat-lbl {
+      font-size: 0.68rem; color: var(--ink-faint);
+      text-transform: uppercase; letter-spacing: 0.4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Inline theme restore -->
+  <script>
+    (function(){const t=localStorage.getItem('aiChallenge_theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();
+  </script>
+
+  <!-- ── Background ── -->
+  <div class="bg" aria-hidden="true">
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+    <div class="bg-blob bg-blob-3"></div>
+    <div class="bg-grain"></div>
+  </div>
+
+  <main class="lb-page">
+
+    <!-- Header -->
+    <div class="lb-page-header">
+      <a href="/" class="lb-back">← Back</a>
+      <h1 class="lb-page-title">🏆 Leaderboard</h1>
+      <div class="lb-page-spacer"></div>
+    </div>
+
+    <!-- Stats strip -->
+    <div class="lb-stats-strip" id="lb-stats-strip">
+      <div class="lb-stat-card">
+        <span class="lb-stat-val" id="lb-stat-players">—</span>
+        <span class="lb-stat-lbl">players</span>
+      </div>
+      <div class="lb-stat-card">
+        <span class="lb-stat-val" id="lb-stat-top">—</span>
+        <span class="lb-stat-lbl">top score</span>
+      </div>
+      <div class="lb-stat-card">
+        <span class="lb-stat-val" id="lb-stat-avg">—</span>
+        <span class="lb-stat-lbl">avg accuracy</span>
+      </div>
+    </div>
+
+    <!-- Your rank (shown if player has a saved score) -->
+    <div id="lb-your-rank" class="lb-your-rank" style="display:none">
+      <div class="lb-your-rank-icon">🎯</div>
+      <div class="lb-your-rank-text">
+        <div class="lb-your-rank-title">Your Best Rank</div>
+        <div class="lb-your-rank-detail" id="lb-your-rank-detail">Loading…</div>
+      </div>
+      <div class="lb-your-rank-score" id="lb-your-rank-score">—</div>
+    </div>
+
+    <!-- Tabs: All-time / This week -->
+    <div class="lb-tabs" role="tablist">
+      <button class="lb-tab active" data-tab="alltime" role="tab" aria-selected="true">All Time</button>
+      <button class="lb-tab" data-tab="weekly" role="tab" aria-selected="false">This Week</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="lb-filters" id="lb-filters">
+      <div class="lb-filter-group" id="lb-level-filters">
+        <button class="lb-filter-chip active" data-filter="level" data-val="all">All Levels</button>
+        <button class="lb-filter-chip" data-filter="level" data-val="AI Foundations">Foundations</button>
+        <button class="lb-filter-chip" data-filter="level" data-val="Data Preparation">Data</button>
+        <button class="lb-filter-chip" data-filter="level" data-val="Model Building">Models</button>
+        <button class="lb-filter-chip" data-filter="level" data-val="AI App Development">Apps</button>
+        <button class="lb-filter-chip" data-filter="level" data-val="Deployment and Responsible AI">Deploy</button>
+      </div>
+      <div class="lb-filter-sep" aria-hidden="true"></div>
+      <div class="lb-filter-group" id="lb-diff-filters">
+        <button class="lb-filter-chip active" data-filter="diff" data-val="all">All Levels</button>
+        <button class="lb-filter-chip" data-filter="diff" data-val="Beginner">Beginner</button>
+        <button class="lb-filter-chip" data-filter="diff" data-val="Intermediate">Intermediate</button>
+        <button class="lb-filter-chip" data-filter="diff" data-val="Advanced">Advanced</button>
+      </div>
+    </div>
+
+    <!-- Refresh row -->
+    <div class="lb-refresh-row">
+      <span class="lb-refresh-time" id="lb-refresh-time"></span>
+      <button class="lb-refresh-btn" id="lb-refresh-btn" title="Refresh leaderboard" aria-label="Refresh">↺ Refresh</button>
+    </div>
+
+    <!-- Leaderboard content -->
+    <div id="lb-content">
+      <!-- Skeletons while loading -->
+      <div class="lb-full-table">
+        <div class="lb-skeleton"></div>
+        <div class="lb-skeleton"></div>
+        <div class="lb-skeleton"></div>
+        <div class="lb-skeleton"></div>
+        <div class="lb-skeleton"></div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="lb-cta">
+      <p class="lb-cta-label">Think you can beat the top score?</p>
+      <a href="/" class="btn-primary lb-cta-btn">🎮 Play Now →</a>
+    </div>
+
+  </main>
+
+  <!-- Bottom App Navigation -->
+  <nav class="app-nav">
+    <a href="/"             class="app-nav-item"><span class="app-nav-icon">🏠</span><span class="app-nav-label">Home</span></a>
+    <a href="/lessons.html" class="app-nav-item"><span class="app-nav-icon">📚</span><span class="app-nav-label">Learn</span></a>
+    <a href="/news.html"    class="app-nav-item"><span class="app-nav-icon">📰</span><span class="app-nav-label">News</span></a>
+    <a href="/profile.html" class="app-nav-item"><span class="app-nav-icon">👤</span><span class="app-nav-label">Profile</span></a>
+    <a href="/chat.html"    class="app-nav-item"><span class="app-nav-icon">🤖</span><span class="app-nav-label">Alex</span></a>
+  </nav>
+
+  <script>
+  // ── Theme ──────────────────────────────────────────────────────
+  (function applyTheme(){
+    const theme = localStorage.getItem('aiChallenge_theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    const meta = document.getElementById('meta-theme-color');
+    if (meta) meta.setAttribute('content', theme === 'dark' ? '#07060c' : '#f0eff8');
+  })();
+
+  // ── State ──────────────────────────────────────────────────────
+  let _tab       = 'alltime';
+  let _levelFilt = 'all';
+  let _diffFilt  = 'all';
+  let _allScores = [];
+  let _loading   = false;
+
+  const $  = id => document.getElementById(id);
+  const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // ── Load ───────────────────────────────────────────────────────
+  async function loadBoard() {
+    if (_loading) return;
+    _loading = true;
+    showSkeletons();
+
+    try {
+      let scores, weekLabel = '';
+      if (_tab === 'weekly') {
+        const data = await fetch('/api/leaderboard/weekly').then(r => r.json());
+        scores    = data.scores || [];
+        if (data.weekStart) {
+          const d = new Date(data.weekStart + 'T00:00:00');
+          weekLabel = 'Week of ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+      } else {
+        scores = await fetch('/api/leaderboard').then(r => r.json());
+      }
+      _allScores = Array.isArray(scores) ? scores : [];
+      renderBoard(weekLabel);
+      renderStats(_allScores);
+      updateRefreshTime();
+      checkYourRank(_allScores);
+    } catch (e) {
+      $('lb-content').innerHTML = `
+        <div class="lb-empty-state">
+          <div class="lb-empty-icon">😕</div>
+          <div class="lb-empty-title">Could not load leaderboard</div>
+          <p>Check your connection and try again.</p>
+        </div>`;
+    } finally {
+      _loading = false;
+    }
+  }
+
+  // ── Render ─────────────────────────────────────────────────────
+  function renderBoard(weekLabel = '') {
+    const medals = ['🥇','🥈','🥉'];
+    const rowClasses = ['lb-row-gold','lb-row-silver','lb-row-bronze'];
+
+    // Apply filters client-side
+    let filtered = _allScores;
+    if (_levelFilt !== 'all') filtered = filtered.filter(s => s.level === _levelFilt);
+    if (_diffFilt  !== 'all') filtered = filtered.filter(s => s.difficulty === _diffFilt);
+
+    const playerName = localStorage.getItem('aiChallenge_playerName') || '';
+
+    if (filtered.length === 0) {
+      $('lb-content').innerHTML = `
+        <div class="lb-empty-state">
+          <div class="lb-empty-icon">🏆</div>
+          <div class="lb-empty-title">${_tab === 'weekly' ? 'No scores yet this week' : 'No scores yet'}</div>
+          <p>${_tab === 'weekly' ? 'Be the first to submit a score this week!' : 'Play a game and save your score to appear here.'}</p>
+        </div>`;
+      return;
+    }
+
+    const rows = filtered.map((s, i) => {
+      const isYou  = playerName && s.player_name.toLowerCase() === playerName.toLowerCase();
+      const rankEl = medals[i] ? `<div class="lb-rank-cell">${medals[i]}</div>`
+                               : `<div class="lb-rank-num">#${i+1}</div>`;
+      const rowCls = isYou ? 'lb-row-you' : (rowClasses[i] || '');
+      const date   = new Date(s.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric' });
+      return `
+        <div class="lb-full-row ${rowCls}">
+          ${rankEl}
+          <div class="lb-info-cell">
+            <div class="lb-player-name">${esc(s.player_name)}${isYou ? ' <span style="color:var(--accent);font-size:0.7rem">(you)</span>' : ''}</div>
+            <div class="lb-player-meta">
+              <span class="lb-meta-pill">${esc(s.level)}</span>
+              <span class="lb-meta-pill">${esc(s.difficulty)}</span>
+              <span>${s.correct_answers}/10</span>
+              <span>·</span><span>${date}</span>
+            </div>
+          </div>
+          <div>
+            <div class="lb-score-cell">${s.score.toLocaleString()}</div>
+            <div class="lb-score-acc">${s.accuracy}% acc</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    $('lb-content').innerHTML =
+      (weekLabel ? `<div class="lb-week-label">${esc(weekLabel)}</div>` : '') +
+      `<div class="lb-full-table">${rows}</div>`;
+  }
+
+  function renderStats(scores) {
+    if (!scores.length) return;
+    $('lb-stat-players').textContent = scores.length;
+    $('lb-stat-top').textContent     = Math.max(...scores.map(s => s.score)).toLocaleString();
+    const avgAcc = Math.round(scores.reduce((a, s) => a + s.accuracy, 0) / scores.length);
+    $('lb-stat-avg').textContent     = avgAcc + '%';
+  }
+
+  function showSkeletons() {
+    $('lb-content').innerHTML = `
+      <div class="lb-full-table">
+        ${Array(7).fill('<div class="lb-skeleton"></div>').join('')}
+      </div>`;
+  }
+
+  function updateRefreshTime() {
+    const now = new Date();
+    $('lb-refresh-time').textContent = 'Updated ' + now.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+  }
+
+  function checkYourRank(scores) {
+    const name = localStorage.getItem('aiChallenge_playerName');
+    if (!name || !scores.length) return;
+    const yours = scores.filter(s => s.player_name.toLowerCase() === name.toLowerCase());
+    if (!yours.length) return;
+    const best  = yours.reduce((a, b) => b.score > a.score ? b : a);
+    const rank  = scores.filter(s => s.score > best.score).length + 1;
+    $('lb-your-rank').style.display = 'flex';
+    $('lb-your-rank-detail').textContent = `Rank #${rank} of ${scores.length} · ${best.correct_answers}/10 correct`;
+    $('lb-your-rank-score').textContent  = best.score.toLocaleString() + ' pts';
+  }
+
+  // ── Tab switching ──────────────────────────────────────────────
+  document.querySelectorAll('.lb-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      _tab = btn.dataset.tab;
+      document.querySelectorAll('.lb-tab').forEach(b => {
+        b.classList.toggle('active', b === btn);
+        b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+      });
+      loadBoard();
+    });
+  });
+
+  // ── Filter chips ───────────────────────────────────────────────
+  document.addEventListener('click', e => {
+    const chip = e.target.closest('.lb-filter-chip');
+    if (!chip) return;
+    const type = chip.dataset.filter;
+    const val  = chip.dataset.val;
+    if (type === 'level') {
+      _levelFilt = val;
+      document.querySelectorAll('[data-filter="level"]').forEach(c => c.classList.toggle('active', c === chip));
+    } else if (type === 'diff') {
+      _diffFilt = val;
+      document.querySelectorAll('[data-filter="diff"]').forEach(c => c.classList.toggle('active', c === chip));
+    }
+    renderBoard();
+  });
+
+  // ── Refresh button ─────────────────────────────────────────────
+  $('lb-refresh-btn').addEventListener('click', loadBoard);
+
+  // ── Init ───────────────────────────────────────────────────────
+  loadBoard();
+  </script>
+
+</body>
+</html>
