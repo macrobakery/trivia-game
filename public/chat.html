@@ -445,6 +445,42 @@
     .msg-fb-btn.active-up   { border-color: var(--green); color: var(--green); background: hsl(142 70% 50% / 0.08); }
     .msg-fb-btn.active-down { border-color: var(--red, #e05252); color: var(--red, #e05252); background: hsl(0 70% 50% / 0.08); }
 
+    /* ── Follow-up question chips ── */
+    .chat-followup-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px 16px 2px 52px; /* align under assistant bubble */
+      animation: chipFadeIn 0.3s ease both;
+    }
+    @keyframes chipFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .chat-followup-label {
+      width: 100%;
+      font-size: 0.68rem;
+      color: var(--ink-faint);
+      letter-spacing: 0.3px;
+      margin-bottom: 2px;
+    }
+    .chat-followup-chip {
+      padding: 5px 11px;
+      border-radius: var(--radius-pill, 20px);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--ink-2, var(--ink-faint));
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      text-align: left;
+    }
+    .chat-followup-chip:hover {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+
     /* ── Copy button on assistant messages ── */
     .msg-copy-btn {
       position: absolute;
@@ -927,6 +963,41 @@
       return text;
     }
 
+    // ── Follow-up chip suggestions ──
+    // Returns 2-3 contextual follow-up questions based on the user's text and AI response.
+    function getFollowUpChips(userText, aiResponse) {
+      const ut = (userText || '').toLowerCase();
+      const ar = (aiResponse || '').toLowerCase();
+
+      // Pool of universally useful follow-ups
+      const always = [
+        'Can you give me a real-world example? 💡',
+        'What are the main limitations or drawbacks?',
+        'What should I learn next? 📚',
+      ];
+
+      // Context-specific overrides (first match wins for slot 0)
+      let slot0 = always[0];
+      if (ut.includes('how') || ut.includes('work') || ut.includes('explain'))
+        slot0 = 'Can you simplify that even further? 🎈';
+      if (ut.includes('compare') || ut.includes('differ') || ut.includes('vs'))
+        slot0 = 'Can you show a side-by-side comparison?';
+      if (ut.includes('code') || ut.includes('implement') || ar.includes('```'))
+        slot0 = 'Can you show me the code? 💻';
+      if (ut.includes('error') || ut.includes('bug') || ut.includes('wrong'))
+        slot0 = 'What are the most common mistakes to avoid?';
+
+      let slot1 = 'What are the main limitations or drawbacks?';
+      if (ut.includes('use') || ut.includes('appl') || ut.includes('real'))
+        slot1 = 'How is this used in industry today?';
+      if (ar.includes('model') || ar.includes('neural') || ar.includes('train'))
+        slot1 = 'How is this different from traditional programming?';
+      if (ar.includes('ethic') || ar.includes('bias') || ar.includes('safe'))
+        slot1 = 'What ethical concerns does this raise?';
+
+      return [slot0, slot1, 'What should I learn next? 📚'];
+    }
+
     // ── Send message ──
     async function sendMessage() {
       const text = inputEl.value.trim();
@@ -937,6 +1008,9 @@
       updateCharCounter();
       isStreaming = true;
       sendBtn.disabled = true;
+
+      // Remove any previous follow-up chips when a new question is sent
+      document.querySelectorAll('.chat-followup-chips').forEach(el => el.remove());
 
       // Show user bubble
       const isFirstMsg = messages.length === 0;
@@ -1060,6 +1134,34 @@
               fbRow.appendChild(upBtn);
               fbRow.appendChild(downBtn);
               bubbleEl.appendChild(fbRow);
+            }
+
+            // ── Follow-up question chips ──
+            // Remove any previous chips so only the latest set shows
+            document.querySelectorAll('.chat-followup-chips').forEach(el => el.remove());
+            const followUps = getFollowUpChips(text, fullResponse);
+            if (followUps.length) {
+              const chipsEl = document.createElement('div');
+              chipsEl.className = 'chat-followup-chips';
+              const labelEl = document.createElement('span');
+              labelEl.className = 'chat-followup-label';
+              labelEl.textContent = 'Dig deeper:';
+              chipsEl.appendChild(labelEl);
+              followUps.forEach(q => {
+                const btn = document.createElement('button');
+                btn.className = 'chat-followup-chip';
+                btn.textContent = q;
+                btn.addEventListener('click', () => {
+                  // Remove all chips, fill input, send
+                  document.querySelectorAll('.chat-followup-chips').forEach(el => el.remove());
+                  inputEl.value = q;
+                  updateCharCounter();
+                  autoResize();
+                  sendMessage();
+                });
+                chipsEl.appendChild(btn);
+              });
+              chatEl.appendChild(chipsEl);
             }
           }
         }
