@@ -3875,3 +3875,82 @@ button, a, input, select {
   color: var(--gold);
   font-weight: 600;
 }
+
+/* ── Leaderboard Preview (home screen) ─────────────────── */
+.hub-lb-preview {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-top: 14px;
+}
+
+.hub-lb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.hub-lb-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.hub-lb-see-all {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--accent);
+  text-decoration: none;
+  transition: opacity var(--t);
+}
+.hub-lb-see-all:hover { opacity: 0.7; }
+
+.hub-lb-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hub-lb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  transition: border-color var(--t);
+}
+.hub-lb-row:hover { border-color: var(--border-hi); }
+.hub-lb-row.hub-lb-row-you {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.hub-lb-medal {
+  font-size: 1rem;
+  flex-shrink: 0;
+  width: 22px;
+  text-align: center;
+}
+
+.hub-lb-name {
+  flex: 1;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.hub-lb-pts {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+}
