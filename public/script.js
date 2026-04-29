@@ -1128,15 +1128,23 @@ function showResults() {
     $('res-time').textContent = `${roundMin}:${String(roundSec).padStart(2, '0')}`;
   }
 
-  // Populate stats
+  // Populate stats (with count-up animations)
   $('badge-name').textContent           = isPractice ? 'Practice Complete!' : badge.name;
   $('badge-icon').textContent           = isPractice ? '🎓' : badge.icon;
   $('badge-ring').style.display         = 'flex';
-  $('res-score').textContent            = isPractice ? '—' : score;
-  $('res-correct').textContent          = `${correctCount}/${total}`;
-  $('res-accuracy').textContent         = `${accuracy}%`;
   $('res-correct-meta').textContent     = `${correctCount} correct`;
   $('res-wrong-meta').textContent       = `${wrongCount} wrong`;
+
+  if (isPractice) {
+    $('res-score').textContent    = '—';
+    $('res-correct').textContent  = `${correctCount}/${total}`;
+    $('res-accuracy').textContent = `${accuracy}%`;
+  } else {
+    // Animated count-up for the 3 key numbers
+    countUp($('res-score'),    0, score,    900, v => v.toLocaleString());
+    countUp($('res-correct'),  0, correctCount, 700, v => `${v}/${total}`);
+    countUp($('res-accuracy'), 0, accuracy, 800, v => `${v}%`);
+  }
   $('res-level-badge').textContent      = selectedLevel;
   $('res-diff-badge').textContent       = selectedDifficulty;
 
@@ -1557,6 +1565,22 @@ function showCelebration() {
   el.innerHTML = '<div class="celebrate-text">✓</div>';
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 700);
+}
+
+// ── Generic count-up helper ────────────────────────────────────
+// el: DOM element, from/to: numbers, durationMs: ms, fmt: formatter fn
+function countUp(el, from, to, durationMs, fmt = v => v) {
+  if (!el) return;
+  if (from === to) { el.textContent = fmt(to); return; }
+  const diff      = to - from;
+  const startTime = performance.now();
+  function tick(now) {
+    const p     = Math.min(1, (now - startTime) / durationMs);
+    const eased = 1 - Math.pow(1 - p, 3); // cubic ease-out
+    el.textContent = fmt(Math.round(from + diff * eased));
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 }
 
 // ── Animated score count-up ────────────────────────────────────
