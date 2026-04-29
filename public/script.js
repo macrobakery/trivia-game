@@ -779,6 +779,8 @@ function handleAnswer(selectedOption) {
   if (state.answered) return;
   state.answered = true;
   stopTimer();
+  // Remove critical flash when answered
+  document.querySelector('.qbody')?.classList.remove('timer-critical');
 
   const q       = state.questions[state.currentIndex];
   const correct = q.correct_option.toUpperCase();
@@ -841,6 +843,7 @@ function handleTimeout() {
   state.answered   = true;
   state.streak     = 0;
   state.wrongCount += 1;
+  document.querySelector('.qbody')?.classList.remove('timer-critical');
   $('wrong-count').textContent = state.wrongCount;
 
   const q       = state.questions[state.currentIndex];
@@ -1783,11 +1786,21 @@ function updateLinearTimer() {
   else if (pct <= 50) fill.classList.add('warn');
 }
 
-// Patch updateTimerUI to also drive the linear bar
+// Patch updateTimerUI to also drive the linear bar + urgency effects
 const _origUpdateTimerUI = updateTimerUI;
 function updateTimerUI() {
   _origUpdateTimerUI();
   updateLinearTimer();
+
+  // Red pulse on qbody when 3 seconds left
+  const qbody = document.querySelector('.qbody');
+  if (qbody) {
+    if (state.timeLeft <= 3 && state.timeLeft > 0 && !state.answered) {
+      qbody.classList.add('timer-critical');
+    } else {
+      qbody.classList.remove('timer-critical');
+    }
+  }
 }
 
 // Reset linear bar on each new question
@@ -2035,6 +2048,75 @@ function showResults() {
       localStorage.setItem('aiChallenge_gameHistory', JSON.stringify(hist.slice(0, 20)));
     } catch {}
   }
+
+  // 🎉 Confetti for good results (≥70% accuracy, non-practice)
+  if (!isPractice && accuracy >= 70) {
+    setTimeout(() => launchResultsConfetti(accuracy), 400);
+  }
+}
+
+// ── Results confetti ───────────────────────────────────────────
+function launchResultsConfetti(accuracy) {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:8000';
+  document.body.appendChild(canvas);
+
+  const ctx    = canvas.getContext('2d');
+  const W      = canvas.width  = window.innerWidth;
+  const H      = canvas.height = window.innerHeight;
+  const isPerfect = accuracy === 100;
+
+  // More particles for perfect score
+  const count = isPerfect ? 140 : 80;
+  const colors = isPerfect
+    ? ['#ffd700','#ffec6e','#fff4aa','#fffde0','#ffb700','#ff9800']
+    : ['#a970ff','#6ee7f7','#68ffa0','#ffd97d','#ff7eb6','#c4b5fd'];
+
+  const particles = Array.from({ length: count }, () => {
+    const size = 4 + Math.random() * 6;
+    return {
+      x: Math.random() * W,
+      y: -10 - Math.random() * 80,
+      vx: (Math.random() - 0.5) * 3,
+      vy: 2 + Math.random() * 4,
+      rot: Math.random() * 360,
+      rotV: (Math.random() - 0.5) * 8,
+      w: size, h: size * (0.4 + Math.random() * 0.6),
+      color: colors[Math.floor(Math.random() * colors.length)],
+      opacity: 1
+    };
+  });
+
+  const totalFrames = isPerfect ? 180 : 140;
+  let frame = 0;
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.x   += p.vx;
+      p.y   += p.vy;
+      p.vy  += 0.06; // gravity
+      p.rot += p.rotV;
+      // Fade out in last 40 frames
+      if (frame > totalFrames - 40) p.opacity = Math.max(0, p.opacity - 1 / 40);
+
+      ctx.save();
+      ctx.globalAlpha = p.opacity;
+      ctx.translate(p.x + p.w / 2, p.y + p.h / 2);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+
+    frame++;
+    if (frame < totalFrames) {
+      requestAnimationFrame(draw);
+    } else {
+      canvas.remove();
+    }
+  }
+  requestAnimationFrame(draw);
 }
 
 // ══════════════════════════════════════════════════════════════
