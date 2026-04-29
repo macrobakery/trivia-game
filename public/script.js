@@ -949,6 +949,62 @@ function showResults() {
   } else {
     showScreen('results');
   }
+
+  // Difficulty ramp suggestion
+  if (!isPractice) showDifficultyRamp(correctCount, total, selectedDifficulty, selectedLevel);
+}
+
+function showDifficultyRamp(correct, total, difficulty, level) {
+  const rampEl = $('difficulty-ramp');
+  if (!rampEl) return;
+  rampEl.style.display = 'none';
+
+  const nextDiff = { Beginner: 'Intermediate', Intermediate: 'Advanced' };
+  const next = nextDiff[difficulty];
+
+  if (correct >= 8 && next) {
+    // Nailed it — suggest levelling up
+    rampEl.innerHTML = `
+      <div class="ramp-icon">🚀</div>
+      <div class="ramp-text">
+        <div class="ramp-title">${correct}/${total} — You're ready for more!</div>
+        <div class="ramp-sub">Try <strong>${next}</strong> to challenge yourself further.</div>
+      </div>
+      <button class="btn-primary ramp-btn" id="ramp-upgrade-btn">Try ${next} →</button>
+    `;
+    rampEl.className = 'difficulty-ramp ramp-upgrade';
+    rampEl.style.display = 'flex';
+    $('ramp-upgrade-btn').addEventListener('click', () => {
+      state.selectedDifficulty = next;
+      localStorage.setItem('aiChallenge_lastDiff', next);
+      rampEl.style.display = 'none';
+      clearSession();
+      showScreen('start');
+      loadLeaderboardPreview();
+    });
+  } else if (correct <= 4 && difficulty !== 'Beginner') {
+    // Struggling — suggest stepping down
+    const prevDiff = { Advanced: 'Intermediate', Intermediate: 'Beginner' };
+    const prev = prevDiff[difficulty];
+    rampEl.innerHTML = `
+      <div class="ramp-icon">💡</div>
+      <div class="ramp-text">
+        <div class="ramp-title">Practice makes perfect!</div>
+        <div class="ramp-sub">Try <strong>${prev}</strong> to build confidence first.</div>
+      </div>
+      <button class="btn-ghost ramp-btn" id="ramp-down-btn">Try ${prev}</button>
+    `;
+    rampEl.className = 'difficulty-ramp ramp-downgrade';
+    rampEl.style.display = 'flex';
+    $('ramp-down-btn').addEventListener('click', () => {
+      state.selectedDifficulty = prev;
+      localStorage.setItem('aiChallenge_lastDiff', prev);
+      rampEl.style.display = 'none';
+      clearSession();
+      showScreen('start');
+      loadLeaderboardPreview();
+    });
+  }
 }
 
 // ── Results buttons ────────────────────────────────────────────

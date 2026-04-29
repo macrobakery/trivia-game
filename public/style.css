@@ -1556,6 +1556,31 @@ ul     { list-style: none; }
 /* ── Practice mode: hide the timer ── */
 .practice-mode .timer-wrap { visibility: hidden; }
 
+/* ── Difficulty ramp suggestion ── */
+.difficulty-ramp {
+  display: flex; align-items: center; gap: 12px;
+  border-radius: var(--radius); padding: 14px 16px;
+  margin-bottom: 16px; animation: fadeIn 0.4s ease;
+}
+.ramp-upgrade {
+  background: linear-gradient(135deg, var(--accent-dim), transparent);
+  border: 1px solid var(--accent);
+}
+.ramp-downgrade {
+  background: var(--surface); border: 1px solid var(--border);
+}
+.ramp-icon { font-size: 1.5rem; flex-shrink: 0; }
+.ramp-text { flex: 1; min-width: 0; }
+.ramp-title {
+  font-size: 0.85rem; font-weight: 700;
+  color: var(--ink); margin-bottom: 2px;
+}
+.ramp-sub { font-size: 0.78rem; color: var(--ink-faint); }
+.ramp-btn {
+  flex-shrink: 0; white-space: nowrap;
+  padding: 8px 14px !important; font-size: 0.8rem !important;
+}
+
 /* ── Streak celebration keyframes ── */
 @keyframes scaleIn {
   from { transform: scale(0.7); opacity: 0; }
