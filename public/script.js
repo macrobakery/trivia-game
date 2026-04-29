@@ -649,20 +649,42 @@ $$('.opt-btn').forEach(btn => {
   });
 });
 
-// Keyboard shortcuts: A/B/C/D to answer, Enter/Space for next
+// Keyboard shortcuts: A/B/C/D + 1/2/3/4 to answer, Enter/Space for next, Escape to quit
 document.addEventListener('keydown', e => {
-  if (!screens.game.classList.contains('active')) return;
+  // Ignore if typing in an input / textarea
+  if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)) return;
 
-  if (!state.answered) {
-    const key = e.key.toUpperCase();
-    if (['A','B','C','D'].includes(key)) {
-      const btn = $(`opt-${key.toLowerCase()}`);
-      if (btn && !btn.disabled && !btn.classList.contains('eliminated')) handleAnswer(key);
+  if (screens.game.classList.contains('active')) {
+    if (!state.answered) {
+      const keyMap = { '1': 'A', '2': 'B', '3': 'C', '4': 'D' };
+      const key    = keyMap[e.key] || e.key.toUpperCase();
+      if (['A','B','C','D'].includes(key)) {
+        const btn = $(`opt-${key.toLowerCase()}`);
+        if (btn && !btn.disabled && !btn.classList.contains('eliminated')) {
+          e.preventDefault();
+          handleAnswer(key);
+        }
+      }
+      // Escape during game: back to start screen (with confirm)
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (confirm('Leave this round? Progress will be lost.')) {
+          stopTimer();
+          clearSession();
+          showScreen('start');
+        }
+      }
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      const nb = $('next-btn');
+      if (nb && $('feedback-area').style.display !== 'none') nb.click();
     }
-  } else if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    const nb = $('next-btn');
-    if (nb && $('feedback-area').style.display !== 'none') nb.click();
+    return;
+  }
+
+  // Results screen — press Enter or Space to play again
+  if (screens.results.classList.contains('active')) {
+    if (e.key === 'Escape') { e.preventDefault(); showScreen('start'); }
   }
 });
 
@@ -1721,69 +1743,7 @@ function renderAchievementsPanel() {
 // DAILY CHALLENGE
 // ══════════════════════════════════════════════════════════════
 
-function getDailyCountdown() {
-  const now    = new Date();
-  const endOfDay = new Date(now);
-  endOfDay.setHours(23, 59, 59, 999);
-  const ms   = endOfDay - now;
-  const h    = Math.floor(ms / 3600000);
-  const m    = Math.floor((ms % 3600000) / 60000);
-  return `Resets in ${h}h ${m}m`;
-}
-
-function initDailyChallenge() {
-  const badge = $('dcb-countdown');
-  if (badge) badge.textContent = getDailyCountdown();
-  // update every minute
-  setInterval(() => { if (badge) badge.textContent = getDailyCountdown(); }, 60000);
-}
-
-if ($('daily-challenge-btn')) $('daily-challenge-btn').addEventListener('click', async () => {
-  const btn = $('daily-challenge-btn');
-  btn.style.opacity = '0.6';
-  btn.style.pointerEvents = 'none';
-
-  try {
-    const data = await fetch('/api/daily-challenge').then(r => r.json());
-    if (!data || data.length === 0) {
-      alert('Daily challenge not available right now. Try again later.');
-      return;
-    }
-
-    // Set up state as a normal game but with daily questions
-    state.selectedLevel      = 'Daily Challenge';
-    state.selectedDifficulty = 'Intermediate';
-    state.questions          = data;
-    Object.assign(state, {
-      currentIndex: 0, score: 0, correctCount: 0, wrongCount: 0,
-      streak: 0, maxStreak: 0, answerHistory: [], scoreSaved: false,
-      powerUps: { fiftyFifty: true, extraTime: true, hint: true },
-      roundStartTime: Date.now()
-    });
-
-    $('active-level-badge').textContent = '📅 Daily';
-    $('active-diff-badge').textContent  = 'Challenge';
-    $('score-display').textContent      = '0';
-    $('correct-count').textContent      = '0';
-    $('wrong-count').textContent        = '0';
-    ['pu-fifty', 'pu-time', 'pu-hint'].forEach(id => {
-      $(id).disabled = false;
-      $(id).classList.remove('used');
-    });
-    $('game-screen').classList.remove('practice-mode');
-    $('pu-time').style.display = '';
-    $('streak-display').style.display = 'none';
-
-    showScreen('game');
-    loadQuestion();
-  } catch (err) {
-    alert('Could not load daily challenge. Please try again.');
-    console.error(err);
-  } finally {
-    btn.style.opacity = '';
-    btn.style.pointerEvents = '';
-  }
-});
+// Daily challenge is handled by initDailyChallenge() IIFE below
 
 // ══════════════════════════════════════════════════════════════
 // LEVEL STATS — save best scores per level for profile page
@@ -2073,9 +2033,9 @@ function initHubStreakDisplay() {
 loadLeaderboardPreview();
 updateLevelCards();
 checkForSession();
-initDailyChallenge();
 initHubStreakDisplay();
 initWeakSpotsBtn();
+initHomeStatsStrip();
 
 // ══════════════════════════════════════════════════════════════
 // SUGGEST A QUESTION MODAL
@@ -2290,3 +2250,30 @@ async function startDailyChallenge() {
   // Update countdown every minute
   setInterval(_updateDailyCountdown, 60_000);
 })();
+
+// ══════════════════════════════════════════════════════════════
+// HOME STATS STRIP — show streak + accuracy + games on home screen
+// ══════════════════════════════════════════════════════════════
+
+function initHomeStatsStrip() {
+  const strip    = $('hub-stats-strip');
+  if (!strip) return;
+
+  try {
+    const streak     = JSON.parse(localStorage.getItem('aiChallenge_streak') || '{}');
+    const levelStats = JSON.parse(localStorage.getItem('aiChallenge_levelStats') || '{}');
+    const total      = levelStats._total || {};
+    const games      = total.games || 0;
+    const answered   = total.answered || 0;
+    const correct    = total.correct  || 0;
+    const accuracy   = answered > 0 ? Math.round(correct / answered * 100) + '%' : '—';
+    const streakCnt  = streak.count || 0;
+
+    if (games > 0 || streakCnt > 0) {
+      $('hs-streak').textContent  = `🔥 ${streakCnt} day${streakCnt !== 1 ? 's' : ''}`;
+      $('hs-accuracy').textContent = `🎯 ${accuracy}`;
+      $('hs-games').textContent    = `${games} game${games !== 1 ? 's' : ''}`;
+      strip.style.display = 'flex';
+    }
+  } catch (_) {}
+}

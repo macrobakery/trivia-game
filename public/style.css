@@ -2312,6 +2312,26 @@ button, a, input, select {
 .ach-chip-icon { font-size: 1.1rem; flex-shrink: 0; }
 .ach-chip-info { display: flex; flex-direction: column; gap: 1px; }
 .ach-chip-name { font-size: 0.75rem; font-weight: 700; line-height: 1.2; }
+
+/* ─────────────────────────────────────────────
+   HOME STATS STRIP
+───────────────────────────────────────────── */
+
+.hub-stats-strip {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 6px 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  max-width: 360px; margin: 0 auto 14px;
+}
+.hub-stat-item {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem; font-weight: 700; color: var(--ink-faint); white-space: nowrap;
+}
+.hub-stat-link { text-decoration: none; color: var(--accent); transition: opacity var(--t); }
+.hub-stat-link:hover { opacity: 0.8; }
+.hub-stat-sep { opacity: 0.3; font-size: 0.7rem; }
+
 .ach-chip-desc { font-size: 0.63rem; color: var(--ink-faint); line-height: 1.3; }
 
 /* ══════════════════════════════════════════════
