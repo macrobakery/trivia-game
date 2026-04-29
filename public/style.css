@@ -1183,6 +1183,19 @@ ul     { list-style: none; }
   80%     { transform: translateX(3px); }
 }
 
+/* ── Answer feedback micro-animations ── */
+.opt-btn.opt-shake {
+  animation: shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+.opt-btn.opt-correct-pop {
+  animation: correctPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes correctPop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
 /* ── Feedback area ── */
 .feedback-area { animation: fadeIn 0.3s ease; }
 

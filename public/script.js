@@ -938,10 +938,19 @@ async function streamExplanation(q, selectedOption) {
 function highlightOptions(selected, correct) {
   ['opt-a','opt-b','opt-c','opt-d'].forEach(id => $(id).disabled = true);
   if (selected === correct) {
-    $(`opt-${selected.toLowerCase()}`).classList.add('correct');
+    const btn = $(`opt-${selected.toLowerCase()}`);
+    btn.classList.add('correct');
+    // Subtle pop animation on correct answer
+    btn.classList.add('opt-correct-pop');
+    setTimeout(() => btn.classList.remove('opt-correct-pop'), 500);
   } else {
-    $(`opt-${selected.toLowerCase()}`).classList.add('wrong');
-    $(`opt-${correct.toLowerCase()}`).classList.add('correct');
+    const wrongBtn   = $(`opt-${selected.toLowerCase()}`);
+    const correctBtn = $(`opt-${correct.toLowerCase()}`);
+    wrongBtn.classList.add('wrong');
+    correctBtn.classList.add('correct');
+    // Shake animation on the wrong button
+    wrongBtn.classList.add('opt-shake');
+    setTimeout(() => wrongBtn.classList.remove('opt-shake'), 500);
   }
 }
 
