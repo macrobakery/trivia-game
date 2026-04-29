@@ -57,3 +57,24 @@ self.addEventListener('fetch', event => {
     })
   );
 });
+
+// ── Push Notification handler ──────────────────────────────────
+self.addEventListener('push', event => {
+  let data = { title: '🔥 AI Challenge', body: 'New daily content is live!', url: '/' };
+  try { data = Object.assign(data, JSON.parse(event.data.text())); } catch (_) {}
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body:    data.body,
+      icon:    '/icons/icon-192.png',
+      badge:   '/icons/icon-192.png',
+      data:    { url: data.url },
+      vibrate: [200, 100, 200]
+    })
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || '/';
+  event.waitUntil(clients.openWindow(url));
+});

@@ -230,3 +230,83 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/service-worker.js').catch(() => {});
   });
 }
+
+// ── Push Notifications ─────────────────────────────────────────
+(function initPush() {
+  const btn    = document.getElementById('push-toggle-btn');
+  const label  = document.getElementById('push-btn-label');
+  const icon   = document.getElementById('push-btn-icon');
+  const status = document.getElementById('push-status');
+  if (!btn || !('Notification' in window) || !('serviceWorker' in navigator)) {
+    if (btn) btn.style.display = 'none';
+    return;
+  }
+
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64  = (base64String + padding).replace(/-/g,'+').replace(/_/g,'/');
+    const raw     = window.atob(base64);
+    return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+  }
+
+  function updateBtn(subscribed) {
+    if (subscribed) {
+      icon.textContent  = '🔕';
+      label.textContent = 'Disable Notifications';
+      btn.classList.add('push-on');
+      status.textContent = '✅ You will receive daily reminders.';
+    } else {
+      icon.textContent  = '🔔';
+      label.textContent = 'Enable Notifications';
+      btn.classList.remove('push-on');
+      status.textContent = '';
+    }
+  }
+
+  async function checkSubscribed() {
+    try {
+      const reg  = await navigator.serviceWorker.ready;
+      const sub  = await reg.pushManager.getSubscription();
+      updateBtn(!!sub);
+    } catch (_) {}
+  }
+
+  btn.addEventListener('click', async () => {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+
+      if (sub) {
+        // Unsubscribe
+        await sub.unsubscribe();
+        await fetch('/api/push/unsubscribe', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint: sub.endpoint })
+        });
+        updateBtn(false);
+      } else {
+        // Subscribe
+        const perm = await Notification.requestPermission();
+        if (perm !== 'granted') {
+          status.textContent = '❌ Permission denied. Enable in browser settings.';
+          return;
+        }
+        const keyData  = await fetch('/api/push/vapid-public-key').then(r => r.json());
+        const newSub   = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(keyData.key)
+        });
+        const subJSON = newSub.toJSON();
+        await fetch('/api/push/subscribe', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint: subJSON.endpoint, keys: subJSON.keys })
+        });
+        updateBtn(true);
+      }
+    } catch (err) {
+      status.textContent = '⚠️ Could not set up notifications: ' + err.message;
+    }
+  });
+
+  checkSubscribed();
+})();

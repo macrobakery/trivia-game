@@ -10,6 +10,18 @@ const path         = require('path');
 const { createClient } = require('@libsql/client');
 const rateLimit    = require('express-rate-limit');
 
+// Web Push — optional, requires VAPID env vars
+let webPush = null;
+try {
+  webPush = require('web-push');
+  const vapidPublic  = process.env.VAPID_PUBLIC_KEY  || 'BGEkcus0Wdaqfw8I8g9dZ_5WEoNPJtYuuoGtthFi8hQ_fg910K66ls9DEEVaKl_lPx3m5sT2AwCOizqkWHRC61w';
+  const vapidPrivate = process.env.VAPID_PRIVATE_KEY || 'ODPynHngNH-iIjgnxTHANNIF71GPOE9qXyYY7va6bQo';
+  webPush.setVapidDetails('mailto:macrobakery@gmail.com', vapidPublic, vapidPrivate);
+  console.log('✅ Web Push configured.');
+} catch (_) {
+  console.log('ℹ️  web-push not available — push notifications disabled.');
+}
+
 // Anthropic client — optional, requires ANTHROPIC_API_KEY env var
 let anthropic = null;
 try {
@@ -172,6 +184,14 @@ async function createTables() {
     content    TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(date, type)
+  )`);
+
+  // Push subscriptions table
+  await dbClient.execute(`CREATE TABLE IF NOT EXISTS push_subscriptions (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    endpoint   TEXT NOT NULL UNIQUE,
+    keys       TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
   // Analytics events table
@@ -599,6 +619,66 @@ app.get('/api/analytics', adminAuth, async (req, res) => {
     flaggedCount:  flaggedCount  ? flaggedCount.c  : 0,
     questionCount: questionCount ? questionCount.c : 0
   });
+});
+
+// ============================================================
+// PUSH NOTIFICATIONS
+// ============================================================
+
+// GET /api/push/vapid-public-key
+app.get('/api/push/vapid-public-key', (req, res) => {
+  const key = process.env.VAPID_PUBLIC_KEY || 'BGEkcus0Wdaqfw8I8g9dZ_5WEoNPJtYuuoGtthFi8hQ_fg910K66ls9DEEVaKl_lPx3m5sT2AwCOizqkWHRC61w';
+  res.json({ key });
+});
+
+// POST /api/push/subscribe
+app.post('/api/push/subscribe', async (req, res) => {
+  const { endpoint, keys } = req.body;
+  if (!endpoint || !keys) return res.status(400).json({ error: 'Invalid subscription.' });
+  try {
+    await dbRun(
+      'INSERT OR REPLACE INTO push_subscriptions (endpoint, keys) VALUES (?, ?)',
+      [endpoint, JSON.stringify(keys)]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Could not save subscription.' });
+  }
+});
+
+// POST /api/push/unsubscribe
+app.post('/api/push/unsubscribe', async (req, res) => {
+  const { endpoint } = req.body;
+  if (!endpoint) return res.status(400).json({ error: 'endpoint required.' });
+  try {
+    await dbRun('DELETE FROM push_subscriptions WHERE endpoint = ?', [endpoint]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: 'Could not remove subscription.' });
+  }
+});
+
+// POST /api/push/send-daily (admin) — send daily reminder to all subscribers
+app.post('/api/push/send-daily', adminAuth, async (req, res) => {
+  if (!webPush) return res.status(503).json({ error: 'Push not configured.' });
+  const { title = '🔥 Daily AI Challenge', body = 'New questions are live! Keep your streak going.' } = req.body;
+  const subs = await dbAll('SELECT endpoint, keys FROM push_subscriptions');
+  let sent = 0, failed = 0;
+  for (const sub of subs) {
+    try {
+      await webPush.sendNotification(
+        { endpoint: sub.endpoint, keys: JSON.parse(sub.keys) },
+        JSON.stringify({ title, body, icon: '/icons/icon-192.png', url: '/' })
+      );
+      sent++;
+    } catch (err) {
+      failed++;
+      if (err.statusCode === 410) {
+        await dbRun('DELETE FROM push_subscriptions WHERE endpoint = ?', [sub.endpoint]);
+      }
+    }
+  }
+  res.json({ ok: true, sent, failed });
 });
 
 // POST /api/questions/suggest — user submits a question for review
