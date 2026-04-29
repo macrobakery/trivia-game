@@ -375,6 +375,19 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// ── Back to top ───────────────────────────────────────────────
+
+(function initBackToTop() {
+  const btn = document.getElementById('news-btt-btn');
+  if (!btn) return;
+  window.addEventListener('scroll', () => {
+    btn.style.display = window.scrollY > 400 ? 'flex' : 'none';
+  }, { passive: true });
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+
 // ── Boot ──────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
