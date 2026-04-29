@@ -3,7 +3,7 @@
 // Caches static assets for offline / instant load
 // ============================================================
 
-const CACHE_NAME   = 'ai-challenge-v5';
+const CACHE_NAME   = 'ai-challenge-v6';
 const STATIC_ASSETS = [
   '/',
   '/style.css',
@@ -24,6 +24,7 @@ const STATIC_ASSETS = [
   '/chat.html',
   '/learn.html',
   '/learn.css',
+  '/offline.html',
   '/og-image.svg'
 ];
 
@@ -68,8 +69,8 @@ self.addEventListener('fetch', event => {
         return response;
       });
     }).catch(() => {
-      // Offline fallback — serve the cached shell
-      return caches.match('/');
+      // Offline fallback — serve the dedicated offline page
+      return caches.match('/offline.html') || caches.match('/');
     })
   );
 });

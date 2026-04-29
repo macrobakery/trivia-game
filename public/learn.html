@@ -12,15 +12,31 @@
   <link rel="stylesheet" href="/style.css" />
   <link rel="stylesheet" href="/learn.css" />
   <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#07060c" />
+  <meta name="theme-color" content="#07060c" id="meta-theme-color" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <meta property="og:type"        content="website" />
+  <meta property="og:site_name"   content="AI Challenge" />
+  <meta property="og:title"       content="AI Learning Hub — Daily Lessons & Streaks" />
+  <meta property="og:description" content="Your daily AI learning hub. Track streaks, read AI trends, complete lessons, and level up every day." />
+  <meta property="og:url"         content="https://ai-app-builder-challenge.vercel.app/learn.html" />
+  <meta property="og:image"       content="https://ai-app-builder-challenge.vercel.app/og-image.svg" />
+  <meta name="twitter:card"       content="summary_large_image" />
+  <meta name="twitter:title"      content="AI Learning Hub — Daily Lessons & Streaks" />
+  <meta name="twitter:description" content="Your daily AI learning hub. Track streaks, read AI trends, complete lessons, and level up every day." />
+  <meta name="twitter:image"      content="https://ai-app-builder-challenge.vercel.app/og-image.svg" />
 </head>
 <body>
 
   <!-- Inline theme restore — runs before CSS paint to prevent flash -->
   <script>
-    (function(){const t=localStorage.getItem('aiChallenge_theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();
+    (function(){
+      const t = localStorage.getItem('aiChallenge_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+      const m = document.getElementById('meta-theme-color');
+      if (m) m.setAttribute('content', t === 'dark' ? '#07060c' : '#f0eff8');
+    })();
   </script>
 
   <!-- ── Animated nebula background ── -->
@@ -216,7 +232,7 @@
   <!-- Bottom App Navigation -->
   <nav class="app-nav">
     <a href="/"             class="app-nav-item"><span class="app-nav-icon">🏠</span><span class="app-nav-label">Home</span></a>
-    <a href="/lessons.html" class="app-nav-item active"><span class="app-nav-icon">📚</span><span class="app-nav-label">Learn</span></a>
+    <a href="/lessons.html" class="app-nav-item"><span class="app-nav-icon">📚</span><span class="app-nav-label">Learn</span></a>
     <a href="/news.html"    class="app-nav-item"><span class="app-nav-icon">📰</span><span class="app-nav-label">News</span></a>
     <a href="/profile.html" class="app-nav-item"><span class="app-nav-icon">👤</span><span class="app-nav-label">Profile</span></a>
     <a href="/leaderboard.html" class="app-nav-item"><span class="app-nav-icon">🏆</span><span class="app-nav-label">Rank</span></a>

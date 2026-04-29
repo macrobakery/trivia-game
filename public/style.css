@@ -3107,3 +3107,82 @@ button, a, input, select {
 .question-enter .opt-btn:nth-child(2) { animation: questionSlideIn 0.22s 0.08s ease both; }
 .question-enter .opt-btn:nth-child(3) { animation: questionSlideIn 0.22s 0.12s ease both; }
 .question-enter .opt-btn:nth-child(4) { animation: questionSlideIn 0.22s 0.16s ease both; }
+
+/* ─────────────────────────────────────────────────────────────
+   ANSWER TIMELINE — per-question dots on results screen
+───────────────────────────────────────────────────────────── */
+.answer-timeline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin: 0 0 20px;
+}
+.at-dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  border: 2px solid transparent;
+  transition: transform 0.15s ease;
+  cursor: default;
+  position: relative;
+}
+.at-dot:hover { transform: scale(1.15); }
+.at-dot.at-correct {
+  background: hsl(145 65% 20%);
+  border-color: var(--green);
+  color: var(--green);
+}
+.at-dot.at-wrong {
+  background: hsl(0 60% 20%);
+  border-color: var(--red);
+  color: var(--red);
+}
+.at-dot.at-timeout {
+  background: hsl(38 70% 18%);
+  border-color: hsl(38 90% 55%);
+  color: hsl(38 90% 55%);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   AI FACT OF THE DAY — home screen rotating widget
+───────────────────────────────────────────────────────────── */
+.ai-fact-strip {
+  margin: 8px 0 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 11px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  transition: border-color var(--t), background var(--t);
+  text-align: left;
+}
+.ai-fact-strip:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+.ai-fact-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+.ai-fact-body { flex: 1; min-width: 0; }
+.ai-fact-label {
+  font-size: 0.62rem; font-weight: 700;
+  color: var(--accent); text-transform: uppercase;
+  letter-spacing: 0.5px; margin-bottom: 3px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.ai-fact-text {
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+  line-height: 1.55;
+}
+.ai-fact-next {
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  opacity: 0.55;
+  flex-shrink: 0;
+  margin-top: 2px;
+}

@@ -172,6 +172,19 @@ function playSound(type) {
   } catch (_) { /* audio not available */ }
 }
 
+// ── Haptic feedback (mobile) ───────────────────────────────────
+function haptic(type) {
+  if (!('vibrate' in navigator)) return;
+  try {
+    if      (type === 'correct')  navigator.vibrate(50);
+    else if (type === 'streak')   navigator.vibrate([50, 30, 80]);
+    else if (type === 'wrong')    navigator.vibrate([100, 40, 100]);
+    else if (type === 'timeout')  navigator.vibrate(180);
+    else if (type === 'complete') navigator.vibrate([80, 40, 80, 40, 200]);
+    else if (type === 'tap')      navigator.vibrate(20);
+  } catch (_) {}
+}
+
 // ══════════════════════════════════════════════════════════════
 // SESSION PERSISTENCE — localStorage
 // ══════════════════════════════════════════════════════════════
@@ -738,6 +751,7 @@ function handleAnswer(selectedOption) {
     showFeedback('correct', `✓ Correct! +${points} pts${streakLabel}`, q.explanation);
     clearMasteredQuestions([q.question_text]);
     playSound(state.streak >= 3 ? 'streak' : 'correct');
+    haptic(state.streak >= 3 ? 'streak' : 'correct');
     showCelebration();
   } else {
     state.streak = 0;
@@ -750,6 +764,7 @@ function handleAnswer(selectedOption) {
     streamExplanation(q, selectedOption);
     recordWrongQuestion(q);
     playSound('wrong');
+    haptic('wrong');
   }
 }
 
@@ -779,6 +794,7 @@ function handleTimeout() {
   streamExplanation(q, null);
   recordWrongQuestion(q);
   playSound('wrong');
+  haptic('timeout');
 }
 
 // ── AI wrong-answer explainer ──────────────────────────────────
@@ -1042,6 +1058,16 @@ function showResults() {
   $('res-level-badge').textContent      = selectedLevel;
   $('res-diff-badge').textContent       = selectedDifficulty;
 
+  // Motivational eyebrow message
+  const eyebrow = $('results-eyebrow');
+  if (eyebrow && !isPractice) {
+    if      (correctCount === 10)  eyebrow.textContent = '🏆 Perfect score!';
+    else if (correctCount >= 8)    eyebrow.textContent = '🔥 Excellent work!';
+    else if (correctCount >= 6)    eyebrow.textContent = '👍 Good round!';
+    else if (correctCount >= 4)    eyebrow.textContent = '💪 Keep practising!';
+    else                           eyebrow.textContent = '📚 Study and retry!';
+  }
+
   // Pass / fail banner
   const pf = $('pass-fail-banner');
   if (isPractice) {
@@ -1082,7 +1108,18 @@ function showResults() {
   $('save-score-btn').style.display = isPractice ? 'none' : '';
   $('share-score-btn').style.display = isPractice ? 'none' : '';
 
+  // Answer timeline dots
+  const timelineEl = $('answer-timeline');
+  if (timelineEl && state.answerHistory.length) {
+    timelineEl.innerHTML = state.answerHistory.map((h, i) => {
+      const cls = h.isCorrect ? 'at-correct' : (h.selectedOption === null ? 'at-timeout' : 'at-wrong');
+      const icon = h.isCorrect ? '✓' : (h.selectedOption === null ? '⏱' : '✗');
+      return `<div class="at-dot ${cls}" title="Q${i+1}: ${h.isCorrect ? 'Correct' : h.selectedOption === null ? 'Timed out' : 'Wrong'}">${icon}</div>`;
+    }).join('');
+  }
+
   playSound(passed ? 'complete' : 'wrong');
+  haptic(passed ? 'complete' : 'wrong');
 
   // Confetti burst on perfect score (10/10)
   if (correctCount === total && !isPractice) {
@@ -2043,6 +2080,34 @@ updateLevelCards();
 checkForSession();
 initHubStreakDisplay();
 
+// ── Personalised greeting ──────────────────────────────────────
+(function initGreeting() {
+  const greetEl = $('hub-greeting');
+  const subEl   = document.getElementById('hub-greeting-sub');
+  if (!greetEl) return;
+
+  const name    = localStorage.getItem('aiChallenge_playerName') || '';
+  const hour    = new Date().getHours();
+  const tod     = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+
+  if (name) {
+    greetEl.childNodes[0].nodeValue = `${tod}, ${name}`;
+  } else {
+    greetEl.childNodes[0].nodeValue = 'AI Challenge';
+  }
+
+  // Dynamic sub-greeting based on streak
+  const streak = (() => {
+    try { return JSON.parse(localStorage.getItem('aiChallenge_streak') || '{}').count || 0; } catch { return 0; }
+  })();
+  if (subEl) {
+    if (streak >= 7)       subEl.textContent = `${streak}-day streak 🔥 — you're unstoppable!`;
+    else if (streak >= 3)  subEl.textContent = `${streak}-day streak 🔥 — keep it going!`;
+    else if (streak === 1) subEl.textContent = 'Day 1 streak — great start!';
+    else                   subEl.textContent = 'Learn, quiz, and stay sharp every day';
+  }
+})();
+
 // ── PWA Shortcuts handler ──────────────────────────────────────
 (function handlePWAShortcut() {
   const params = new URLSearchParams(window.location.search);
@@ -2058,6 +2123,78 @@ initHubStreakDisplay();
 })();
 initWeakSpotsBtn();
 initHomeStatsStrip();
+
+// ══════════════════════════════════════════════════════════════
+// AI FACT OF THE DAY — rotating daily widget
+// ══════════════════════════════════════════════════════════════
+
+(function initAIFact() {
+  const el = $('ai-fact-strip');
+  const textEl = $('ai-fact-text');
+  if (!el || !textEl) return;
+
+  const FACTS = [
+    'The term "Artificial Intelligence" was coined by John McCarthy in 1956 at the Dartmouth Conference.',
+    'GPT-4 was trained on roughly 1 trillion tokens — about the equivalent of 1 million novels.',
+    'A "token" in an LLM is roughly ¾ of a word on average. "ChatGPT" is a single token.',
+    'The transformer architecture, which powers most modern AI, was introduced by Google researchers in 2017.',
+    'AlphaGo defeated world Go champion Lee Sedol 4–1 in 2016 — a feat thought to be decades away.',
+    'Gradient descent was first described in 1847 by mathematician Augustin-Louis Cauchy.',
+    'DALL·E\'s name is a blend of Salvador Dalí and Pixar\'s WALL·E.',
+    'The first chatbot, ELIZA, was created in 1966 at MIT. It could hold a conversation by pattern matching.',
+    '"Hallucination" in AI means confidently generating false information — a fundamental challenge in LLMs.',
+    'Overfitting occurs when a model memorises training data instead of learning general patterns.',
+    'RLHF (Reinforcement Learning from Human Feedback) is the technique used to align ChatGPT to human values.',
+    'The word "robot" comes from the Czech word "robota," meaning forced labour or drudgery.',
+    'Moore\'s Law predicted transistor counts double every ~2 years — AI compute has grown even faster.',
+    'Backpropagation, the algorithm that trains neural networks, was popularised by Rumelhart et al. in 1986.',
+    'Claude, Gemini, and GPT are all "autoregressive" models — they predict one token at a time, left to right.',
+    'The "attention mechanism" in transformers lets a model focus on relevant parts of the input dynamically.',
+    'Fine-tuning adapts a pre-trained model to a specific task with a much smaller dataset.',
+    'A perceptron, the simplest neural network, was built by Frank Rosenblatt in 1958.',
+    'ImageNet, a dataset of 14 million labelled images, catalysed the deep learning revolution in 2012.',
+    'Prompt engineering is the skill of writing instructions to get the best outputs from language models.',
+    'In 2023, AI generated images won a prestigious fine arts competition — sparking a global debate on creativity.',
+    'Vector embeddings convert words and concepts into numbers so models can measure semantic similarity.',
+    'Retrieval-Augmented Generation (RAG) lets AI answer questions using documents it was never trained on.',
+    'The Turing Test — proposed in 1950 — asks whether a human can tell if they\'re talking to a machine.',
+    'Diffusion models (like Stable Diffusion) generate images by learning to reverse a noisy "corruption" process.',
+    'Reinforcement learning trained OpenAI\'s Five to beat human world champions at the game Dota 2.',
+    'In AI, "context window" refers to how much text a model can process at once — now up to millions of tokens.',
+    'Transfer learning lets a model trained on one task (e.g., language) be adapted to completely different tasks.',
+    'The first AI "winter" happened in the 1970s when funding dried up after early systems failed to scale.',
+    'Edge AI runs models directly on devices (phones, sensors) without sending data to a server.',
+    '"Stochastic" means involving randomness — SGD (Stochastic Gradient Descent) uses random mini-batches.',
+    'A confusion matrix in ML shows true positives, false positives, true negatives, and false negatives.',
+    'BERT, Google\'s language model, was the first to read text in both directions simultaneously (bidirectional).',
+    'Neural scaling laws show model performance improves predictably as you add more data and compute.',
+    'The AI safety field studies how to build AI systems that are reliably beneficial and aligned with human values.',
+  ];
+
+  // Pick a "daily" fact based on day-of-year, plus allow tapping for more
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  let factIdx = dayOfYear % FACTS.length;
+
+  function showFact() {
+    textEl.textContent = FACTS[factIdx % FACTS.length];
+  }
+
+  showFact();
+
+  el.addEventListener('click', () => {
+    factIdx = (factIdx + 1) % FACTS.length;
+    showFact();
+    haptic('tap');
+    // Brief flash animation
+    textEl.style.opacity = '0';
+    textEl.style.transform = 'translateY(4px)';
+    textEl.style.transition = 'opacity 0.15s, transform 0.15s';
+    setTimeout(() => {
+      textEl.style.opacity = '1';
+      textEl.style.transform = 'translateY(0)';
+    }, 150);
+  });
+})();
 
 // ══════════════════════════════════════════════════════════════
 // SUGGEST A QUESTION MODAL
