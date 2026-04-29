@@ -232,6 +232,57 @@
   margin-left: 2px;
 }
 
+/* ── Mark all read button ─────────────────────────────── */
+.news-mark-all-btn {
+  margin-left: auto;
+  padding: 5px 11px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--green);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+.news-mark-all-btn:hover {
+  background: var(--green-dim);
+  border-color: hsl(142 68% 50% / 0.4);
+}
+
+/* ── Reading progress row ────────────────────────────── */
+.news-read-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.news-read-progress-bar-wrap {
+  flex: 1;
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.news-read-progress-bar {
+  height: 100%;
+  background: var(--green);
+  border-radius: 99px;
+  width: 0%;
+  transition: width 0.4s ease;
+}
+.news-read-progress-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  white-space: nowrap;
+  min-width: 56px;
+  text-align: right;
+}
+
 /* ── Card top row (emoji + actions) ─────────────────────── */
 
 .news-card-top-row {

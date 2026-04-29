@@ -65,12 +65,20 @@
       <span class="news-source" id="news-source"></span>
     </div>
 
-    <!-- Filter bar: All / Unread / Bookmarked -->
+    <!-- Filter bar: All / Unread / Bookmarked + Mark All Read -->
     <div class="news-filter-bar" id="news-filter-bar">
       <button class="news-filter-btn active" data-filter="all">All</button>
       <button class="news-filter-btn" data-filter="unread">🔵 Unread</button>
       <button class="news-filter-btn" data-filter="bookmarked">🔖 Saved</button>
       <span class="news-unread-badge" id="news-unread-badge" style="display:none">0</span>
+      <button class="news-mark-all-btn" id="news-mark-all-btn" style="display:none" title="Mark all stories as read">✓ Mark all read</button>
+    </div>
+    <!-- Reading progress row -->
+    <div class="news-read-progress-row" id="news-read-progress-row" style="display:none">
+      <div class="news-read-progress-bar-wrap">
+        <div class="news-read-progress-bar" id="news-read-progress-bar"></div>
+      </div>
+      <span class="news-read-progress-label" id="news-read-progress-label">0 / 0 read</span>
     </div>
 
     <div id="news-grid" class="news-grid">

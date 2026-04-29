@@ -84,15 +84,48 @@ function toggleBookmark(trend) {
 }
 
 function updateUnreadBadge() {
-  const badge = document.getElementById('news-unread-badge');
-  if (!badge) return;
+  const badge    = document.getElementById('news-unread-badge');
+  const markBtn  = document.getElementById('news-mark-all-btn');
+  const progRow  = document.getElementById('news-read-progress-row');
+  const progBar  = document.getElementById('news-read-progress-bar');
+  const progLbl  = document.getElementById('news-read-progress-label');
+
   const all       = _cachedTrends || [];
-  const unreadCnt = all.filter(t => !isRead(t.headline)).length;
-  if (unreadCnt > 0) {
-    badge.textContent    = unreadCnt;
-    badge.style.display  = 'inline-flex';
-  } else {
-    badge.style.display  = 'none';
+  const total     = all.length;
+  const readCnt   = all.filter(t => isRead(t.headline)).length;
+  const unreadCnt = total - readCnt;
+
+  // Unread badge
+  if (badge) {
+    if (unreadCnt > 0) {
+      badge.textContent   = unreadCnt;
+      badge.style.display = 'inline-flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  // Mark-all button: show only when there are unread items
+  if (markBtn) {
+    markBtn.style.display = (total > 0 && unreadCnt > 0) ? '' : 'none';
+  }
+
+  // Reading progress bar + label
+  if (progRow && total > 0) {
+    progRow.style.display = 'flex';
+    const pct = Math.round((readCnt / total) * 100);
+    if (progBar) progBar.style.width = pct + '%';
+    if (progLbl) {
+      if (readCnt === total) {
+        progLbl.textContent = '✓ All read';
+        if (progBar) progBar.style.background = 'var(--green)';
+      } else {
+        progLbl.textContent = `${readCnt} / ${total} read`;
+        if (progBar) progBar.style.background = '';
+      }
+    }
+  } else if (progRow) {
+    progRow.style.display = 'none';
   }
 }
 
@@ -383,6 +416,51 @@ async function loadNews(forceRefresh = false) {
   }
 }
 
+// ── Mark all read ─────────────────────────────────────────────
+
+function markAllRead() {
+  const trends = _cachedTrends || [];
+  if (trends.length === 0) return;
+
+  const s = getReadSet();
+  trends.forEach(t => s.add(t.headline));
+  saveReadSet(s);
+
+  // Track daily goals (mark news read date)
+  try {
+    const d   = new Date();
+    const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    localStorage.setItem('aiChallenge_lastNewsRead', str);
+  } catch {}
+
+  // Update all cards visually
+  document.querySelectorAll('.news-card:not(.skeleton-card)').forEach(card => {
+    const hl = card.dataset.headline || '';
+    if (!hl) return;
+    card.classList.add('news-card-read');
+    const actions = card.querySelector('.news-card-actions');
+    if (actions && !actions.querySelector('.news-read-badge')) {
+      const badge = document.createElement('span');
+      badge.className = 'news-read-badge';
+      badge.textContent = '✓ Read';
+      actions.prepend(badge);
+    }
+  });
+
+  // If currently on unread filter, show empty state
+  if (_activeFilter === 'unread') applyFilter();
+
+  updateUnreadBadge();
+
+  // Visual feedback on the button
+  const btn = document.getElementById('news-mark-all-btn');
+  if (btn) {
+    btn.textContent = '✓ Done!';
+    btn.style.display = 'none';
+    setTimeout(() => updateUnreadBadge(), 600);
+  }
+}
+
 // ── Filter bar wiring ─────────────────────────────────────────
 
 document.getElementById('news-filter-bar').addEventListener('click', e => {
@@ -390,6 +468,8 @@ document.getElementById('news-filter-bar').addEventListener('click', e => {
   if (!btn) return;
   setFilter(btn.dataset.filter);
 });
+
+document.getElementById('news-mark-all-btn').addEventListener('click', markAllRead);
 
 // ── Button wiring ─────────────────────────────────────────────
 
