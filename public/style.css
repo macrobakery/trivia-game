@@ -3575,3 +3575,117 @@ button, a, input, select {
   font-size: 1.6rem;
   flex-shrink: 0;
 }
+
+/* ── Recent Games section ──────────────────────────────── */
+.recent-games {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-top: 14px;
+}
+
+.rg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.rg-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.rg-see-all {
+  font-size: 0.72rem;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity var(--t);
+}
+.rg-see-all:hover { opacity: 0.8; }
+
+.rg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rg-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.rg-item-left {
+  min-width: 0;
+  flex: 1;
+}
+
+.rg-level {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rg-meta {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+  align-items: center;
+}
+
+.rg-diff {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.rg-date {
+  font-size: 0.68rem;
+  color: var(--ink-faint);
+}
+
+.rg-item-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.rg-score {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.rg-score-pts {
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  font-weight: 400;
+}
+
+.rg-acc {
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+
+.rg-acc-perfect {
+  color: var(--gold);
+  font-weight: 600;
+}

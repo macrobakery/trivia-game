@@ -1265,7 +1265,7 @@ $('save-score-btn').addEventListener('click', () => {
   openSaveModal();
 });
 $('view-lb-res-btn').addEventListener('click', () => openLeaderboardModal());
-$('play-again-btn').addEventListener('click', () => { clearSession(); showScreen('start'); loadLeaderboardPreview(); renderDailyGoals(); });
+$('play-again-btn').addEventListener('click', () => { clearSession(); showScreen('start'); loadLeaderboardPreview(); renderDailyGoals(); renderRecentGames(); });
 
 $('review-btn').addEventListener('click', () => {
   const section = $('review-section');
@@ -1975,6 +1975,23 @@ function showResults() {
     const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     localStorage.setItem('aiChallenge_lastGameDone', str);
   } catch {}
+
+  // Save to game history (max 20 entries, newest first)
+  if (!isPractice) {
+    try {
+      const hist = JSON.parse(localStorage.getItem('aiChallenge_gameHistory') || '[]');
+      hist.unshift({
+        level:      selectedLevel,
+        difficulty: selectedDifficulty,
+        score,
+        correct:    correctCount,
+        total:      questions.length,
+        accuracy,
+        date:       new Date().toISOString()
+      });
+      localStorage.setItem('aiChallenge_gameHistory', JSON.stringify(hist.slice(0, 20)));
+    } catch {}
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2534,6 +2551,66 @@ function initWelcomeBanner() {
 
   container.style.display = '';
 })();
+
+// ══════════════════════════════════════════════════════════════
+// RECENT GAMES — last 3 non-practice rounds on home screen
+// ══════════════════════════════════════════════════════════════
+
+function renderRecentGames() {
+  const container = $('recent-games');
+  const list      = $('rg-list');
+  if (!container || !list) return;
+
+  let hist = [];
+  try { hist = JSON.parse(localStorage.getItem('aiChallenge_gameHistory') || '[]'); } catch {}
+  if (!hist.length) { container.style.display = 'none'; return; }
+
+  const LEVEL_SHORT = {
+    'AI Foundations':                'Foundations',
+    'Data Preparation':              'Data Prep',
+    'Model Building':                'Model Building',
+    'AI App Development':            'AI App Dev',
+    'Deployment and Responsible AI': 'Deploy & Ethics',
+  };
+  const DIFF_COLOR = {
+    Beginner:     'var(--green)',
+    Intermediate: 'var(--gold)',
+    Advanced:     'var(--red)',
+  };
+
+  const recent = hist.slice(0, 3);
+  list.innerHTML = recent.map(g => {
+    const date    = new Date(g.date);
+    const isToday = date.toDateString() === new Date().toDateString();
+    const dateStr = isToday
+      ? 'Today'
+      : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const lvlShort = LEVEL_SHORT[g.level] || g.level;
+    const pct      = Math.round((g.correct / g.total) * 100);
+    const perfect  = g.correct === g.total;
+    const diffCol  = DIFF_COLOR[g.difficulty] || 'var(--ink-faint)';
+
+    return `
+      <div class="rg-item">
+        <div class="rg-item-left">
+          <div class="rg-level">${lvlShort}</div>
+          <div class="rg-meta">
+            <span class="rg-diff" style="color:${diffCol}">${g.difficulty}</span>
+            <span class="rg-date">${dateStr}</span>
+          </div>
+        </div>
+        <div class="rg-item-right">
+          <div class="rg-score">${g.score.toLocaleString()}<span class="rg-score-pts"> pts</span></div>
+          <div class="rg-acc ${perfect ? 'rg-acc-perfect' : ''}">${g.correct}/${g.total} · ${pct}%${perfect ? ' 🏆' : ''}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.style.display = '';
+}
+
+renderRecentGames();
 
 // ══════════════════════════════════════════════════════════════
 // SUGGEST A QUESTION MODAL
