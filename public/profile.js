@@ -496,9 +496,62 @@ function renderGameHistory() {
   }).join('');
 }
 
+// ── Weekly bar chart ───────────────────────────────────────────
+function renderWeeklyChart() {
+  const container = $('week-chart');
+  const labelEl   = $('week-games-label');
+  if (!container) return;
+
+  const history = read('aiChallenge_gameHistory', []);
+
+  // Build last 7 days (oldest → newest)
+  const DAY_ABBR = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - i);
+    const str   = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const label = i === 0 ? 'Today' : DAY_ABBR[d.getDay()];
+    days.push({ str, label, isToday: i === 0 });
+  }
+
+  // Count games per day from history
+  const counts = {};
+  history.forEach(g => {
+    if (!g.date) return;
+    const d   = new Date(g.date);
+    const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    counts[str] = (counts[str] || 0) + 1;
+  });
+
+  // Fill in the days
+  days.forEach(d => { d.count = counts[d.str] || 0; });
+
+  const maxCount  = Math.max(1, ...days.map(d => d.count));
+  const weekTotal = days.reduce((s, d) => s + d.count, 0);
+  if (labelEl) labelEl.textContent = `${weekTotal} game${weekTotal !== 1 ? 's' : ''} this week`;
+
+  container.innerHTML = days.map(d => {
+    const pct   = Math.round((d.count / maxCount) * 100);
+    const tip   = `${d.count} game${d.count !== 1 ? 's' : ''}`;
+    const cls   = ['wc-bar-fill', d.count > 0 ? 'wc-bar-active' : '', d.isToday ? 'wc-bar-today' : ''].filter(Boolean).join(' ');
+    return `
+      <div class="wc-col">
+        <div class="wc-bar-wrap" title="${tip}">
+          <div class="${cls}" style="height:${Math.max(pct, d.count > 0 ? 8 : 0)}%"></div>
+        </div>
+        <div class="wc-day-label ${d.isToday ? 'wc-today-lbl' : ''}">${d.label}</div>
+        ${d.count > 0 ? `<div class="wc-count-label">${d.count}</div>` : '<div class="wc-count-label wc-count-zero">–</div>'}
+      </div>
+    `;
+  }).join('');
+}
+
 // ── Init ───────────────────────────────────────────────────────
 renderHeader();
 renderStats();
+renderWeeklyChart();
 renderCalendar();
 renderLevelRecords();
 renderLessonsProgress();
