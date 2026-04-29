@@ -46,6 +46,14 @@
       <span class="news-source" id="news-source"></span>
     </div>
 
+    <!-- Filter bar: All / Unread / Bookmarked -->
+    <div class="news-filter-bar" id="news-filter-bar">
+      <button class="news-filter-btn active" data-filter="all">All</button>
+      <button class="news-filter-btn" data-filter="unread">🔵 Unread</button>
+      <button class="news-filter-btn" data-filter="bookmarked">🔖 Saved</button>
+      <span class="news-unread-badge" id="news-unread-badge" style="display:none">0</span>
+    </div>
+
     <div id="news-grid" class="news-grid">
       <!-- Skeleton cards shown while loading -->
       <div class="news-card skeleton-card">

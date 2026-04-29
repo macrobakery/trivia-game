@@ -37,26 +37,117 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
 
 applyTheme();
 
+// ── Read / Bookmark persistence ───────────────────────────────
+
+const READ_KEY     = 'aiChallenge_newsRead';      // Set of headline strings
+const BOOKMARK_KEY = 'aiChallenge_newsBookmarks'; // Array of trend objects
+
+function getReadSet() {
+  try { return new Set(JSON.parse(localStorage.getItem(READ_KEY) || '[]')); } catch { return new Set(); }
+}
+function saveReadSet(s) {
+  try { localStorage.setItem(READ_KEY, JSON.stringify([...s])); } catch {}
+}
+function getBookmarks() {
+  try { return JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]'); } catch { return []; }
+}
+function saveBookmarks(arr) {
+  try { localStorage.setItem(BOOKMARK_KEY, JSON.stringify(arr)); } catch {}
+}
+
+function isRead(headline) { return getReadSet().has(headline); }
+function isBookmarked(headline) { return getBookmarks().some(b => b.headline === headline); }
+
+function markRead(headline) {
+  const s = getReadSet();
+  s.add(headline);
+  saveReadSet(s);
+  updateUnreadBadge();
+}
+
+function toggleBookmark(trend) {
+  const bms = getBookmarks();
+  const idx = bms.findIndex(b => b.headline === trend.headline);
+  if (idx !== -1) {
+    bms.splice(idx, 1);
+  } else {
+    bms.push({ headline: trend.headline, source_url: trend.source_url,
+               plain_english: trend.plain_english, emoji: trend.emoji, savedAt: Date.now() });
+  }
+  saveBookmarks(bms);
+}
+
+function updateUnreadBadge() {
+  const badge = document.getElementById('news-unread-badge');
+  if (!badge) return;
+  const all       = _cachedTrends || [];
+  const unreadCnt = all.filter(t => !isRead(t.headline)).length;
+  if (unreadCnt > 0) {
+    badge.textContent    = unreadCnt;
+    badge.style.display  = 'inline-flex';
+  } else {
+    badge.style.display  = 'none';
+  }
+}
+
+// ── Active filter ─────────────────────────────────────────────
+
+let _activeFilter  = 'all';
+let _cachedTrends  = [];
+
+function setFilter(f) {
+  _activeFilter = f;
+  document.querySelectorAll('.news-filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.filter === f);
+  });
+  applyFilter();
+}
+
+function applyFilter() {
+  const cards = document.querySelectorAll('.news-card:not(.skeleton-card)');
+  cards.forEach(card => {
+    const headline = card.dataset.headline || '';
+    let show = true;
+    if (_activeFilter === 'unread')     show = !isRead(headline);
+    if (_activeFilter === 'bookmarked') show = isBookmarked(headline);
+    card.style.display = show ? '' : 'none';
+  });
+
+  // Empty state message
+  const visible = [...document.querySelectorAll('.news-card:not(.skeleton-card)')].filter(c => c.style.display !== 'none');
+  const grid = document.getElementById('news-grid');
+  const existing = grid.querySelector('.news-filter-empty');
+  if (existing) existing.remove();
+
+  if (visible.length === 0 && _activeFilter !== 'all') {
+    const msg = document.createElement('p');
+    msg.className = 'news-filter-empty';
+    const label = _activeFilter === 'unread' ? 'unread stories' : 'saved stories';
+    msg.textContent = `No ${label} right now.`;
+    grid.appendChild(msg);
+  }
+}
+
 // ── Render ────────────────────────────────────────────────────
 
 /**
  * Build the HTML string for a single news card.
- * @param {{ headline: string, emoji: string, plain_english: string, why_it_matters: string, source_url: string }} trend
- * @param {number} index  0-based card index (unused visually but kept for future use)
- * @returns {string} HTML string
  */
 function renderCard(trend, index) {
-  const emoji        = escapeHtml(trend.emoji || '📌');
-  const headline     = escapeHtml(trend.headline || 'Untitled');
+  const emoji        = trend.emoji || '📌';
+  const headline     = trend.headline || 'Untitled';
   const plainEnglish = escapeHtml(trend.plain_english || '');
   const whyItMatters = escapeHtml(trend.why_it_matters || '');
   const sourceUrl    = trend.source_url || '';
+  const read         = isRead(headline);
+  const bookmarked   = isBookmarked(headline);
 
   const linkHtml = sourceUrl
-    ? `<a class="news-card-link"
+    ? `<a class="news-card-link news-read-link"
           href="${escapeHtml(sourceUrl)}"
           target="_blank"
-          rel="noopener noreferrer">
+          rel="noopener noreferrer"
+          data-headline="${escapeHtml(headline)}">
          Read more <span class="news-card-link-arrow">→</span>
        </a>`
     : '';
@@ -66,10 +157,23 @@ function renderCard(trend, index) {
        <p class="news-card-why">${whyItMatters}</p>`
     : '';
 
+  const readBadge = read
+    ? `<span class="news-read-badge">✓ Read</span>`
+    : '';
+
+  const bmIcon = bookmarked ? '🔖' : '🤍';
+  const bmTitle = bookmarked ? 'Remove bookmark' : 'Save article';
+
   return `
-    <article class="news-card">
-      <span class="news-card-emoji">${emoji}</span>
-      <h2 class="news-card-headline">${headline}</h2>
+    <article class="news-card${read ? ' news-card-read' : ''}" data-headline="${escapeHtml(headline)}">
+      <div class="news-card-top-row">
+        <span class="news-card-emoji">${escapeHtml(emoji)}</span>
+        <div class="news-card-actions">
+          ${readBadge}
+          <button class="news-bm-btn" data-headline="${escapeHtml(headline)}" title="${bmTitle}" aria-label="${bmTitle}">${bmIcon}</button>
+        </div>
+      </div>
+      <h2 class="news-card-headline">${escapeHtml(headline)}</h2>
       <p class="news-card-plain">${plainEnglish}</p>
       ${whyHtml}
       ${linkHtml}
@@ -79,24 +183,17 @@ function renderCard(trend, index) {
 
 /**
  * Populate the grid, date label, and source badge from API data.
- * @param {{ trends: Array, source: string, fallback: boolean, date: string }} data
  */
 function renderNews(data) {
   const grid     = document.getElementById('news-grid');
   const dateEl   = document.getElementById('news-date');
   const sourceEl = document.getElementById('news-source');
 
-  // Format date — data.date is expected to be an ISO date string (YYYY-MM-DD or full ISO)
   if (data.date) {
     const d = new Date(data.date);
-    // Guard against invalid dates returned by the API
     if (!isNaN(d.getTime())) {
       dateEl.textContent = d.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year:    'numeric',
-        month:   'long',
-        day:     'numeric',
-        // Avoid timezone shift on bare YYYY-MM-DD by treating as local
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
     } else {
@@ -108,19 +205,58 @@ function renderNews(data) {
     });
   }
 
-  // Source label
-  sourceEl.textContent = data.fallback
-    ? 'AI-curated picks'
-    : 'Hacker News + Claude';
+  sourceEl.textContent = data.fallback ? 'AI-curated picks' : 'Hacker News + Claude';
 
-  // Render cards
   const trends = Array.isArray(data.trends) ? data.trends : [];
+  _cachedTrends = trends;
+
   if (trends.length === 0) {
     grid.innerHTML = `<p style="color:var(--ink-faint);text-align:center;padding:32px 0">No stories available right now.</p>`;
     return;
   }
 
   grid.innerHTML = trends.map((trend, i) => renderCard(trend, i)).join('');
+
+  // Wire bookmark buttons
+  grid.querySelectorAll('.news-bm-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const hl    = btn.dataset.headline;
+      const trend = trends.find(t => t.headline === hl);
+      if (!trend) return;
+      toggleBookmark(trend);
+      const card     = btn.closest('.news-card');
+      const nowSaved = isBookmarked(hl);
+      btn.textContent = nowSaved ? '🔖' : '🤍';
+      btn.title       = nowSaved ? 'Remove bookmark' : 'Save article';
+      if (_activeFilter === 'bookmarked' && !nowSaved) {
+        card.style.display = 'none';
+      }
+    });
+  });
+
+  // Wire read tracking on "Read more" links
+  grid.querySelectorAll('.news-read-link').forEach(link => {
+    link.addEventListener('click', () => {
+      const hl   = link.dataset.headline;
+      const card = link.closest('.news-card');
+      markRead(hl);
+      if (card) {
+        card.classList.add('news-card-read');
+        const existing = card.querySelector('.news-read-badge');
+        if (!existing) {
+          const badge = document.createElement('span');
+          badge.className = 'news-read-badge';
+          badge.textContent = '✓ Read';
+          card.querySelector('.news-card-actions')?.prepend(badge);
+        }
+        if (_activeFilter === 'unread') card.style.display = 'none';
+      }
+    });
+  });
+
+  updateUnreadBadge();
+  applyFilter();
 }
 
 // ── Data fetching ─────────────────────────────────────────────
@@ -131,7 +267,6 @@ async function loadNews() {
   const dateEl   = document.getElementById('news-date');
   const sourceEl = document.getElementById('news-source');
 
-  // Reset to skeleton state
   errorBox.style.display = 'none';
   dateEl.textContent     = 'Loading…';
   sourceEl.textContent   = '';
@@ -156,10 +291,8 @@ async function loadNews() {
   try {
     const res = await fetch('/api/ai-trends');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
     const data = await res.json();
     if (data.error) throw new Error(data.error);
-
     renderNews(data);
   } catch (err) {
     console.error('[news] Failed to load:', err);
@@ -168,12 +301,17 @@ async function loadNews() {
   }
 }
 
-// ── Button wiring ─────────────────────────────────────────────
+// ── Filter bar wiring ─────────────────────────────────────────
 
-document.getElementById('refresh-btn').addEventListener('click', () => {
-  loadNews();
+document.getElementById('news-filter-bar').addEventListener('click', e => {
+  const btn = e.target.closest('.news-filter-btn');
+  if (!btn) return;
+  setFilter(btn.dataset.filter);
 });
 
+// ── Button wiring ─────────────────────────────────────────────
+
+document.getElementById('refresh-btn').addEventListener('click', () => { loadNews(); });
 document.getElementById('retry-btn').addEventListener('click', () => {
   document.getElementById('news-error').style.display = 'none';
   loadNews();

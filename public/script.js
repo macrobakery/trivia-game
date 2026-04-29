@@ -1843,6 +1843,12 @@ function showResults() {
 
   updateLevelStats();
   renderAchievementsPanel();
+
+  // Mark daily challenge as completed
+  if (state.isDailyChallenge) {
+    markDailyDone();
+    state.isDailyChallenge = false;
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2172,3 +2178,115 @@ function startWeakSpotsSession() {
   loadQuestion();
   track('quiz_start', { level: 'Weak Spots', difficulty: 'Practice' });
 }
+
+// ══════════════════════════════════════════════════════════════
+// DAILY CHALLENGE
+// ══════════════════════════════════════════════════════════════
+
+const DC_KEY = 'aiChallenge_dailyDone'; // value = "YYYY-MM-DD"
+
+function _todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function isDailyDone() {
+  return localStorage.getItem(DC_KEY) === _todayStr();
+}
+
+function markDailyDone() {
+  localStorage.setItem(DC_KEY, _todayStr());
+  updateDailyChallengeUI();
+}
+
+function updateDailyChallengeUI() {
+  const btn  = $('daily-challenge-btn');
+  const chip = $('daily-done-chip');
+  const sub  = $('daily-sub');
+  if (!btn) return;
+  if (isDailyDone()) {
+    if (chip) chip.style.display = 'inline-flex';
+    btn.classList.add('daily-done');
+    if (sub) sub.textContent = 'Already played today — come back tomorrow!';
+  } else {
+    if (chip) chip.style.display = 'none';
+    btn.classList.remove('daily-done');
+    _updateDailyCountdown();
+  }
+}
+
+function _updateDailyCountdown() {
+  const sub = $('daily-sub');
+  if (!sub || isDailyDone()) return;
+  const now      = new Date();
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const ms = midnight - now;
+  const h  = Math.floor(ms / 3600000);
+  const m  = Math.floor((ms % 3600000) / 60000);
+  sub.textContent = `Resets in ${h}h ${m}m · Same 10 questions for all players`;
+}
+
+async function startDailyChallenge() {
+  const btn = $('daily-challenge-btn');
+  const lbl = btn ? btn.querySelector('.hub-cta-daily-label') : null;
+  if (btn) btn.disabled = true;
+  if (lbl) lbl.textContent = 'Loading…';
+
+  try {
+    const data = await fetch('/api/daily-challenge').then(r => r.json());
+    if (!Array.isArray(data) || data.length === 0) {
+      alert('Could not load today\'s challenge. Try again!');
+      return;
+    }
+
+    state.questions          = data.slice(0, 10);
+    state.selectedLevel      = '🗓 Daily Challenge';
+    state.selectedDifficulty = 'Intermediate';
+    state.isDailyChallenge   = true;
+
+    Object.assign(state, {
+      currentIndex: 0, score: 0, correctCount: 0, wrongCount: 0,
+      streak: 0, maxStreak: 0, answerHistory: [], scoreSaved: false,
+      powerUps: { fiftyFifty: true, extraTime: true, hint: true },
+      roundStartTime: Date.now()
+    });
+
+    $('active-level-badge').textContent = '🗓 Daily Challenge';
+    $('active-diff-badge').textContent  = 'Intermediate';
+    $('score-display').textContent      = '0';
+    $('correct-count').textContent      = '0';
+    $('wrong-count').textContent        = '0';
+
+    ['pu-fifty', 'pu-time', 'pu-hint'].forEach(id => {
+      $(id).disabled = false;
+      $(id).classList.remove('used');
+    });
+    $('game-screen').classList.remove('practice-mode');
+    $('pu-time').style.display = '';
+
+    const sd = $('streak-display');
+    if (sd) sd.style.display = 'none';
+
+    clearSession();
+    showScreen('game');
+    loadQuestion();
+    track('daily_challenge_start', { date: _todayStr() });
+
+  } catch (err) {
+    alert('Could not load today\'s challenge. Check your connection.');
+    console.error(err);
+  } finally {
+    if (btn) btn.disabled = false;
+    if (lbl) lbl.textContent = 'Today\'s Daily Challenge';
+  }
+}
+
+// Wire daily challenge button
+(function initDailyChallenge() {
+  const btn = $('daily-challenge-btn');
+  if (!btn) return;
+  btn.addEventListener('click', startDailyChallenge);
+  updateDailyChallengeUI();
+  // Update countdown every minute
+  setInterval(_updateDailyCountdown, 60_000);
+})();
