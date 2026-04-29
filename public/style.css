@@ -3576,6 +3576,76 @@ button, a, input, select {
   flex-shrink: 0;
 }
 
+/* ── Streak milestone toast ────────────────────────────── */
+.streak-toast {
+  position: fixed;
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: hsl(265 22% 12%);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 14px 18px 14px 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 20px hsl(40 95% 58% / 0.25);
+  opacity: 0;
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  max-width: min(420px, calc(100vw - 32px));
+  width: max-content;
+}
+.streak-toast.streak-toast-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.streak-toast-big {
+  border-color: var(--accent);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 24px hsl(270 90% 70% / 0.3);
+}
+.streak-toast-icon {
+  font-size: 1.8rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.streak-toast-body {
+  min-width: 0;
+  flex: 1;
+}
+.streak-toast-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 2px;
+}
+.streak-toast-big .streak-toast-title {
+  color: var(--accent);
+}
+.streak-toast-sub {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  line-height: 1.4;
+}
+.streak-toast-close {
+  background: none;
+  border: none;
+  color: var(--ink-faint);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: color var(--t);
+}
+.streak-toast-close:hover { color: var(--ink); }
+
+[data-theme="light"] .streak-toast {
+  background: #fff;
+  border-color: var(--gold);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 0 20px hsl(40 95% 58% / 0.2);
+}
+
 /* ── Recent Games section ──────────────────────────────── */
 .recent-games {
   background: var(--surface);

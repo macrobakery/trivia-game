@@ -2277,6 +2277,7 @@ initWeakSpotsBtn();
 initHomeStatsStrip();
 renderDailyGoals();
 initWelcomeBanner();
+checkStreakMilestone();
 
 // ── Social proof: players active today ────────────────────────
 (function loadSocialProof() {
@@ -2313,6 +2314,73 @@ initWelcomeBanner();
 function _todayGoalStr() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ── Streak milestone celebration ──────────────────────────────
+const STREAK_MILESTONES = [
+  { days: 3,   icon: '⚡', label: '3-Day Streak!',    big: false },
+  { days: 7,   icon: '🔥', label: 'Week Warrior!',    big: true  },
+  { days: 14,  icon: '💪', label: '2-Week Strong!',   big: true  },
+  { days: 30,  icon: '🚀', label: '30-Day Legend!',   big: true  },
+  { days: 60,  icon: '💎', label: '60-Day Diamond!',  big: true  },
+  { days: 100, icon: '👑', label: '100-Day Master!',  big: true  },
+];
+
+function checkStreakMilestone() {
+  let streakData;
+  try { streakData = JSON.parse(localStorage.getItem('aiChallenge_streak') || '{}'); } catch { return; }
+  const count = streakData.count || 0;
+  if (count < 3) return;
+
+  const lastCelebrated = parseInt(localStorage.getItem('aiChallenge_streakCelebrated') || '0', 10);
+
+  // Find the highest milestone that hasn't been celebrated yet
+  const hit = [...STREAK_MILESTONES].reverse().find(m => count >= m.days && lastCelebrated < m.days);
+  if (!hit) return;
+
+  // Mark as celebrated
+  try { localStorage.setItem('aiChallenge_streakCelebrated', String(hit.days)); } catch {}
+
+  // Show toast after a short delay so page finishes rendering
+  setTimeout(() => showStreakToast(hit, count), 1200);
+}
+
+function showStreakToast(milestone, currentStreak) {
+  const existing = document.querySelector('.streak-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'streak-toast' + (milestone.big ? ' streak-toast-big' : '');
+  toast.innerHTML = `
+    <div class="streak-toast-icon">${milestone.icon}</div>
+    <div class="streak-toast-body">
+      <div class="streak-toast-title">${milestone.label}</div>
+      <div class="streak-toast-sub">${currentStreak}-day streak — keep it going!</div>
+    </div>
+    <button class="streak-toast-close" aria-label="Dismiss">✕</button>
+  `;
+  document.body.appendChild(toast);
+
+  // Auto-dismiss after 5s
+  const timer = setTimeout(() => dismissToast(toast), 5000);
+
+  toast.querySelector('.streak-toast-close').addEventListener('click', () => {
+    clearTimeout(timer);
+    dismissToast(toast);
+  });
+
+  // Confetti for big milestones
+  if (milestone.big && typeof launchConfetti === 'function') {
+    launchConfetti();
+  }
+
+  // Animate in
+  requestAnimationFrame(() => toast.classList.add('streak-toast-visible'));
+}
+
+function dismissToast(toast) {
+  toast.classList.remove('streak-toast-visible');
+  setTimeout(() => toast.remove(), 380);
 }
 
 function renderDailyGoals() {
