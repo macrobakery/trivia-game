@@ -640,16 +640,20 @@ function updateTimerUI() {
   $('timer-num').textContent            = state.timeLeft;
   $('timer-bar').style.strokeDasharray  = `${pct * 100} 100`;
 
+  const timerWrap = $('timer-wrap');
   if (state.timeLeft <= 5) {
     $('timer-bar').style.stroke    = 'hsl(0 82% 62%)';
     $('timer-num').style.color     = 'hsl(0 82% 62%)';
+    if (timerWrap) timerWrap.classList.add('timer-urgent');
     setOrbState('thinking');
   } else if (state.timeLeft <= 10) {
     $('timer-bar').style.stroke    = 'hsl(40 95% 58%)';
     $('timer-num').style.color     = 'hsl(40 95% 58%)';
+    if (timerWrap) timerWrap.classList.remove('timer-urgent');
   } else {
     $('timer-bar').style.stroke    = '';
     $('timer-num').style.color     = '';
+    if (timerWrap) timerWrap.classList.remove('timer-urgent');
   }
 }
 
@@ -657,6 +661,8 @@ function resetTimerColor() {
   $('timer-bar').style.stroke           = '';
   $('timer-num').style.color            = '';
   $('timer-bar').style.strokeDasharray  = '100 100';
+  const timerWrap = $('timer-wrap');
+  if (timerWrap) timerWrap.classList.remove('timer-urgent');
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2095,6 +2101,20 @@ loadLeaderboardPreview();
 updateLevelCards();
 checkForSession();
 initHubStreakDisplay();
+
+// ── Track today's visit (for activity calendar on profile) ────
+(function trackVisit() {
+  try {
+    const d   = new Date();
+    const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    let dates = JSON.parse(localStorage.getItem('aiChallenge_visitDates') || '[]');
+    if (!dates.includes(str)) {
+      dates.push(str);
+      if (dates.length > 90) dates = dates.slice(-90);
+      localStorage.setItem('aiChallenge_visitDates', JSON.stringify(dates));
+    }
+  } catch {}
+})();
 
 // ── Personalised greeting ──────────────────────────────────────
 (function initGreeting() {

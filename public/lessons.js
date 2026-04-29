@@ -1026,6 +1026,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Show initial view
   showTopics();
+
+  // Track visit for activity calendar
+  try {
+    const d   = new Date();
+    const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    let dates = JSON.parse(localStorage.getItem('aiChallenge_visitDates') || '[]');
+    if (!dates.includes(str)) {
+      dates.push(str);
+      if (dates.length > 90) dates = dates.slice(-90);
+      localStorage.setItem('aiChallenge_visitDates', JSON.stringify(dates));
+    }
+  } catch {}
+
+  // Keyboard nav in lesson detail view
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    const detailView = document.getElementById('view-detail');
+    if (!detailView || !detailView.classList.contains('view-active')) return;
+
+    if (e.key === 'ArrowLeft' || e.key === 'Escape') {
+      // Go back
+      if (currentTopicId) showLessonList(currentTopicId);
+      else showTopics();
+    } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
+      // Next lesson — click the next button if available
+      const nextBtn = document.getElementById('btn-next-lesson') || document.getElementById('btn-next-topic');
+      if (nextBtn) nextBtn.click();
+    } else if (e.key === 'm' || e.key === 'M') {
+      // Mark as done
+      const doneBtn = document.getElementById('btn-mark-done');
+      if (doneBtn) doneBtn.click();
+    }
+  });
 });
 
 

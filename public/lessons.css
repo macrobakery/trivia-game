@@ -774,3 +774,24 @@
   box-shadow: 0 0 0 3px var(--accent-dim);
 }
 .lessons-search-input::placeholder { color: var(--ink-faint); }
+
+
+/* ── Keyboard hint in lesson detail ─────────────────────────── */
+.lesson-kb-hint {
+  font-size: 0.62rem;
+  color: var(--ink-faint);
+  opacity: 0.5;
+  text-align: center;
+  padding: 0 0 24px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.lesson-kb-hint kbd {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 0.58rem;
+}
+@media (hover: none) and (pointer: coarse) {
+  .lesson-kb-hint { display: none; }
+}
