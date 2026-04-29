@@ -505,6 +505,11 @@ function loadQuestion() {
   $('hint-box').style.display      = 'none';
   $('hint-text').textContent       = '';
   $('feedback-area').style.display = 'none';
+  // Reset ELI5 for the new question
+  const eli5Box = $('eli5-box');
+  const eli5Btn = $('eli5-btn');
+  if (eli5Box) eli5Box.style.display = 'none';
+  if (eli5Btn) { eli5Btn.disabled = false; eli5Btn.textContent = '🧒 Simpler'; }
 
   // Reset flag button for this question
   const flagBtn = $('flag-btn');
@@ -856,6 +861,53 @@ $('pu-hint').addEventListener('click', async () => {
     // Graceful fallback to static hint
     hintText.className   = '';
     hintText.textContent = q.hint;
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// ELI5 — Explain Like I'm 5
+// ══════════════════════════════════════════════════════════════
+
+$('eli5-btn').addEventListener('click', async () => {
+  if (state.answered) return; // no point simplifying after answering
+  const btn     = $('eli5-btn');
+  const box     = $('eli5-box');
+  const textEl  = $('eli5-text');
+  const q       = state.questions[state.currentIndex];
+
+  if (!q) return;
+
+  // Toggle off if already shown
+  if (box.style.display !== 'none') {
+    box.style.display = 'none';
+    btn.textContent   = '🧒 Simpler';
+    return;
+  }
+
+  btn.disabled    = true;
+  btn.textContent = '✦ Simplifying…';
+
+  try {
+    const res = await fetch('/api/eli5', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question_text: q.question_text,
+        option_a: q.option_a, option_b: q.option_b,
+        option_c: q.option_c, option_d: q.option_d,
+        level: q.level
+      })
+    });
+    const data = await res.json();
+    if (data.simplified) {
+      textEl.textContent  = data.simplified;
+      box.style.display   = 'block';
+      btn.textContent     = '✕ Hide';
+      btn.disabled        = false;
+    } else throw new Error('no content');
+  } catch (_) {
+    btn.textContent = '🧒 Simpler';
+    btn.disabled    = false;
   }
 });
 

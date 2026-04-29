@@ -660,6 +660,41 @@ Topic: ${level} — ${difficulty}`
 });
 
 // ============================================================
+// ELI5 — Explain Like I'm 5 (simplify a quiz question)
+// ============================================================
+
+app.post('/api/eli5', hintLimiter, async (req, res) => {
+  const { question_text, option_a, option_b, option_c, option_d, level } = req.body;
+  if (!question_text) return res.status(400).json({ error: 'question_text required.' });
+  if (!anthropic)     return res.status(503).json({ error: 'AI not configured.' });
+
+  try {
+    const message = await anthropic.messages.create({
+      model:      'claude-haiku-4-5',
+      max_tokens: 160,
+      system: `You rewrite complex AI quiz questions for complete beginners.
+Rewrite the question and all four answer options in the simplest possible language.
+Use analogies a 10-year-old would understand. Keep options A/B/C/D labels.
+Format: just the rewritten question text, then each option on its own line starting with A) B) C) D).
+No extra commentary.`,
+      messages: [{
+        role: 'user',
+        content: `Topic: ${level}
+Question: ${question_text}
+A) ${option_a}
+B) ${option_b}
+C) ${option_c}
+D) ${option_d}`
+      }]
+    });
+    res.json({ simplified: message.content[0].text.trim() });
+  } catch (err) {
+    console.error('ELI5 error:', err.message);
+    res.status(500).json({ error: 'Could not simplify.' });
+  }
+});
+
+// ============================================================
 // AI WRONG-ANSWER EXPLAINER — streaming, called after wrong answer
 // ============================================================
 

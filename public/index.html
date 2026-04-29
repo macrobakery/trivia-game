@@ -196,8 +196,16 @@
           <span class="qcat"  id="q-cat">AI Foundations</span>
         </div>
 
-        <!-- Question text -->
-        <h2 class="qtext" id="q-text">Loading question…</h2>
+        <!-- Question text + ELI5 toggle -->
+        <div class="qtext-wrap">
+          <h2 class="qtext" id="q-text">Loading question…</h2>
+          <button class="eli5-btn" id="eli5-btn" title="Explain this question in simpler language">🧒 Simpler</button>
+        </div>
+        <!-- ELI5 simplified version (hidden until used) -->
+        <div class="eli5-box" id="eli5-box" style="display:none">
+          <span class="eli5-label">✨ Simplified</span>
+          <p class="eli5-text" id="eli5-text"></p>
+        </div>
 
         <!-- Hint card (shown when hint power-up used) -->
         <div class="hint-card" id="hint-box" style="display:none">

@@ -1556,6 +1556,37 @@ ul     { list-style: none; }
 /* ── Practice mode: hide the timer ── */
 .practice-mode .timer-wrap { visibility: hidden; }
 
+/* ── ELI5 — Explain Like I'm 5 ── */
+.qtext-wrap {
+  display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;
+}
+.qtext-wrap .qtext { flex: 1; margin-bottom: 0; }
+.eli5-btn {
+  flex-shrink: 0; white-space: nowrap;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-pill); padding: 5px 11px;
+  font-size: 0.72rem; font-weight: 600; color: var(--ink-faint);
+  cursor: pointer; transition: all var(--t); margin-top: 4px;
+}
+.eli5-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+.eli5-btn:disabled { opacity: 0.5; cursor: default; }
+.eli5-box {
+  background: linear-gradient(135deg, hsl(200 100% 60% / 0.08), hsl(270 90% 70% / 0.06));
+  border: 1px solid hsl(200 100% 60% / 0.3);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  margin-bottom: 14px; animation: fadeIn 0.25s ease;
+}
+.eli5-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem; font-weight: 700;
+  color: var(--cyan); text-transform: uppercase;
+  letter-spacing: 0.5px; display: block; margin-bottom: 6px;
+}
+.eli5-text {
+  font-size: 0.84rem; color: var(--ink); line-height: 1.65;
+  white-space: pre-line;
+}
+
 /* ── Difficulty ramp suggestion ── */
 .difficulty-ramp {
   display: flex; align-items: center; gap: 12px;
