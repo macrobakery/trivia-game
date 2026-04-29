@@ -358,6 +358,17 @@
   border-radius: var(--radius-sm);
 }
 
+.point-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  opacity: 0.75;
+}
+
 .point-heading {
   font-size: 0.92rem;
   font-weight: 700;
@@ -462,6 +473,32 @@
   background: var(--surface-2);
   border-color: var(--border-hi);
   color: var(--ink);
+}
+
+/* ── Practice Quiz Link ─────────────────────────────────────── */
+
+.btn-quiz-topic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-quiz-topic:hover {
+  background: hsl(40 95% 58% / 0.12);
+  filter: brightness(1.1);
 }
 
 /* ── Duration Badge ─────────────────────────────────────────── */

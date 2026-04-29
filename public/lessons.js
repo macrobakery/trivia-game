@@ -864,8 +864,16 @@ function renderLessonList(topic) {
 ────────────────────────────────────────────────────────────── */
 
 function renderLessonDetail(topic, lesson) {
-  // Duration badge
+  // Duration badge + lesson position in topic
+  const lessonNum = topic.lessons.findIndex(l => l.id === lesson.id) + 1;
+  const lessonTotal = topic.lessons.length;
   document.getElementById('lesson-duration').textContent = `⏱ ${lesson.duration}`;
+
+  // Show lesson position in topbar area (after duration badge)
+  const durationEl = document.getElementById('lesson-duration');
+  if (durationEl) {
+    durationEl.innerHTML = `⏱ ${lesson.duration} &nbsp;·&nbsp; <span style="opacity:0.65">${lessonNum} of ${lessonTotal}</span>`;
+  }
 
   // Article content
   const article = document.getElementById('lesson-article');
@@ -874,8 +882,9 @@ function renderLessonDetail(topic, lesson) {
       <h2 class="lesson-title-main">${lesson.title}</h2>
       <p class="lesson-intro">${lesson.intro}</p>
       <div class="lesson-points">
-        ${lesson.points.map(point => `
+        ${lesson.points.map((point, i) => `
           <div class="lesson-point-card">
+            <div class="point-num">${i + 1} / ${lesson.points.length}</div>
             <div class="point-heading">${point.heading}</div>
             <div class="point-body">${point.body}</div>
           </div>
@@ -918,6 +927,19 @@ function renderLessonActions(topic, lesson) {
     html += `<button class="btn-next-lesson" id="btn-next-lesson" data-topic="${topic.id}" data-lesson="${nextLesson.id}">Next →</button>`;
   } else if (nextTopic) {
     html += `<button class="btn-next-lesson" id="btn-next-topic" data-topic="${nextTopic.id}">Next Topic →</button>`;
+  }
+
+  // Quiz practice link for this topic
+  const TOPIC_QUIZ_MAP = {
+    'foundations':       'AI Foundations',
+    'data-prep':         'Data Preparation',
+    'model-building':    'Model Building',
+    'ai-app-dev':        'AI App Development',
+    'deployment-ethics': 'Deployment and Responsible AI',
+  };
+  const quizLevel = TOPIC_QUIZ_MAP[topic.id];
+  if (quizLevel) {
+    html += `<a class="btn-quiz-topic" href="/?level=${encodeURIComponent(quizLevel)}" title="Practice quiz on ${topic.title}">🎮 Practice Quiz</a>`;
   }
 
   container.innerHTML = html;
