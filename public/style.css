@@ -2923,6 +2923,10 @@ button, a, input, select {
   .hub-tile-icon { font-size: 1.4rem; }
   .hub-tile-title { font-size: 0.72rem; }
   .hub-tile-sub { display: none; }
+  /* Quick links: tighter on very small screens */
+  .hub-quick-links { gap: 8px; }
+  .hub-quick-link  { padding: 12px 6px; font-size: 0.72rem; }
+  .hub-quick-icon  { font-size: 1.2rem; }
 }
 
 /* Ensure question screen content doesn't hide behind bottom nav */
