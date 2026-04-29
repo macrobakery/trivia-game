@@ -38,6 +38,51 @@ let state = {
   roundStartTime: null
 };
 
+// ── Spaced Repetition — track wrong questions across sessions ──
+const SR_KEY = 'aiChallenge_weakSpots';
+const SR_MAX = 50; // cap stored questions
+
+function getSRStore() {
+  try { return JSON.parse(localStorage.getItem(SR_KEY) || '[]'); } catch { return []; }
+}
+function saveSRStore(arr) {
+  try { localStorage.setItem(SR_KEY, JSON.stringify(arr.slice(-SR_MAX))); } catch {}
+}
+
+function recordWrongQuestion(q) {
+  const store = getSRStore();
+  // Avoid duplicates by question_text
+  const idx = store.findIndex(s => s.question_text === q.question_text);
+  if (idx !== -1) {
+    store[idx].wrongCount = (store[idx].wrongCount || 1) + 1;
+    store[idx].lastSeen   = Date.now();
+  } else {
+    store.push({
+      question_text: q.question_text,
+      option_a: q.option_a, option_b: q.option_b,
+      option_c: q.option_c, option_d: q.option_d,
+      correct_option: q.correct_option,
+      explanation: q.explanation,
+      hint: q.hint,
+      level: q.level, difficulty: q.difficulty,
+      wrongCount: 1, lastSeen: Date.now()
+    });
+  }
+  saveSRStore(store);
+}
+
+function clearMasteredQuestions(correctTexts) {
+  // When answered correctly, reduce their wrongCount
+  let store = getSRStore();
+  store = store.map(s => {
+    if (correctTexts.includes(s.question_text)) {
+      return { ...s, wrongCount: Math.max(0, (s.wrongCount || 1) - 1) };
+    }
+    return s;
+  }).filter(s => s.wrongCount > 0);
+  saveSRStore(store);
+}
+
 // ── Analytics (fire-and-forget) ────────────────────────────────
 function track(event, props = {}) {
   try {
@@ -661,6 +706,7 @@ function handleAnswer(selectedOption) {
 
     const streakLabel = streakBonus > 0 ? `  🔥×${state.streak} +${streakBonus} bonus` : '';
     showFeedback('correct', `✓ Correct! +${points} pts${streakLabel}`, q.explanation);
+    clearMasteredQuestions([q.question_text]);
     playSound(state.streak >= 3 ? 'streak' : 'correct');
     showCelebration();
   } else {
@@ -672,6 +718,7 @@ function handleAnswer(selectedOption) {
     updateStreakUI();
     showFeedback('wrong', `✗ Wrong! The answer was ${correct}`, q.explanation);
     streamExplanation(q, selectedOption);
+    recordWrongQuestion(q);
     playSound('wrong');
   }
 }
@@ -700,6 +747,7 @@ function handleTimeout() {
   updateStreakUI();
   showFeedback('timeout', `⏱ Time's up! The answer was ${correct}`, q.explanation);
   streamExplanation(q, null);
+  recordWrongQuestion(q);
   playSound('wrong');
 }
 
@@ -2021,3 +2069,53 @@ updateLevelCards();
 checkForSession();
 initDailyChallenge();
 initHubStreakDisplay();
+initWeakSpotsBtn();
+
+// ── Weak Spots button ──────────────────────────────────────────
+function initWeakSpotsBtn() {
+  const btn   = $('weak-spots-btn');
+  const count = $('ws-count');
+  if (!btn) return;
+
+  const store = getSRStore();
+  if (store.length >= 3) {
+    btn.style.display = '';
+    if (count) count.textContent = store.length;
+  }
+
+  btn.addEventListener('click', startWeakSpotsSession);
+}
+
+function startWeakSpotsSession() {
+  const store = getSRStore();
+  if (!store.length) return;
+  // Sort by wrongCount desc, take up to 10
+  const questions = shuffle([...store])
+    .sort((a, b) => (b.wrongCount || 1) - (a.wrongCount || 1))
+    .slice(0, 10)
+    .map(q => ({ ...q, id: q.question_text })); // ensure id field
+
+  Object.assign(state, {
+    questions, currentIndex: 0, score: 0,
+    correctCount: 0, wrongCount: 0,
+    streak: 0, maxStreak: 0, answerHistory: [], scoreSaved: false,
+    selectedLevel: 'Weak Spots', selectedDifficulty: 'Practice',
+    powerUps: { fiftyFifty: true, extraTime: true, hint: true },
+    roundStartTime: Date.now()
+  });
+
+  $('active-level-badge').textContent = '🎯 Weak Spots';
+  $('active-diff-badge').textContent  = 'Practice';
+  $('score-display').textContent      = '0';
+  $('correct-count').textContent      = '0';
+  $('wrong-count').textContent        = '0';
+  ['pu-fifty','pu-time','pu-hint'].forEach(id => { $(id).disabled = false; $(id).classList.remove('used'); });
+  $('game-screen').classList.add('practice-mode');
+  $('pu-time').style.display = 'none';
+  const sd = $('streak-display');
+  if (sd) sd.style.display = 'none';
+
+  showScreen('game');
+  loadQuestion();
+  track('quiz_start', { level: 'Weak Spots', difficulty: 'Practice' });
+}

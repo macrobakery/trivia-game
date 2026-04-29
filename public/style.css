@@ -1556,6 +1556,28 @@ ul     { list-style: none; }
 /* ── Practice mode: hide the timer ── */
 .practice-mode .timer-wrap { visibility: hidden; }
 
+/* ── Weak Spots practice button ── */
+.hub-cta-weakspots {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; position: relative; width: 100%; padding: 12px 44px;
+  background: linear-gradient(135deg, hsl(0 82% 62% / 0.08), hsl(40 95% 58% / 0.06));
+  border: 1px solid hsl(0 82% 62% / 0.4);
+  border-radius: var(--radius-pill); cursor: pointer;
+  color: hsl(0 82% 75%); font-size: 0.86rem; font-weight: 600;
+  transition: all var(--t);
+}
+.hub-cta-weakspots:hover {
+  border-color: hsl(0 82% 62% / 0.7);
+  background: hsl(0 82% 62% / 0.12);
+  transform: translateY(-1px);
+}
+.ws-count {
+  position: absolute; right: 36px;
+  background: hsl(0 82% 62%); color: #fff;
+  border-radius: 999px; font-size: 0.65rem; font-weight: 800;
+  padding: 1px 6px; font-family: 'JetBrains Mono', monospace;
+}
+
 /* ── Search bar (home screen) ── */
 .hub-search-wrap {
   width: 100%; max-width: 480px;
