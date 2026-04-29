@@ -395,6 +395,56 @@
       margin: 12px 0;
     }
 
+    /* ── Message timestamp ── */
+    .msg-time {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      color: var(--ink-faint);
+      opacity: 0.45;
+      align-self: flex-end;
+      margin-bottom: 2px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .msg.user .msg-time { margin-left: 4px; }
+    .msg.assistant .msg-time { margin-right: 4px; }
+
+    /* ── Character counter ── */
+    .chat-char-counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--ink-faint);
+      opacity: 0.4;
+      transition: color 0.2s, opacity 0.2s;
+      white-space: nowrap;
+      align-self: flex-end;
+      padding-bottom: 10px;
+      flex-shrink: 0;
+    }
+    .chat-char-counter.warn  { color: #f5a623; opacity: 0.8; }
+    .chat-char-counter.limit { color: var(--red, #e05252); opacity: 1; }
+
+    /* ── Helpful feedback buttons ── */
+    .msg-feedback {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .msg-fb-btn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 3px 9px;
+      font-size: 0.68rem;
+      color: var(--ink-faint);
+      cursor: pointer;
+      transition: all var(--t);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .msg-fb-btn:hover { border-color: var(--border-hi); color: var(--ink); }
+    .msg-fb-btn.active-up   { border-color: var(--green); color: var(--green); background: hsl(142 70% 50% / 0.08); }
+    .msg-fb-btn.active-down { border-color: var(--red, #e05252); color: var(--red, #e05252); background: hsl(0 70% 50% / 0.08); }
+
     /* ── Copy button on assistant messages ── */
     .msg-copy-btn {
       position: absolute;
@@ -546,6 +596,7 @@
           maxlength="1000"
           aria-label="Chat message"
         ></textarea>
+        <span class="chat-char-counter" id="chat-char-counter" aria-live="polite" aria-label="Characters remaining">1000</span>
         <button id="send-btn" aria-label="Send message" title="Send (Enter)">↑</button>
       </div>
       <p class="chat-input-hint">Press <kbd style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:3px;padding:1px 4px;font-size:0.58rem">Enter</kbd> to send · <kbd style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:3px;padding:1px 4px;font-size:0.58rem">Shift+Enter</kbd> for new line</p>
@@ -585,11 +636,37 @@
     let isStreaming = false;
 
     // ── DOM ──
-    const messagesEl = document.getElementById('chat-messages');
-    const inputEl    = document.getElementById('chat-input');
-    const sendBtn    = document.getElementById('send-btn');
-    const emptyEl    = document.getElementById('chat-empty');
-    const clearBtn   = document.getElementById('clear-chat-btn');
+    const messagesEl  = document.getElementById('chat-messages');
+    const inputEl     = document.getElementById('chat-input');
+    const sendBtn     = document.getElementById('send-btn');
+    const emptyEl     = document.getElementById('chat-empty');
+    const clearBtn    = document.getElementById('clear-chat-btn');
+    const charCounter = document.getElementById('chat-char-counter');
+
+    // ── Personalised greeting ──
+    (function personaliseGreeting() {
+      const titleEl = document.querySelector('.chat-empty-title');
+      const subEl   = document.querySelector('.chat-empty-sub');
+      if (!titleEl) return;
+      const name = localStorage.getItem('aiChallenge_playerName') || '';
+      if (name) {
+        titleEl.textContent = `Hi ${name}! I'm Alex, your AI Tutor`;
+      }
+    })();
+
+    // ── Character counter ──
+    function updateCharCounter() {
+      const len = inputEl.value.length;
+      const rem = 1000 - len;
+      if (!charCounter) return;
+      charCounter.textContent = rem;
+      charCounter.className = 'chat-char-counter' +
+        (rem <= 0 ? ' limit' : rem <= 100 ? ' warn' : '');
+      // Only show counter when user has typed something
+      charCounter.style.display = len > 0 ? '' : 'none';
+    }
+    // Hide by default
+    if (charCounter) charCounter.style.display = 'none';
 
     // ── Load saved history ──
     const sugBar = document.getElementById('suggested-bar');
@@ -653,14 +730,20 @@
       emptyEl.style.display = 'flex';
       // Restore suggestions bar
       if (sugBar) sugBar.style.display = '';
+      // Re-personalise greeting (name may have changed)
+      const titleEl = document.querySelector('.chat-empty-title');
+      if (titleEl) {
+        const name = localStorage.getItem('aiChallenge_playerName') || '';
+        titleEl.textContent = name ? `Hi ${name}! I'm Alex, your AI Tutor` : "Hi! I'm Alex, your AI Tutor";
+      }
     });
 
-    // ── Input auto-resize ──
+    // ── Input auto-resize + char counter ──
     function autoResize() {
       inputEl.style.height = 'auto';
       inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
     }
-    inputEl.addEventListener('input', autoResize);
+    inputEl.addEventListener('input', () => { autoResize(); updateCharCounter(); });
 
     // ── Send on Enter (Shift+Enter = newline) ──
     inputEl.addEventListener('keydown', e => {
@@ -676,6 +759,23 @@
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
+    // ── Format time as HH:MM ──
+    function fmtTime(d) {
+      const h = d.getHours(), m = d.getMinutes();
+      return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h < 12 ? 'AM' : 'PM'}`;
+    }
+
+    // ── Get user avatar label (initials or emoji) ──
+    function getUserAvatar() {
+      const name = localStorage.getItem('aiChallenge_playerName') || '';
+      if (!name) return '🧑';
+      // Return up to 2 initials
+      const parts = name.trim().split(/\s+/);
+      return parts.length >= 2
+        ? (parts[0][0] + parts[1][0]).toUpperCase()
+        : name.slice(0,2).toUpperCase();
+    }
+
     // ── Append a message bubble ──
     function appendBubble(role, content, animate = true) {
       const wrap = document.createElement('div');
@@ -684,14 +784,38 @@
 
       const avatar = document.createElement('div');
       avatar.className = 'msg-avatar';
-      avatar.textContent = role === 'assistant' ? '🤖' : '🧑';
+      if (role === 'assistant') {
+        avatar.textContent = '🤖';
+      } else {
+        const label = getUserAvatar();
+        // If it's initials (no emoji), style differently
+        if (/^[A-Z]{1,2}$/.test(label)) {
+          avatar.textContent = label;
+          avatar.style.cssText += 'font-size:0.72rem;font-weight:700;letter-spacing:-0.5px;';
+        } else {
+          avatar.textContent = label;
+        }
+      }
 
       const bubble = document.createElement('div');
       bubble.className = 'msg-bubble';
       bubble.innerHTML = formatText(content);
 
-      wrap.appendChild(avatar);
-      wrap.appendChild(bubble);
+      // Timestamp
+      const time = document.createElement('span');
+      time.className = 'msg-time';
+      time.setAttribute('aria-hidden', 'true');
+      time.textContent = fmtTime(new Date());
+
+      if (role === 'user') {
+        wrap.appendChild(time);
+        wrap.appendChild(bubble);
+        wrap.appendChild(avatar);
+      } else {
+        wrap.appendChild(avatar);
+        wrap.appendChild(bubble);
+        wrap.appendChild(time);
+      }
 
       // Add copy button for assistant messages
       if (role === 'assistant') {
@@ -807,6 +931,7 @@
 
       inputEl.value = '';
       inputEl.style.height = 'auto';
+      updateCharCounter();
       isStreaming = true;
       sendBtn.disabled = true;
 
@@ -882,8 +1007,16 @@
         const streamWrap = document.getElementById('streaming-msg');
         if (streamWrap) {
           streamWrap.removeAttribute('id');
-          // Add copy button to completed streaming bubble
+          // Add timestamp + copy button + feedback to completed streaming bubble
           if (fullResponse) {
+            // Timestamp
+            const time = document.createElement('span');
+            time.className = 'msg-time';
+            time.setAttribute('aria-hidden', 'true');
+            time.textContent = fmtTime(new Date());
+            streamWrap.appendChild(time);
+
+            // Copy button
             const copyBtn = document.createElement('button');
             copyBtn.className = 'msg-copy-btn';
             copyBtn.textContent = '⎘ Copy';
@@ -901,6 +1034,30 @@
               } catch { copyBtn.textContent = '✗'; }
             });
             streamWrap.appendChild(copyBtn);
+
+            // Helpful feedback buttons (inside the bubble)
+            const bubbleEl = streamWrap.querySelector('.msg-bubble');
+            if (bubbleEl) {
+              const fbRow = document.createElement('div');
+              fbRow.className = 'msg-feedback';
+              const upBtn   = document.createElement('button');
+              upBtn.className = 'msg-fb-btn';
+              upBtn.innerHTML = '👍 Helpful';
+              const downBtn = document.createElement('button');
+              downBtn.className = 'msg-fb-btn';
+              downBtn.innerHTML = '👎 Not helpful';
+              upBtn.addEventListener('click', () => {
+                upBtn.classList.toggle('active-up');
+                downBtn.classList.remove('active-down');
+              });
+              downBtn.addEventListener('click', () => {
+                downBtn.classList.toggle('active-down');
+                upBtn.classList.remove('active-up');
+              });
+              fbRow.appendChild(upBtn);
+              fbRow.appendChild(downBtn);
+              bubbleEl.appendChild(fbRow);
+            }
           }
         }
         isStreaming = false;
