@@ -3247,3 +3247,86 @@ button, a, input, select {
   color: var(--ink);
   transition: color 0.2s;
 }
+
+/* ---------------------------------------------------------
+   CONTINUE LEARNING — home screen next-lesson card
+--------------------------------------------------------- */
+.continue-learning {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin: 8px 0 4px;
+}
+.cl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.cl-title {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.cl-see-all {
+  font-size: 0.7rem;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity var(--t);
+}
+.cl-see-all:hover { opacity: 0.75; }
+
+.cl-lesson-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  text-decoration: none;
+  transition: all var(--t);
+}
+.cl-lesson-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  transform: translateX(2px);
+}
+.cl-lesson-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+.cl-lesson-info { flex: 1; min-width: 0; }
+.cl-lesson-topic {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+}
+.cl-lesson-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cl-lesson-arrow {
+  font-size: 1rem;
+  color: var(--ink-faint);
+  flex-shrink: 0;
+  transition: transform var(--t);
+}
+.cl-lesson-card:hover .cl-lesson-arrow {
+  color: var(--accent);
+  transform: translateX(4px);
+}

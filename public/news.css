@@ -459,6 +459,16 @@
   margin-top: 10px;
 }
 
+/* ── Reading time badge ── */
+.news-card-readtime {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--ink-faint);
+  white-space: nowrap;
+  opacity: 0.7;
+}
+
 /* ── Ask Alex link ── */
 .news-ask-alex {
   display: inline-flex; align-items: center; gap: 4px;

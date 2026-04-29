@@ -2292,6 +2292,84 @@ function renderDailyGoals() {
 })();
 
 // ══════════════════════════════════════════════════════════════
+// CONTINUE LEARNING — show next unfinished lesson on home screen
+// ══════════════════════════════════════════════════════════════
+
+(function initContinueLearning() {
+  const container = $('continue-learning');
+  if (!container) return;
+
+  // Curriculum mirror (must match lessons.js CURRICULUM)
+  const TOPICS = [
+    { id: 'foundations',       title: 'AI Foundations',      icon: '◐',
+      lessons: ['what-is-ai','machine-learning','deep-learning','model-training','ai-ethics'] },
+    { id: 'data-prep',         title: 'Data Preparation',    icon: '◇',
+      lessons: ['data-foundation','collecting-data','cleaning-data','feature-engineering','train-val-test'] },
+    { id: 'model-building',    title: 'Model Building',      icon: '◈',
+      lessons: ['supervised-unsupervised','regression-classification','trees-forests','model-evaluation','overfitting'] },
+    { id: 'ai-app-dev',        title: 'AI App Development',  icon: '◉',
+      lessons: ['choosing-api','prompt-engineering','rag','ai-agents','testing-ai-apps'] },
+    { id: 'deployment-ethics', title: 'Deployment & Ethics', icon: '✦',
+      lessons: ['deploying-models','monitoring-ai','ai-safety','fairness-bias','future-ai'] },
+  ];
+
+  const LESSON_TITLES = {
+    'what-is-ai':                 'What Is Artificial Intelligence?',
+    'machine-learning':           'Machine Learning: Teaching Computers to Learn',
+    'deep-learning':              'Deep Learning & Neural Networks',
+    'model-training':             'How Models Are Trained',
+    'ai-ethics':                  'AI Ethics & Bias',
+    'data-foundation':            'Why Data Is the Foundation of AI',
+    'collecting-data':            'Collecting & Sourcing Data',
+    'cleaning-data':              'Cleaning & Preprocessing Data',
+    'feature-engineering':        'Feature Engineering',
+    'train-val-test':             'Train, Validation & Test Splits',
+    'supervised-unsupervised':    'Supervised vs Unsupervised Learning',
+    'regression-classification':  'Regression vs Classification',
+    'trees-forests':              'Decision Trees & Random Forests',
+    'model-evaluation':           'Model Evaluation Metrics',
+    'overfitting':                'Overfitting & Regularisation',
+    'choosing-api':               'Choosing an AI API',
+    'prompt-engineering':         'Prompt Engineering',
+    'rag':                        'Retrieval-Augmented Generation (RAG)',
+    'ai-agents':                  'AI Agents & Tool Use',
+    'testing-ai-apps':            'Testing AI Applications',
+    'deploying-models':           'Deploying AI Models to Production',
+    'monitoring-ai':              'Monitoring AI Systems',
+    'ai-safety':                  'AI Safety & Alignment',
+    'fairness-bias':              'Fairness & Bias in AI',
+    'future-ai':                  'The Future of AI',
+  };
+
+  let progress = {};
+  try { progress = JSON.parse(localStorage.getItem('aiChallenge_lessonProgress') || '{}'); } catch {}
+
+  // Find first incomplete lesson across all topics
+  let nextTopic = null, nextLesson = null;
+  outer: for (const topic of TOPICS) {
+    for (const lessonId of topic.lessons) {
+      if (!progress[`${topic.id}/${lessonId}`]) {
+        nextTopic  = topic;
+        nextLesson = lessonId;
+        break outer;
+      }
+    }
+  }
+
+  if (!nextTopic) return; // All 25 lessons done — hide section
+
+  const iconEl   = $('cl-lesson-icon');
+  const topicEl  = $('cl-lesson-topic');
+  const titleEl  = $('cl-lesson-title');
+
+  if (iconEl)  iconEl.textContent  = nextTopic.icon;
+  if (topicEl) topicEl.textContent = nextTopic.title;
+  if (titleEl) titleEl.textContent = LESSON_TITLES[nextLesson] || nextLesson;
+
+  container.style.display = '';
+})();
+
+// ══════════════════════════════════════════════════════════════
 // SUGGEST A QUESTION MODAL
 // ══════════════════════════════════════════════════════════════
 

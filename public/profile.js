@@ -11,14 +11,26 @@ const BADGES = [
 ];
 
 const ACHIEVEMENTS = [
-  { id: 'first_win',     icon: '🎯', name: 'First Win',      desc: 'Complete any round'                    },
-  { id: 'perfect',       icon: '💎', name: 'Perfect Score',   desc: 'Score 10/10 correct'                  },
-  { id: 'speed_demon',   icon: '⚡', name: 'Speed Demon',     desc: 'Finish round with avg >8s remaining'   },
-  { id: 'veteran',       icon: '🎖️', name: 'Veteran',         desc: 'Play 10 rounds'                       },
-  { id: 'streak_legend', icon: '🔥', name: 'Streak Legend',   desc: 'Get a 5-answer streak'                },
-  { id: 'scholar',       icon: '📚', name: 'Scholar',         desc: 'Complete all 5 topic levels'          },
-  { id: 'ai_master',     icon: '🧠', name: 'AI Master',       desc: '90%+ accuracy on Advanced difficulty' },
-  { id: 'centurion',     icon: '💯', name: 'Centurion',       desc: 'Score 1000+ points in a single round' },
+  // Quiz achievements
+  { id: 'first_win',       icon: '🎯', name: 'First Win',        desc: 'Complete any quiz round',               category: 'quiz'    },
+  { id: 'perfect',         icon: '💎', name: 'Perfect Score',     desc: 'Score 10/10 correct',                   category: 'quiz'    },
+  { id: 'speed_demon',     icon: '⚡', name: 'Speed Demon',       desc: 'Finish round with avg >8s remaining',   category: 'quiz'    },
+  { id: 'veteran',         icon: '🎖️', name: 'Veteran',           desc: 'Play 10 rounds',                        category: 'quiz'    },
+  { id: 'streak_legend',   icon: '🔥', name: 'Streak Legend',     desc: 'Get a 5-answer streak',                 category: 'quiz'    },
+  { id: 'ai_master',       icon: '🧠', name: 'AI Master',         desc: '90%+ accuracy on Advanced difficulty',  category: 'quiz'    },
+  { id: 'centurion',       icon: '💯', name: 'Centurion',         desc: 'Score 1000+ points in a single round',  category: 'quiz'    },
+  { id: 'daily_warrior',   icon: '🗓', name: 'Daily Warrior',     desc: 'Complete 7 daily challenges',           category: 'quiz'    },
+  // Learning achievements
+  { id: 'scholar',         icon: '📚', name: 'Scholar',           desc: 'Complete all 5 quiz levels',            category: 'learn'   },
+  { id: 'lesson_starter',  icon: '🌱', name: 'First Lesson',      desc: 'Complete your first lesson',            category: 'learn'   },
+  { id: 'lesson_halfway',  icon: '📖', name: 'Halfway There',     desc: 'Complete 13 or more lessons',           category: 'learn'   },
+  { id: 'lesson_master',   icon: '🎓', name: 'Graduated',         desc: 'Complete all 25 lessons',               category: 'learn'   },
+  // News achievements
+  { id: 'news_reader',     icon: '📰', name: 'News Reader',       desc: 'Read 5 AI news articles',               category: 'news'    },
+  { id: 'news_addict',     icon: '🗞️', name: 'AI Journalist',     desc: 'Read 25 AI news articles',              category: 'news'    },
+  // Consistency achievements
+  { id: 'comeback',        icon: '🌅', name: 'Back in Action',    desc: 'Return after a 7+ day absence',         category: 'streak'  },
+  { id: 'week_streak',     icon: '📆', name: '7-Day Streak',      desc: 'Visit 7 days in a row',                 category: 'streak'  },
 ];
 
 const LEVELS = [
@@ -27,6 +39,15 @@ const LEVELS = [
   { name: 'Model Building',                 glyph: '◈', num: 'Level 3' },
   { name: 'AI App Development',             glyph: '◉', num: 'Level 4' },
   { name: 'Deployment and Responsible AI',  glyph: '✦', num: 'Level 5' },
+];
+
+// Must match CURRICULUM in lessons.js
+const LESSON_TOPICS = [
+  { id: 'foundations',       title: 'AI Foundations',      icon: '◐', count: 5 },
+  { id: 'data-prep',         title: 'Data Preparation',    icon: '◇', count: 5 },
+  { id: 'model-building',    title: 'Model Building',      icon: '◈', count: 5 },
+  { id: 'ai-app-dev',        title: 'AI App Development',  icon: '◉', count: 5 },
+  { id: 'deployment-ethics', title: 'Deployment & Ethics', icon: '✦', count: 5 },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────
@@ -102,6 +123,19 @@ function renderStats() {
   $('ps-accuracy').textContent    = total.answered
     ? Math.round((total.correct / total.answered) * 100) + '%'
     : '—';
+
+  // Lessons completed
+  const lessonProg  = read('aiChallenge_lessonProgress', {});
+  const lessonsDone = Object.values(lessonProg).filter(Boolean).length;
+  const lessonEl    = $('ps-lessons');
+  if (lessonEl) lessonEl.textContent = lessonsDone + '/25';
+
+  // News articles read
+  try {
+    const newsRead = new Set(JSON.parse(localStorage.getItem('aiChallenge_newsRead') || '[]'));
+    const newsEl   = $('ps-news');
+    if (newsEl) newsEl.textContent = newsRead.size;
+  } catch { /* ignore */ }
 }
 
 // ── Activity calendar ──────────────────────────────────────────
@@ -172,14 +206,86 @@ function renderLevelRecords() {
   }).join('');
 }
 
+// ── Lessons Progress ───────────────────────────────────────────
+function renderLessonsProgress() {
+  const progress    = read('aiChallenge_lessonProgress', {});
+  const totalDone   = Object.values(progress).filter(Boolean).length;
+  const totalAll    = 25;
+
+  const countEl = $('lessons-progress-count');
+  if (countEl) countEl.textContent = `${totalDone} / ${totalAll} complete`;
+
+  const container = $('lessons-progress-topics');
+  if (!container) return;
+
+  container.innerHTML = LESSON_TOPICS.map(topic => {
+    const done  = Object.keys(progress).filter(k => k.startsWith(topic.id + '/') && progress[k]).length;
+    const pct   = Math.round((done / topic.count) * 100);
+    const allDone = done === topic.count;
+    return `
+      <div class="lp-topic-row">
+        <div class="lp-topic-info">
+          <span class="lp-topic-icon">${topic.icon}</span>
+          <span class="lp-topic-title">${escapeHtml(topic.title)}</span>
+          <span class="lp-topic-count ${allDone ? 'lp-complete' : ''}">${done}/${topic.count}${allDone ? ' ✓' : ''}</span>
+        </div>
+        <div class="lp-bar-track">
+          <div class="lp-bar-fill ${allDone ? 'lp-bar-done' : ''}" style="width:${pct}%"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
 // ── Achievements ───────────────────────────────────────────────
 function renderAchievements() {
   const unlocked = read('aiChallenge_unlocked', []);
-  const achCount = $('ach-count');
-  if (achCount) achCount.textContent = `${unlocked.length} / ${ACHIEVEMENTS.length} unlocked`;
 
-  $('prof-ach-grid').innerHTML = ACHIEVEMENTS.map(ach => `
-    <div class="prof-ach-chip ${unlocked.includes(ach.id) ? 'unlocked' : ''}">
+  // Derive additional unlocked achievements from local data
+  const derived = new Set(unlocked);
+
+  // Lesson-based achievements
+  const lessonProg  = read('aiChallenge_lessonProgress', {});
+  const lessonsDone = Object.values(lessonProg).filter(Boolean).length;
+  if (lessonsDone >= 1)  derived.add('lesson_starter');
+  if (lessonsDone >= 13) derived.add('lesson_halfway');
+  if (lessonsDone >= 25) derived.add('lesson_master');
+
+  // News-based achievements
+  try {
+    const newsRead = new Set(JSON.parse(localStorage.getItem('aiChallenge_newsRead') || '[]'));
+    if (newsRead.size >= 5)  derived.add('news_reader');
+    if (newsRead.size >= 25) derived.add('news_addict');
+  } catch {}
+
+  // Streak-based achievements
+  const visitDates  = read('aiChallenge_visitDates', []);
+  if (visitDates.length >= 7) {
+    // Check for 7 consecutive days
+    const sorted = [...visitDates].sort();
+    let consecutive = 1, maxConsec = 1;
+    for (let i = 1; i < sorted.length; i++) {
+      const prev = new Date(sorted[i - 1]);
+      const curr = new Date(sorted[i]);
+      const diff = Math.round((curr - prev) / 86400000);
+      if (diff === 1) { consecutive++; maxConsec = Math.max(maxConsec, consecutive); }
+      else             { consecutive = 1; }
+    }
+    if (maxConsec >= 7) derived.add('week_streak');
+  }
+
+  const unlockedArr = [...derived];
+  const achCount = $('ach-count');
+  if (achCount) achCount.textContent = `${unlockedArr.length} / ${ACHIEVEMENTS.length} unlocked`;
+
+  // Group by category for display order
+  const categoryOrder = ['quiz', 'learn', 'news', 'streak'];
+  const sorted = [...ACHIEVEMENTS].sort((a, b) =>
+    categoryOrder.indexOf(a.category) - categoryOrder.indexOf(b.category)
+  );
+
+  $('prof-ach-grid').innerHTML = sorted.map(ach => `
+    <div class="prof-ach-chip ${unlockedArr.includes(ach.id) ? 'unlocked' : ''}" title="${ach.desc}">
       <span class="prof-ach-icon">${ach.icon}</span>
       <div class="prof-ach-info">
         <div class="prof-ach-name">${ach.name}</div>
@@ -251,6 +357,7 @@ renderHeader();
 renderStats();
 renderCalendar();
 renderLevelRecords();
+renderLessonsProgress();
 renderAchievements();
 renderDailyChallenge();
 

@@ -137,6 +137,15 @@ function applyFilter() {
 // ── Render ────────────────────────────────────────────────────
 
 /**
+ * Estimate reading time in minutes (200 wpm average).
+ */
+function estimateReadTime(text) {
+  if (!text) return 1;
+  const words = text.trim().split(/\s+/).length;
+  return Math.max(1, Math.round(words / 200));
+}
+
+/**
  * Build the HTML string for a single news card.
  */
 function renderCard(trend, index) {
@@ -147,6 +156,11 @@ function renderCard(trend, index) {
   const sourceUrl    = trend.source_url || '';
   const read         = isRead(headline);
   const bookmarked   = isBookmarked(headline);
+
+  // Reading time estimate (plain_english + why_it_matters combined)
+  const rawText    = (trend.plain_english || '') + ' ' + (trend.why_it_matters || '');
+  const readMins   = estimateReadTime(rawText);
+  const readTimeHtml = `<span class="news-card-readtime">⏱ ${readMins} min read</span>`;
 
   const linkHtml = sourceUrl
     ? `<a class="news-card-link news-read-link"
@@ -179,6 +193,7 @@ function renderCard(trend, index) {
         <span class="news-card-emoji">${escapeHtml(emoji)}</span>
         <div class="news-card-actions">
           ${readBadge}
+          ${readTimeHtml}
           <button class="news-bm-btn" data-headline="${escapeHtml(headline)}" title="${bmTitle}" aria-label="${bmTitle}">${bmIcon}</button>
         </div>
       </div>
