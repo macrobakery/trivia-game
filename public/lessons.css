@@ -79,6 +79,62 @@
   width: 0%;
 }
 
+/* ── Continue Learning Banner ──────────────────────────────── */
+
+.lessons-continue-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 14px 18px;
+  background: var(--accent-dim);
+  border: 1px solid hsl(270 90% 70% / 0.3);
+  border-radius: var(--radius);
+  margin-bottom: 22px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--t), background var(--t);
+  font-family: inherit;
+}
+.lessons-continue-banner:hover {
+  border-color: var(--accent);
+  background: hsl(270 90% 70% / 0.12);
+}
+
+.lcb-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.lcb-info { flex: 1; min-width: 0; }
+
+.lcb-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+}
+
+.lcb-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lcb-arr {
+  font-size: 1rem;
+  color: var(--accent);
+  flex-shrink: 0;
+  transition: transform var(--t);
+}
+.lessons-continue-banner:hover .lcb-arr { transform: translateX(4px); }
+
 /* ── Topic List ─────────────────────────────────────────────── */
 
 .topic-list {

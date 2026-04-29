@@ -77,7 +77,27 @@
   border-left: 3px solid var(--accent); /* overridden per-index below */
   padding: 24px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  /* Stagger-in animation on load */
+  animation: newsCardIn 0.35s ease both;
 }
+.news-card:nth-child(1)  { animation-delay: 0.04s; }
+.news-card:nth-child(2)  { animation-delay: 0.08s; }
+.news-card:nth-child(3)  { animation-delay: 0.12s; }
+.news-card:nth-child(4)  { animation-delay: 0.16s; }
+.news-card:nth-child(5)  { animation-delay: 0.20s; }
+.news-card:nth-child(6)  { animation-delay: 0.24s; }
+.news-card:nth-child(7)  { animation-delay: 0.28s; }
+.news-card:nth-child(8)  { animation-delay: 0.32s; }
+.news-card:nth-child(9)  { animation-delay: 0.36s; }
+.news-card:nth-child(10) { animation-delay: 0.40s; }
+
+@keyframes newsCardIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Skip animation on skeleton cards */
+.news-card.skeleton-card { animation: none; }
 
 .news-card:hover {
   border-color: var(--border-hi);

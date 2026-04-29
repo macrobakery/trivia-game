@@ -850,6 +850,49 @@ function setActiveView(viewId) {
    RENDER: TOPIC LIST
 ────────────────────────────────────────────────────────────── */
 
+// ── "Continue Learning" banner — find next incomplete lesson ──
+
+function renderContinueBanner() {
+  const banner  = document.getElementById('lessons-continue-banner');
+  const lblEl   = document.getElementById('lcb-title');
+  const iconEl  = document.getElementById('lcb-icon');
+  if (!banner || !lblEl) return;
+
+  const progress = getProgress();
+  let nextTopic  = null;
+  let nextLesson = null;
+
+  // Walk curriculum in order to find first incomplete lesson
+  outer: for (const topic of CURRICULUM) {
+    for (const lesson of topic.lessons) {
+      const key = `${topic.id}/${lesson.id}`;
+      if (!progress[key]) {
+        nextTopic  = topic;
+        nextLesson = lesson;
+        break outer;
+      }
+    }
+  }
+
+  if (!nextTopic || !nextLesson) {
+    // All done!
+    banner.style.display = 'none';
+    return;
+  }
+
+  // Don't show banner if no progress yet (new user — let them browse)
+  const done = totalDoneCount();
+  if (done === 0) { banner.style.display = 'none'; return; }
+
+  banner.style.display = 'flex';
+  if (iconEl) iconEl.textContent = nextTopic.icon;
+  lblEl.textContent = nextLesson.title;
+
+  banner.onclick = () => {
+    showLessonDetail(nextTopic.id, nextLesson.id);
+  };
+}
+
 function renderTopicList() {
   const container = document.getElementById('topic-list');
   if (!container) return;
@@ -863,6 +906,9 @@ function renderTopicList() {
   document.getElementById('total-lessons').textContent = total;
   const fill = document.getElementById('total-fill');
   if (fill) fill.style.width = `${pct}%`;
+
+  // "Continue Learning" next-lesson banner
+  renderContinueBanner();
 
   // Render cards
   container.innerHTML = CURRICULUM.map(topic => {
