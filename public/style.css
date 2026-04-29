@@ -3198,3 +3198,52 @@ button, a, input, select {
   animation: timerPulse 0.6s ease-in-out infinite;
   border-radius: 50%;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   DAILY GOALS — home screen progress tracker
+───────────────────────────────────────────────────────────── */
+.daily-goals {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin: 8px 0 4px;
+}
+.dg-title {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.dg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.dg-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+}
+.dg-check {
+  font-size: 1rem;
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.dg-item.done .dg-check {
+  color: var(--green);
+}
+.dg-item.done .dg-label {
+  color: var(--ink-faint);
+  text-decoration: line-through;
+}
+.dg-label {
+  color: var(--ink);
+  transition: color 0.2s;
+}

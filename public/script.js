@@ -1214,7 +1214,7 @@ $('save-score-btn').addEventListener('click', () => {
   openSaveModal();
 });
 $('view-lb-res-btn').addEventListener('click', () => openLeaderboardModal());
-$('play-again-btn').addEventListener('click', () => { clearSession(); showScreen('start'); loadLeaderboardPreview(); });
+$('play-again-btn').addEventListener('click', () => { clearSession(); showScreen('start'); loadLeaderboardPreview(); renderDailyGoals(); });
 
 $('review-btn').addEventListener('click', () => {
   const section = $('review-section');
@@ -1876,6 +1876,13 @@ function showResults() {
     markDailyDone();
     state.isDailyChallenge = false;
   }
+
+  // Track game goal for daily goals
+  try {
+    const d   = new Date();
+    const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    localStorage.setItem('aiChallenge_lastGameDone', str);
+  } catch {}
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2159,6 +2166,58 @@ initHubStreakDisplay();
 })();
 initWeakSpotsBtn();
 initHomeStatsStrip();
+renderDailyGoals();
+
+// ══════════════════════════════════════════════════════════════
+// DAILY GOALS — 3 simple daily targets
+// ══════════════════════════════════════════════════════════════
+
+function _todayGoalStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function renderDailyGoals() {
+  const today  = _todayGoalStr();
+  const goals  = $('daily-goals');
+  if (!goals) return;
+
+  const gameDone   = localStorage.getItem('aiChallenge_dailyDone') === today
+                     || (() => {
+                       // Also check if any game was played today via levelStats lastPlayed
+                       try {
+                         const stats = JSON.parse(localStorage.getItem('aiChallenge_levelStats') || '{}');
+                         return Object.values(stats).some(v => v && v.lastPlayed === today);
+                       } catch { return false; }
+                     })();
+  const newsDone   = localStorage.getItem('aiChallenge_lastNewsRead') === today;
+  const lessonDone = localStorage.getItem('aiChallenge_lastLessonDone') === today;
+
+  const anyGoal = gameDone || newsDone || lessonDone;
+  goals.style.display = anyGoal ? 'block' : 'none';
+  if (!anyGoal) return;
+
+  function setGoal(id, checkId, done) {
+    const item  = $(id);
+    const check = $(checkId);
+    if (!item || !check) return;
+    item.classList.toggle('done', done);
+    check.textContent = done ? '✓' : '○';
+  }
+
+  setGoal('dg-game',   'dg-game-check',   gameDone);
+  setGoal('dg-news',   'dg-news-check',   newsDone);
+  setGoal('dg-lesson', 'dg-lesson-check', lessonDone);
+
+  // Animate newly completed goals
+  const all = gameDone && newsDone && lessonDone;
+  const titleEl = goals.querySelector('.dg-title');
+  if (titleEl) {
+    titleEl.textContent = all ? '🎉 All goals done!' : `Today's Goals (${[gameDone,newsDone,lessonDone].filter(Boolean).length}/3)`;
+    if (all) titleEl.style.color = 'var(--green)';
+    else     titleEl.style.color = '';
+  }
+}
 
 // ══════════════════════════════════════════════════════════════
 // AI FACT OF THE DAY — rotating daily widget

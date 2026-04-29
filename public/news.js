@@ -63,6 +63,12 @@ function markRead(headline) {
   s.add(headline);
   saveReadSet(s);
   updateUnreadBadge();
+  // Track for daily goals
+  try {
+    const d = new Date();
+    const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    localStorage.setItem('aiChallenge_lastNewsRead', str);
+  } catch {}
 }
 
 function toggleBookmark(trend) {

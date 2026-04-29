@@ -699,6 +699,10 @@ function markDone(topicId, lessonId) {
   progress[`${topicId}/${lessonId}`] = true;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    // Track for daily goals
+    const d   = new Date();
+    const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    localStorage.setItem('aiChallenge_lastLessonDone', str);
   } catch (e) {
     console.warn('Could not save progress:', e);
   }
