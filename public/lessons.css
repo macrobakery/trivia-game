@@ -832,3 +832,18 @@
 @media (hover: none) and (pointer: coarse) {
   .lesson-kb-hint { display: none; }
 }
+
+/* Swipe hint — touch/mobile only */
+.lesson-swipe-hint {
+  display: none;
+  text-align: center;
+  font-size: 0.68rem;
+  color: var(--ink-faint);
+  margin-top: 8px;
+  padding-bottom: 8px;
+  letter-spacing: 0.01em;
+  opacity: 0.7;
+}
+@media (hover: none) and (pointer: coarse) {
+  .lesson-swipe-hint { display: block; }
+}
