@@ -278,9 +278,40 @@ function updateStreakUI() {
     el.style.display = 'flex';
     $('streak-num').textContent = state.streak;
     el.className = `streak-pill${state.streak >= 5 ? ' streak-hot' : ''}`;
+    // Burst animation at streak milestones
+    if ([3, 5, 7, 10].includes(state.streak)) {
+      el.classList.add('streak-burst');
+      setTimeout(() => el.classList.remove('streak-burst'), 600);
+      showStreakToast(state.streak);
+    }
   } else {
     el.style.display = 'none';
   }
+}
+
+function showStreakToast(n) {
+  const msg = n >= 10 ? `🔥×${n} UNSTOPPABLE!` : n >= 7 ? `🔥×${n} On fire!` : n >= 5 ? `🔥×${n} Hot streak!` : `🔥×${n} Streak!`;
+  let toast = document.getElementById('streak-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'streak-toast';
+    toast.style.cssText = `
+      position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-20px);
+      background:var(--accent);color:#0a0013;border-radius:999px;
+      padding:8px 20px;font-size:0.85rem;font-weight:800;
+      z-index:9000;pointer-events:none;opacity:0;
+      transition:opacity 0.2s,transform 0.2s;white-space:nowrap;
+    `;
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(-20px)';
+  }, 1800);
 }
 
 // ══════════════════════════════════════════════════════════════

@@ -231,26 +231,79 @@ function renderMilestoneBar(currentDay) {
 }
 
 function checkMilestone(data) {
-  const toast = document.getElementById('milestone-toast');
-  if (!toast) return;
-
   const hit = MILESTONES.find(m => m.days === data.count);
   if (!hit) return;
 
   const messages = {
-    3:   `${hit.icon} ${hit.label}! You've built a 3-day habit — keep it up!`,
-    7:   `${hit.icon} ${hit.label}! One full week of learning — you're on fire!`,
-    30:  `${hit.icon} ${hit.label}! 30 days of AI mastery — incredible dedication!`,
-    100: `${hit.icon} ${hit.label}! 100 days! You are an AI learning champion! 🎉`,
+    3:   `${hit.icon} 3-Day Streak! You've built a habit — keep it up!`,
+    7:   `${hit.icon} Week Warrior! One full week of learning — you're on fire!`,
+    30:  `${hit.icon} 30-Day Legend! Incredible dedication to AI mastery!`,
+    100: `${hit.icon} 100-Day Champion! You are an AI learning legend! 🎉`,
   };
 
   const msg = messages[data.count] || `${hit.icon} ${hit.label}! Milestone reached!`;
-  toast.textContent = msg;
-  toast.classList.add('visible');
 
-  setTimeout(() => {
-    toast.classList.remove('visible');
-  }, 3000);
+  // Big celebration modal for major milestones
+  showStreakCelebration(data.count, hit.icon, msg);
+
+  // Also fire confetti
+  launchStreakConfetti(data.count);
+}
+
+function showStreakCelebration(days, icon, message) {
+  // Remove any existing one
+  const old = document.getElementById('streak-celebrate-overlay');
+  if (old) old.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'streak-celebrate-overlay';
+  overlay.style.cssText = `
+    position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);animation:fadeIn 0.3s ease;
+  `;
+  overlay.innerHTML = `
+    <div style="
+      background:var(--modal-bg);border:1px solid var(--accent);border-radius:24px;
+      padding:36px 32px;max-width:340px;width:calc(100vw - 32px);text-align:center;
+      box-shadow:0 0 60px rgba(124,106,255,0.3);animation:scaleIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    ">
+      <div style="font-size:3.5rem;margin-bottom:12px;animation:bounceIn 0.5s ease 0.1s both;">${icon}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Streak Milestone</div>
+      <h2 style="font-family:'Fraunces',serif;font-size:1.5rem;color:var(--ink);margin-bottom:10px;">${days}-Day Streak!</h2>
+      <p style="font-size:0.88rem;color:var(--ink-faint);line-height:1.6;margin-bottom:24px;">${message}</p>
+      <button id="streak-celebrate-close" style="
+        background:var(--accent);color:#0a0013;border:none;border-radius:999px;
+        padding:12px 28px;font-size:0.9rem;font-weight:700;cursor:pointer;width:100%;
+      ">Keep it going! 🚀</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const close = () => {
+    overlay.style.animation = 'fadeOut 0.2s ease forwards';
+    setTimeout(() => overlay.remove(), 200);
+  };
+  document.getElementById('streak-celebrate-close').addEventListener('click', close);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  setTimeout(close, 8000); // auto-dismiss
+}
+
+function launchStreakConfetti(days) {
+  const count  = days >= 30 ? 120 : days >= 7 ? 80 : 50;
+  const colors = ['hsl(270 90% 70%)','hsl(200 100% 60%)','hsl(142 68% 50%)','hsl(40 95% 58%)','hsl(0 82% 62%)','#fff'];
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.style.cssText = `
+      position:fixed;top:-10px;pointer-events:none;z-index:10000;
+      left:${Math.random()*100}vw;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      width:${Math.random()*8+5}px;height:${Math.random()*8+5}px;
+      border-radius:${Math.random()>0.5?'50%':'2px'};
+      animation:confettiFall ${(Math.random()*2+1.5).toFixed(2)}s ease-in ${(Math.random()*0.6).toFixed(2)}s forwards;
+    `;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 3500);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
