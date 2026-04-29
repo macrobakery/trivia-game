@@ -915,21 +915,7 @@ function renderLessonActions(topic, lesson) {
   const topicIdx = CURRICULUM.findIndex(t => t.id === topic.id);
   const nextTopic = !nextLesson ? (CURRICULUM[topicIdx + 1] || null) : null;
 
-  let html = '';
-
-  if (done) {
-    html += `<button class="btn-done completed" disabled>✓ Completed</button>`;
-  } else {
-    html += `<button class="btn-done" id="btn-mark-done">Mark as Done ✓</button>`;
-  }
-
-  if (nextLesson) {
-    html += `<button class="btn-next-lesson" id="btn-next-lesson" data-topic="${topic.id}" data-lesson="${nextLesson.id}">Next →</button>`;
-  } else if (nextTopic) {
-    html += `<button class="btn-next-lesson" id="btn-next-topic" data-topic="${nextTopic.id}">Next Topic →</button>`;
-  }
-
-  // Quiz practice link for this topic
+  // ── Quiz practice map ──────────────────────────────────────
   const TOPIC_QUIZ_MAP = {
     'foundations':       'AI Foundations',
     'data-prep':         'Data Preparation',
@@ -938,6 +924,29 @@ function renderLessonActions(topic, lesson) {
     'deployment-ethics': 'Deployment and Responsible AI',
   };
   const quizLevel = TOPIC_QUIZ_MAP[topic.id];
+
+  let html = '';
+
+  if (done) {
+    // Already complete — show completed badge then navigation
+    html += `<button class="btn-done completed" disabled>✓ Completed</button>`;
+    if (nextLesson) {
+      html += `<button class="btn-next-lesson" id="btn-next-lesson" data-topic="${topic.id}" data-lesson="${nextLesson.id}">Next Lesson →</button>`;
+    } else if (nextTopic) {
+      html += `<button class="btn-next-lesson" id="btn-next-topic" data-topic="${nextTopic.id}">Next Topic →</button>`;
+    }
+  } else {
+    // Not complete — combine mark-done + advance into one button
+    if (nextLesson) {
+      html += `<button class="btn-done btn-done-advance" id="btn-mark-done" data-next-topic="${topic.id}" data-next-lesson="${nextLesson.id}">Done &amp; Next →</button>`;
+    } else if (nextTopic) {
+      html += `<button class="btn-done btn-done-advance" id="btn-mark-done" data-next-topic="${nextTopic.id}" data-next-type="topic">Done &amp; Next Topic →</button>`;
+    } else {
+      // Last lesson in entire curriculum
+      html += `<button class="btn-done" id="btn-mark-done">Mark as Done ✓</button>`;
+    }
+  }
+
   if (quizLevel) {
     html += `<a class="btn-quiz-topic" href="/?level=${encodeURIComponent(quizLevel)}" title="Practice quiz on ${topic.title}">🎮 Practice Quiz</a>`;
   }
@@ -949,11 +958,29 @@ function renderLessonActions(topic, lesson) {
   if (btnDone) {
     btnDone.addEventListener('click', () => {
       markDone(topic.id, lesson.id);
-      renderLessonActions(topic, lesson);
+
+      // Brief visual confirmation before advancing
+      btnDone.textContent = '✓ Done!';
+      btnDone.classList.add('completed');
+      btnDone.disabled = true;
+
+      const nextType   = btnDone.dataset.nextType;    // 'topic' or undefined
+      const nextTopic2 = btnDone.dataset.nextTopic;
+      const nextLesson2 = btnDone.dataset.nextLesson;
+
+      if (nextTopic2) {
+        setTimeout(() => {
+          if (nextType === 'topic') showLessonList(nextTopic2);
+          else                     showLessonDetail(nextTopic2, nextLesson2);
+        }, 420);
+      } else {
+        // End of curriculum — just re-render the action buttons
+        setTimeout(() => renderLessonActions(topic, lesson), 420);
+      }
     });
   }
 
-  // Next lesson handler
+  // Next lesson / topic handlers (shown when lesson is already done)
   const btnNextLesson = document.getElementById('btn-next-lesson');
   if (btnNextLesson) {
     btnNextLesson.addEventListener('click', () => {
@@ -961,7 +988,6 @@ function renderLessonActions(topic, lesson) {
     });
   }
 
-  // Next topic handler
   const btnNextTopic = document.getElementById('btn-next-topic');
   if (btnNextTopic) {
     btnNextTopic.addEventListener('click', () => {

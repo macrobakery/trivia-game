@@ -445,6 +445,14 @@
   cursor: default;
 }
 
+/* Primary action: Done & Next — styled more prominently */
+.btn-done.btn-done-advance {
+  background: linear-gradient(135deg, var(--accent), hsl(270 80% 60%));
+  font-size: 0.95rem;
+  padding: 14px 28px;
+  flex: 2; /* takes more space than the quiz link */
+}
+
 .btn-done.completed:hover {
   filter: none;
   transform: none;
