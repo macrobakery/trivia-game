@@ -2031,6 +2031,14 @@ function updateLevelStats() {
 
 const _origShowResults = showResults;
 function showResults() {
+  // Capture personal best BEFORE saving new score
+  const _prevBest = (() => {
+    try {
+      const ls = JSON.parse(localStorage.getItem('aiChallenge_levelStats') || '{}');
+      return (ls[state.selectedLevel] || {}).bestScore || 0;
+    } catch { return 0; }
+  })();
+
   _origShowResults();
 
   const { correctCount, maxStreak, score, selectedDifficulty, selectedLevel, questions } = state;
@@ -2085,6 +2093,27 @@ function showResults() {
   // 🎉 Confetti for good results (≥70% accuracy, non-practice)
   if (!isPractice && accuracy >= 70) {
     setTimeout(() => launchResultsConfetti(accuracy), 400);
+  }
+
+  // ⭐ Personal best detection
+  const pbBanner = $('personal-best-banner');
+  const pbSub    = $('pb-sub');
+  if (pbBanner) {
+    const isNewBest = !isPractice && score > 0 && score > _prevBest;
+    if (isNewBest) {
+      const diff = score - _prevBest;
+      if (pbSub) {
+        pbSub.textContent = _prevBest > 0
+          ? `+${diff.toLocaleString()} pts vs your previous best`
+          : 'First scored game — great start!';
+      }
+      pbBanner.style.display = 'flex';
+      // Small entrance delay so it appears after the count-up
+      pbBanner.style.animationPlayState = 'paused';
+      setTimeout(() => { pbBanner.style.animationPlayState = 'running'; }, 600);
+    } else {
+      pbBanner.style.display = 'none';
+    }
   }
 }
 
