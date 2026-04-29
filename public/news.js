@@ -242,6 +242,12 @@ function renderNews(data) {
   const trends = Array.isArray(data.trends) ? data.trends : [];
   _cachedTrends = trends;
 
+  // Update subtitle story count
+  const countSubEl = document.getElementById('news-count-sub');
+  if (countSubEl && trends.length > 0) {
+    countSubEl.textContent = ` · ${trends.length} ${trends.length === 1 ? 'story' : 'stories'}`;
+  }
+
   if (trends.length === 0) {
     grid.innerHTML = `<p style="color:var(--ink-faint);text-align:center;padding:32px 0">No stories available right now.</p>`;
     return;

@@ -341,6 +341,30 @@
       border-top: 1px solid var(--border);
       margin: 12px 0;
     }
+
+    /* ── Copy button on assistant messages ── */
+    .msg-copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 7px;
+      font-size: 0.65rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--ink-faint);
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.15s ease, color 0.15s ease;
+      white-space: nowrap;
+    }
+    .msg.assistant:hover .msg-copy-btn { opacity: 1; }
+    .msg-copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .msg-copy-btn.copied { color: var(--green); border-color: var(--green); opacity: 1; }
+
+    /* Need relative positioning on assistant msg wrapper */
+    .msg.assistant { position: relative; }
   </style>
 
   <meta property="og:type"        content="website" />
@@ -475,12 +499,14 @@
     const clearBtn   = document.getElementById('clear-chat-btn');
 
     // ── Load saved history ──
+    const sugBar = document.getElementById('suggested-bar');
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
       if (saved.length) {
         messages = saved;
         messages.forEach(m => appendBubble(m.role, m.content, false));
         emptyEl.style.display = 'none';
+        if (sugBar) sugBar.style.display = 'none';
         scrollBottom();
       }
     } catch { messages = []; }
@@ -519,6 +545,8 @@
       // Remove all bubbles except empty state
       document.querySelectorAll('.msg').forEach(el => el.remove());
       emptyEl.style.display = 'flex';
+      // Restore suggestions bar
+      if (sugBar) sugBar.style.display = '';
     });
 
     // ── Input auto-resize ──
@@ -558,6 +586,27 @@
 
       wrap.appendChild(avatar);
       wrap.appendChild(bubble);
+
+      // Add copy button for assistant messages
+      if (role === 'assistant') {
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'msg-copy-btn';
+        copyBtn.textContent = '⎘ Copy';
+        copyBtn.title = 'Copy message';
+        copyBtn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(content);
+            copyBtn.textContent = '✓ Copied';
+            copyBtn.classList.add('copied');
+            setTimeout(() => {
+              copyBtn.textContent = '⎘ Copy';
+              copyBtn.classList.remove('copied');
+            }, 2000);
+          } catch { copyBtn.textContent = '✗'; }
+        });
+        wrap.appendChild(copyBtn);
+      }
+
       messagesEl.appendChild(wrap);
       emptyEl.style.display = 'none';
       scrollBottom();
@@ -656,9 +705,13 @@
       sendBtn.disabled = true;
 
       // Show user bubble
+      const isFirstMsg = messages.length === 0;
       messages.push({ role: 'user', content: text });
       appendBubble('user', text);
       saveHistory();
+
+      // Hide suggestions bar after first message
+      if (isFirstMsg && sugBar) sugBar.style.display = 'none';
 
       // Show streaming bubble
       const bubble = appendStreamingBubble();
@@ -721,7 +774,29 @@
       } finally {
         // Remove streaming bubble wrapper and clean up
         const streamWrap = document.getElementById('streaming-msg');
-        if (streamWrap) streamWrap.removeAttribute('id');
+        if (streamWrap) {
+          streamWrap.removeAttribute('id');
+          // Add copy button to completed streaming bubble
+          if (fullResponse) {
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'msg-copy-btn';
+            copyBtn.textContent = '⎘ Copy';
+            copyBtn.title = 'Copy message';
+            const resp = fullResponse; // closure capture
+            copyBtn.addEventListener('click', async () => {
+              try {
+                await navigator.clipboard.writeText(resp);
+                copyBtn.textContent = '✓ Copied';
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                  copyBtn.textContent = '⎘ Copy';
+                  copyBtn.classList.remove('copied');
+                }, 2000);
+              } catch { copyBtn.textContent = '✗'; }
+            });
+            streamWrap.appendChild(copyBtn);
+          }
+        }
         isStreaming = false;
         sendBtn.disabled = false;
         inputEl.focus();
