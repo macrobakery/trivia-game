@@ -1232,6 +1232,20 @@ ul     { list-style: none; }
   font-size: 0.84rem;
   color: var(--ink-faint);
   line-height: 1.68;
+  min-height: 1.4em;
+}
+
+/* ── Alex typing cursor (wrong-answer explainer) ── */
+.mentor-typing::after {
+  content: '▋';
+  display: inline-block;
+  margin-left: 1px;
+  color: var(--accent);
+  animation: mentorCursor 0.75s step-end infinite;
+}
+@keyframes mentorCursor {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
 }
 
 .btn-next {

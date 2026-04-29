@@ -623,6 +623,7 @@ function handleAnswer(selectedOption) {
     setOrbState('wrong');
     updateStreakUI();
     showFeedback('wrong', `✗ Wrong! The answer was ${correct}`, q.explanation);
+    streamExplanation(q, selectedOption);
     playSound('wrong');
   }
 }
@@ -650,7 +651,73 @@ function handleTimeout() {
   setOrbState('wrong');
   updateStreakUI();
   showFeedback('timeout', `⏱ Time's up! The answer was ${correct}`, q.explanation);
+  streamExplanation(q, null);
   playSound('wrong');
+}
+
+// ── AI wrong-answer explainer ──────────────────────────────────
+async function streamExplanation(q, selectedOption) {
+  const mentorText  = $('mentor-text');
+  const mentorTitle = $('mentor-title');
+  if (!mentorText) return;
+
+  // Show loading state immediately
+  if (mentorTitle) mentorTitle.textContent = '🤖 Alex is explaining…';
+  mentorText.textContent = '';
+  mentorText.classList.add('mentor-typing');
+
+  try {
+    const resp = await fetch('/api/explain', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question_text:   q.question_text,
+        option_a:        q.option_a,
+        option_b:        q.option_b,
+        option_c:        q.option_c,
+        option_d:        q.option_d,
+        correct_option:  q.correct_option.toUpperCase(),
+        selected_option: selectedOption,
+        level:           q.level,
+        difficulty:      q.difficulty
+      })
+    });
+
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+    const reader  = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let   buffer  = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // hold back incomplete line
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const raw = line.slice(6).trim();
+        if (raw === '[DONE]') {
+          mentorText.classList.remove('mentor-typing');
+          if (mentorTitle) mentorTitle.textContent = '🤖 Alex explains';
+          return;
+        }
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed.text)  mentorText.textContent += parsed.text;
+          if (parsed.error) throw new Error(parsed.error);
+        } catch (_) { /* skip malformed chunks */ }
+      }
+    }
+  } catch (err) {
+    // Graceful fallback: show static explanation
+    mentorText.textContent = q.explanation || '';
+    mentorText.classList.remove('mentor-typing');
+    if (mentorTitle) mentorTitle.textContent = '🤖 AI Mentor Explanation';
+  }
 }
 
 function highlightOptions(selected, correct) {

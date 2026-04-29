@@ -54,6 +54,11 @@ const hintLimiter = rateLimit({
   max: 6, // max 6 AI hint requests per minute per IP
   message: { error: 'AI hint rate limit reached. Wait a moment.' }
 });
+const explainLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30, // max 30 explain requests per minute per IP (one per wrong answer)
+  message: { error: 'Explain rate limit reached. Wait a moment.' }
+});
 const scoreLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 20, // max 20 score saves per hour per IP
@@ -651,6 +656,66 @@ Topic: ${level} — ${difficulty}`
   } catch (err) {
     console.error('AI hint error:', err.message);
     res.status(500).json({ error: 'AI request failed.', source: 'error' });
+  }
+});
+
+// ============================================================
+// AI WRONG-ANSWER EXPLAINER — streaming, called after wrong answer
+// ============================================================
+
+app.post('/api/explain', explainLimiter, async (req, res) => {
+  const { question_text, option_a, option_b, option_c, option_d,
+          correct_option, selected_option, level, difficulty } = req.body;
+
+  if (!question_text) return res.status(400).json({ error: 'question_text is required.' });
+
+  if (!anthropic) {
+    return res.status(503).json({ error: 'AI not configured.' });
+  }
+
+  const optMap = { A: option_a, B: option_b, C: option_c, D: option_d };
+  const correctText  = optMap[correct_option]  || correct_option;
+  const selectedText = selected_option ? optMap[selected_option] || selected_option : null;
+
+  const wrongContext = selectedText
+    ? `The student chose "${selected_option}: ${selectedText}" but the correct answer is "${correct_option}: ${correctText}".`
+    : `The student ran out of time. The correct answer is "${correct_option}: ${correctText}".`;
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  try {
+    const stream = await anthropic.messages.stream({
+      model:      'claude-haiku-4-5',
+      max_tokens: 150,
+      system: `You are Alex, a friendly AI tutor. A student just got a quiz question wrong.
+Give a clear, encouraging 1-2 sentence explanation:
+- Explain WHY the correct answer is right in plain, simple language
+- If they chose a specific wrong answer, briefly note why that option is a common mix-up
+- Be warm and encouraging, never condescending
+- No markdown, no lists — plain conversational sentences only`,
+      messages: [{
+        role:    'user',
+        content: `Topic: ${level} — ${difficulty}
+Question: ${question_text}
+Options: A) ${option_a}  B) ${option_b}  C) ${option_c}  D) ${option_d}
+${wrongContext}`
+      }]
+    });
+
+    for await (const chunk of stream) {
+      if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
+        res.write(`data: ${JSON.stringify({ text: chunk.delta.text })}\n\n`);
+      }
+    }
+    res.write('data: [DONE]\n\n');
+    res.end();
+  } catch (err) {
+    console.error('Explain error:', err.message);
+    res.write(`data: ${JSON.stringify({ error: 'Could not generate explanation.' })}\n\n`);
+    res.end();
   }
 });
 
