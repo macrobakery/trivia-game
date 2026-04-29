@@ -217,12 +217,42 @@ $('edit-name-modal').addEventListener('click', e => {
   if (e.target === $('edit-name-modal')) closeEditNameModal();
 });
 
+// ── Daily Challenge Status ─────────────────────────────────────
+function renderDailyChallenge() {
+  const DC_KEY   = 'aiChallenge_dailyDone';
+  const today    = todayStr();
+  const done     = localStorage.getItem(DC_KEY) === today;
+  const statusEl = $('prof-daily-status');
+  const infoEl   = $('prof-daily-info');
+  const ctaEl    = $('prof-daily-cta');
+  if (!statusEl) return;
+
+  if (done) {
+    statusEl.textContent  = '✓ Completed';
+    statusEl.style.color  = 'var(--green)';
+    infoEl.textContent    = 'You have completed today\'s challenge. Come back tomorrow for a new set!';
+    if (ctaEl) ctaEl.style.display = 'none';
+  } else {
+    // Countdown to midnight
+    const now      = new Date();
+    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const ms       = midnight - now;
+    const h        = Math.floor(ms / 3600000);
+    const m        = Math.floor((ms % 3600000) / 60000);
+    statusEl.textContent = '⏳ Not yet';
+    statusEl.style.color = 'var(--ink-faint)';
+    infoEl.textContent   = `Same 10 questions for all players · Resets in ${h}h ${m}m`;
+    if (ctaEl) ctaEl.style.display = '';
+  }
+}
+
 // ── Init ───────────────────────────────────────────────────────
 renderHeader();
 renderStats();
 renderCalendar();
 renderLevelRecords();
 renderAchievements();
+renderDailyChallenge();
 
 // Register service worker
 if ('serviceWorker' in navigator) {

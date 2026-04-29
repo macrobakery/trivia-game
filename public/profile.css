@@ -334,14 +334,16 @@
 /* ── CTA row ── */
 .prof-cta {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   justify-content: center;
+  flex-wrap: wrap;
   margin: 28px 0 12px;
 }
 .prof-cta .btn-primary,
 .prof-cta .btn-ghost {
-  min-width: 140px;
+  min-width: 130px;
   justify-content: center;
+  flex: 1;
 }
 
 .prof-footer-note {
@@ -410,6 +412,32 @@
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 12px;
   }
+}
+
+/* ── Daily Challenge Section ── */
+
+.prof-daily-section {
+  border-left: 3px solid var(--gold);
+}
+
+.prof-daily-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+}
+
+.prof-daily-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.prof-daily-info {
+  font-size: 0.84rem;
+  color: var(--ink-faint);
+  flex: 1;
 }
 
 /* ── Desktop (1024px+) ── */
