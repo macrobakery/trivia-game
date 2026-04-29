@@ -2681,6 +2681,67 @@ function renderRecentGames() {
 renderRecentGames();
 
 // ══════════════════════════════════════════════════════════════
+// DAILY AI TIP
+// ══════════════════════════════════════════════════════════════
+
+(function initDailyTip() {
+  const textEl = $('daily-tip-text');
+  const nextBtn = $('daily-tip-next');
+  if (!textEl) return;
+
+  const TIPS = [
+    "The term 'Artificial Intelligence' was coined by John McCarthy in 1956 at the Dartmouth Conference.",
+    "GPT stands for Generative Pre-trained Transformer — the 'T' refers to the attention mechanism.",
+    "Gradient descent is how neural networks learn: they repeatedly adjust weights to reduce error.",
+    "Overfitting happens when a model memorises training data instead of learning general patterns.",
+    "A 'token' is roughly 4 characters of text — GPT-4 has a 128k token context window.",
+    "RLHF (Reinforcement Learning from Human Feedback) is how ChatGPT was fine-tuned to follow instructions.",
+    "Transformer models process all tokens in parallel, unlike earlier RNNs that processed them sequentially.",
+    "The 'hallucination' problem occurs because LLMs predict the next token — they don't verify facts.",
+    "RAG (Retrieval-Augmented Generation) grounds LLM answers in real documents to reduce hallucinations.",
+    "An embedding is a list of numbers that captures the meaning of a word or sentence in vector space.",
+    "Batch normalisation helps neural networks train faster by keeping activations on a consistent scale.",
+    "The attention mechanism lets Transformers focus on the most relevant parts of the input for each output token.",
+    "Transfer learning lets you adapt a pre-trained model to a new task with much less data.",
+    "Regularisation (like L2 or dropout) penalises complexity to prevent overfitting.",
+    "Precision measures 'of all positive predictions, how many were correct?'",
+    "Recall measures 'of all actual positives, how many did we catch?'",
+    "F1 score is the harmonic mean of precision and recall — useful when classes are imbalanced.",
+    "K-fold cross-validation gives a more reliable accuracy estimate by training on K different data splits.",
+    "A confusion matrix shows the breakdown of correct and incorrect predictions across all classes.",
+    "The bias-variance tradeoff: high bias = underfitting, high variance = overfitting.",
+    "Feature engineering — creating better input variables — often matters more than the choice of model.",
+    "One-hot encoding converts categorical variables into binary columns, one per category.",
+    "Normalisation scales features to [0,1]. Standardisation scales them to mean=0, std=1.",
+    "SHAP values explain AI model predictions by measuring each feature's contribution to the output.",
+    "Prompt engineering is the craft of writing inputs that reliably get useful outputs from LLMs.",
+    "Zero-shot learning means the model solves a task without any examples. Few-shot provides a handful.",
+    "A vector database stores embeddings and enables fast semantic similarity search at scale.",
+    "AI agents combine an LLM with tools (web search, code execution) to complete multi-step tasks.",
+    "Model distillation trains a small 'student' model to mimic a large 'teacher' model.",
+    "The Turing Test, proposed in 1950, asks whether a machine can converse indistinguishably from a human.",
+  ];
+
+  // Tip index: rotate by day of year, but let user manually advance within session
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  let tipKey = 'aiChallenge_tipIdx';
+  let savedIdx = parseInt(localStorage.getItem(tipKey) || '-1', 10);
+  let idx = savedIdx >= 0 ? savedIdx : dayOfYear % TIPS.length;
+
+  function showTip(i) {
+    idx = ((i % TIPS.length) + TIPS.length) % TIPS.length;
+    textEl.textContent = TIPS[idx];
+    try { localStorage.setItem(tipKey, String(idx)); } catch {}
+  }
+
+  showTip(idx);
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => showTip(idx + 1));
+  }
+})();
+
+// ══════════════════════════════════════════════════════════════
 // SUGGEST A QUESTION MODAL
 // ══════════════════════════════════════════════════════════════
 

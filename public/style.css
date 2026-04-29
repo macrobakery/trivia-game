@@ -3576,6 +3576,61 @@ button, a, input, select {
   flex-shrink: 0;
 }
 
+/* ── Daily AI Tip ───────────────────────────────────────── */
+.daily-tip {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--cyan);
+  border-radius: var(--radius-sm);
+  padding: 12px 40px 12px 14px;
+  margin-top: 14px;
+}
+.daily-tip-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 5px;
+  white-space: nowrap;
+}
+.daily-tip-text {
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+  line-height: 1.6;
+  flex: 1;
+}
+/* Stack label + text vertically */
+.daily-tip {
+  flex-direction: column;
+  gap: 4px;
+}
+.daily-tip-next {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--ink-faint);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: color var(--t), background var(--t);
+  line-height: 1;
+}
+.daily-tip-next:hover {
+  color: var(--cyan);
+  background: var(--cyan-dim);
+}
+
 /* ── Streak milestone toast ────────────────────────────── */
 .streak-toast {
   position: fixed;
