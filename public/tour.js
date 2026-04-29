@@ -2,37 +2,37 @@
 // AI Challenge — First-Visit Onboarding Tour
 // ============================================================
 
-const TOUR_KEY = 'aiChallenge_toured_v2';
+const TOUR_KEY = 'aiChallenge_toured_v3';
 
 const TOUR_STEPS = [
   {
     target:   null,
     title:    'Welcome to AI Challenge! 👋',
-    text:     "You've just found your daily AI learning platform — live quizzes, today's AI news, bite-sized lessons, and a personal AI tutor. This 30-second tour will show you everything.",
+    text:     "Your daily AI learning platform — live quizzes, bite-sized lessons, AI news, and a personal tutor. This 30-second tour shows you everything.",
     position: 'center'
   },
   {
-    target:   '.hub-cta-stack',
-    title:    'Your daily launchpad 🚀',
-    text:     'Play a quiz, dive into AI lessons, or catch the latest AI news — all from right here. New content every day!',
-    position: 'bottom'
-  },
-  {
-    target:   '.levels-grid',
-    title:    '5 learning levels 📚',
-    text:     'From AI Foundations to Deployment & Ethics — each with Beginner, Intermediate, and Advanced difficulty. Your best scores are saved and shown on each card.',
-    position: 'bottom'
-  },
-  {
     target:   '#daily-challenge-btn',
-    title:    'Compete globally 🏆',
-    text:     'Everyone worldwide gets the same 10 questions each day. Submit your score to see your global rank. Resets every 24 hours.',
+    title:    'Daily Challenge 🗓',
+    text:     'Everyone worldwide gets the same 10 questions each day. Beat the global leaderboard and build your streak! Resets every 24 hours.',
+    position: 'bottom'
+  },
+  {
+    target:   '.hub-quick-links',
+    title:    'Learn · News · Ask Alex 📚',
+    text:     'Browse 25 structured AI lessons, catch live AI news from the web, or ask Alex (your AI tutor) any question — all three are one tap away.',
+    position: 'top'
+  },
+  {
+    target:   '.daily-goals',
+    title:    'Daily goals 🎯',
+    text:     'Three simple goals every day: play a quiz, read AI news, complete a lesson. Hit all three to build your streak!',
     position: 'top'
   },
   {
     target:   '.chat-fab',
     title:    'Meet Alex — your AI tutor 🤖',
-    text:     'Stuck on a concept? Ask Alex anything and get beginner-friendly explanations, powered by Claude AI. Available from every page.',
+    text:     'Got a question? Ask Alex anything and get instant, beginner-friendly explanations powered by Claude AI. Available on every page.',
     position: 'top'
   }
 ];
