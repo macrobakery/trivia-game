@@ -63,6 +63,18 @@
     <!-- ── Main content ── -->
     <div class="splash-content">
 
+      <!-- ── New-user welcome (hidden after first game) ── -->
+      <div class="hub-welcome" id="hub-welcome" style="display:none">
+        <div class="hub-welcome-headline">Learn AI in 5 minutes a day</div>
+        <div class="hub-welcome-pills">
+          <span class="hub-wp">🎮 Daily quiz</span>
+          <span class="hub-wp">📚 25 lessons</span>
+          <span class="hub-wp">🤖 AI tutor</span>
+          <span class="hub-wp">📰 Live news</span>
+        </div>
+        <div class="hub-welcome-sub">No experience needed. Start with Today's Challenge below ↓</div>
+      </div>
+
       <!-- Resume banner -->
       <div id="resume-banner" class="resume-banner" style="display:none" role="alert">
         <div class="resume-info">
@@ -123,6 +135,17 @@
           </a>
         </div>
 
+        <!-- Curriculum summary strip — always visible -->
+        <div class="hub-curriculum-strip">
+          <span>5 topics</span>
+          <span class="hub-cs-sep">·</span>
+          <span>25 lessons</span>
+          <span class="hub-cs-sep">·</span>
+          <span>3 difficulty levels</span>
+          <span class="hub-cs-sep">·</span>
+          <span>🤖 AI tutor</span>
+        </div>
+
         <!-- Weak spots practice (shown only if there are stored wrong answers) -->
         <button class="hub-cta-weakspots" id="weak-spots-btn" style="display:none">
           <span class="hub-cta-icon">🎯</span>
@@ -177,16 +200,6 @@
           <span class="cl-lesson-arrow">→</span>
         </a>
       </div>
-
-      <!-- ── AI Fact of the Day ── -->
-      <button class="ai-fact-strip" id="ai-fact-strip" aria-label="Daily AI fact — click for next">
-        <span class="ai-fact-icon">💡</span>
-        <div class="ai-fact-body">
-          <div class="ai-fact-label">AI Fact of the Day</div>
-          <div class="ai-fact-text" id="ai-fact-text">Loading…</div>
-        </div>
-        <span class="ai-fact-next">tap for more →</span>
-      </button>
 
       <div class="splash-meta">
         <span>AI App Builder Challenge</span>

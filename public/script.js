@@ -2186,6 +2186,7 @@ initHubStreakDisplay();
 initWeakSpotsBtn();
 initHomeStatsStrip();
 renderDailyGoals();
+initWelcomeBanner();
 
 // ══════════════════════════════════════════════════════════════
 // DAILY GOALS — 3 simple daily targets
@@ -2235,6 +2236,26 @@ function renderDailyGoals() {
     if (all) titleEl.style.color = 'var(--green)';
     else     titleEl.style.color = '';
   }
+}
+
+// ══════════════════════════════════════════════════════════════
+// WELCOME BANNER — shown only to first-time visitors
+// ══════════════════════════════════════════════════════════════
+
+function initWelcomeBanner() {
+  const banner = $('hub-welcome');
+  if (!banner) return;
+  // Check if user has any game history or lesson progress
+  try {
+    const levelStats = JSON.parse(localStorage.getItem('aiChallenge_levelStats') || '{}');
+    const hasGames = (levelStats._total || {}).games > 0;
+    const lessonProgress = JSON.parse(localStorage.getItem('aiChallenge_lessonProgress') || '{}');
+    const hasLessons = Object.values(lessonProgress).some(Boolean);
+    // If completely new: show the welcome card
+    if (!hasGames && !hasLessons) {
+      banner.style.display = 'block';
+    }
+  } catch {}
 }
 
 // ══════════════════════════════════════════════════════════════

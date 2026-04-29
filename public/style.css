@@ -3148,6 +3148,79 @@ button, a, input, select {
 /* ─────────────────────────────────────────────
    QUESTION SLIDE-IN ANIMATION
 ───────────────────────────────────────────── */
+/* ══════════════════════════════════════════════
+   NEW-USER WELCOME CARD
+══════════════════════════════════════════════ */
+
+.hub-welcome {
+  width: 100%;
+  background: linear-gradient(135deg, var(--accent-dim), hsl(200 80% 60% / 0.06));
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  text-align: center;
+}
+
+.hub-welcome-headline {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 12px;
+}
+
+.hub-welcome-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.hub-wp {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.hub-welcome-sub {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  line-height: 1.5;
+}
+
+/* ══════════════════════════════════════════════
+   CURRICULUM SUMMARY STRIP
+══════════════════════════════════════════════ */
+
+.hub-curriculum-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  width: 100%;
+}
+
+.hub-cs-sep { opacity: 0.3; }
+
 @keyframes questionSlideIn {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
