@@ -174,6 +174,14 @@ async function createTables() {
     UNIQUE(date, type)
   )`);
 
+  // Analytics events table
+  await dbClient.execute(`CREATE TABLE IF NOT EXISTS analytics_events (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    event      TEXT NOT NULL,
+    props      TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
   // Schema migrations for tables that existed before these columns were added
   for (const migration of [
     'ALTER TABLE questions ADD COLUMN flag_count INTEGER NOT NULL DEFAULT 0',
@@ -591,6 +599,32 @@ app.get('/api/analytics', adminAuth, async (req, res) => {
     flaggedCount:  flaggedCount  ? flaggedCount.c  : 0,
     questionCount: questionCount ? questionCount.c : 0
   });
+});
+
+// POST /api/analytics/event — track a user interaction (fire-and-forget)
+app.post('/api/analytics/event', async (req, res) => {
+  const { event, props } = req.body;
+  if (!event || typeof event !== 'string' || event.length > 80) {
+    return res.status(400).json({ ok: false });
+  }
+  try {
+    await dbRun(
+      'INSERT INTO analytics_events (event, props) VALUES (?, ?)',
+      [event.trim(), props ? JSON.stringify(props) : null]
+    );
+  } catch (_) { /* non-critical — swallow */ }
+  res.json({ ok: true });
+});
+
+// GET /api/analytics/events — admin: view recent events
+app.get('/api/analytics/events', adminAuth, async (req, res) => {
+  const rows = await dbAll(
+    `SELECT event, props, created_at FROM analytics_events ORDER BY created_at DESC LIMIT 200`
+  );
+  const summary = await dbAll(
+    `SELECT event, COUNT(*) AS count FROM analytics_events GROUP BY event ORDER BY count DESC`
+  );
+  res.json({ summary, recent: rows });
 });
 
 // GET /api/daily-challenge — same 10 questions for everyone today (seeded by date)

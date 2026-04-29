@@ -38,6 +38,17 @@ let state = {
   roundStartTime: null
 };
 
+// ── Analytics (fire-and-forget) ────────────────────────────────
+function track(event, props = {}) {
+  try {
+    fetch('/api/analytics/event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event, props })
+    }).catch(() => {});
+  } catch (_) {}
+}
+
 // ── DOM Helpers ────────────────────────────────────────────────
 const screens = {
   start:   document.getElementById('start-screen'),
@@ -470,6 +481,7 @@ async function startGame() {
 
   showScreen('game');
   loadQuestion();
+  track('quiz_start', { level: state.selectedLevel, difficulty: state.selectedDifficulty });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1001,6 +1013,9 @@ function showResults() {
   } else {
     showScreen('results');
   }
+
+  // Track quiz completion
+  track('quiz_complete', { level: selectedLevel, difficulty: selectedDifficulty, correct: correctCount, total, score, accuracy });
 
   // Difficulty ramp suggestion
   if (!isPractice) showDifficultyRamp(correctCount, total, selectedDifficulty, selectedLevel);
