@@ -97,6 +97,8 @@
   gap: 12px;
   margin-bottom: 20px;
 }
+/* 7th item spans full row — used for Total Points highlight */
+.prof-stats-row .prof-stat:last-child { grid-column: 1 / -1; }
 
 .prof-stat {
   background: var(--surface);
@@ -508,7 +510,9 @@
     padding: 44px 40px 100px;
   }
 
-  .prof-stats-row { gap: 16px; grid-template-columns: repeat(6, 1fr); }
+  .prof-stats-row { gap: 16px; grid-template-columns: repeat(3, 1fr); }
+  /* 7th stat (Total Points) — make it visually stand out on its own row */
+  .prof-stats-row .prof-stat:last-child { grid-column: 1 / -1; }
   .prof-stat-val  { font-size: 1.6rem; }
 
   .activity-calendar {
