@@ -2620,9 +2620,16 @@ function initHomeStatsStrip() {
     const accuracy   = answered > 0 ? Math.round(correct / answered * 100) + '%' : '—';
     const streakCnt  = streak.count || 0;
 
-    if (games > 0 || streakCnt > 0) {
-      $('hs-streak').textContent  = `🔥 ${streakCnt} day${streakCnt !== 1 ? 's' : ''}`;
-      $('hs-accuracy').textContent = `🎯 ${accuracy}`;
+    // Lessons done
+    let lessonsDone = 0;
+    try {
+      const lp = JSON.parse(localStorage.getItem('aiChallenge_lessonProgress') || '{}');
+      lessonsDone = Object.values(lp).filter(Boolean).length;
+    } catch {}
+
+    if (games > 0 || streakCnt > 0 || lessonsDone > 0) {
+      $('hs-streak').textContent   = `🔥 ${streakCnt} day${streakCnt !== 1 ? 's' : ''}`;
+      $('hs-accuracy').textContent = accuracy !== '—' ? `🎯 ${accuracy}` : `📚 ${lessonsDone}/25`;
       $('hs-games').textContent    = `${games} game${games !== 1 ? 's' : ''}`;
       strip.style.display = 'flex';
     }

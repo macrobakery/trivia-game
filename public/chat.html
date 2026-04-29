@@ -283,6 +283,64 @@
 
     /* Clear button */
     #clear-chat-btn { font-size: 0.7rem; }
+
+    /* ── Code blocks ── */
+    .code-block {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      margin: 8px 0;
+      overflow: hidden;
+    }
+    .code-lang {
+      display: block;
+      padding: 4px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+      background: rgba(0,0,0,0.2);
+      border-bottom: 1px solid var(--border);
+    }
+    .code-block pre {
+      margin: 0;
+      padding: 12px 14px;
+      overflow-x: auto;
+    }
+    .code-block code {
+      background: transparent;
+      border: none;
+      padding: 0;
+      font-size: 0.82em;
+      line-height: 1.6;
+      color: var(--ink);
+      white-space: pre;
+    }
+
+    /* ── Message headings ── */
+    .msg-heading {
+      font-family: 'Geist', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 14px 0 6px;
+    }
+    .msg-heading:first-child { margin-top: 0; }
+
+    /* ── Lists in messages ── */
+    .msg-bubble ol,
+    .msg-bubble ul { padding-left: 20px; margin: 8px 0; }
+    .msg-bubble li { margin-bottom: 4px; }
+    .msg-bubble ol { counter-reset: list-counter; }
+
+    /* ── HR in messages ── */
+    .msg-bubble hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 12px 0;
+    }
   </style>
 
   <meta property="og:type"        content="website" />
@@ -297,6 +355,14 @@
   <meta name="twitter:image"      content="https://ai-app-builder-challenge.vercel.app/og-image.svg" />
 </head>
 <body>
+
+  <!-- Inline theme restore — prevents flash of wrong theme on load -->
+  <script>
+    (function(){
+      const t = localStorage.getItem('aiChallenge_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
 
   <!-- Nebula background (reused from main game) -->
   <div class="bg" aria-hidden="true">
@@ -321,21 +387,26 @@
         </div>
       </div>
       <div class="chat-header-right">
+        <button class="theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">🌙</button>
         <button class="btn-ghost-sm" id="clear-chat-btn">🗑 Clear</button>
-        <a href="/" class="btn-ghost-sm">← Back to Game</a>
+        <a href="/" class="btn-ghost-sm">← Back</a>
       </div>
     </header>
 
     <!-- ── Suggested prompts ── -->
     <div class="suggested-bar" id="suggested-bar">
-      <span class="suggestion-chip">What is machine learning?</span>
-      <span class="suggestion-chip">Explain neural networks simply</span>
-      <span class="suggestion-chip">What's the difference between AI and ML?</span>
-      <span class="suggestion-chip">What is a large language model?</span>
-      <span class="suggestion-chip">How does ChatGPT work?</span>
-      <span class="suggestion-chip">What is overfitting?</span>
-      <span class="suggestion-chip">Explain training data</span>
-      <span class="suggestion-chip">What is a prompt?</span>
+      <span class="suggestion-chip">🔍 What is machine learning?</span>
+      <span class="suggestion-chip">🧠 How do neural networks learn?</span>
+      <span class="suggestion-chip">💬 What is a large language model?</span>
+      <span class="suggestion-chip">🔄 What is RAG?</span>
+      <span class="suggestion-chip">⚠️ What is overfitting?</span>
+      <span class="suggestion-chip">🎯 Explain prompt engineering</span>
+      <span class="suggestion-chip">📊 What is gradient descent?</span>
+      <span class="suggestion-chip">🤖 How does ChatGPT work?</span>
+      <span class="suggestion-chip">🔬 What is fine-tuning?</span>
+      <span class="suggestion-chip">🌐 What is an AI agent?</span>
+      <span class="suggestion-chip">📉 What is bias in AI?</span>
+      <span class="suggestion-chip">🚀 How do I deploy an AI model?</span>
     </div>
 
     <!-- ── Messages ── -->
@@ -367,8 +438,29 @@
 
   <script>
     // ── Apply saved theme ──
-    const theme = localStorage.getItem('aiChallenge_theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', theme);
+    (function applyTheme() {
+      const theme = localStorage.getItem('aiChallenge_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+      const btn = document.getElementById('theme-toggle');
+      if (btn) btn.textContent = theme === 'dark' ? '🌙' : '☀️';
+      const meta = document.querySelector('meta[name="theme-color"]');
+      if (!meta) {
+        const m = document.createElement('meta');
+        m.name = 'theme-color';
+        m.content = theme === 'dark' ? '#07060c' : '#f0eff8';
+        document.head.appendChild(m);
+      } else {
+        meta.setAttribute('content', theme === 'dark' ? '#07060c' : '#f0eff8');
+      }
+    })();
+
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const cur  = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = cur === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('aiChallenge_theme', next);
+      document.documentElement.setAttribute('data-theme', next);
+      document.getElementById('theme-toggle').textContent = next === 'dark' ? '🌙' : '☀️';
+    });
 
     // ── State ──
     const STORAGE_KEY = 'aiChallenge_chatHistory';
@@ -497,16 +589,60 @@
       return bubble;
     }
 
-    // ── Simple text formatter (bold, italic, inline code) ──
-    function formatText(text) {
-      return text
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.+?)\*/g,     '<em>$1</em>')
-        .replace(/`([^`]+)`/g,     '<code>$1</code>')
-        .replace(/\n\n/g, '</p><p>')
-        .replace(/\n/g,   '<br>')
-        .replace(/^/, '<p>').replace(/$/, '</p>');
+    // ── Text formatter — handles most common markdown-ish patterns ──
+    function formatText(raw) {
+      // 1. Escape HTML first
+      let text = raw
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      // 2. Fenced code blocks (```lang\n...\n```) — preserve line breaks
+      text = text.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+        const langLabel = lang ? `<span class="code-lang">${lang}</span>` : '';
+        return `<div class="code-block">${langLabel}<pre><code>${code.trim()}</code></pre></div>`;
+      });
+
+      // 3. Inline code
+      text = text.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+
+      // 4. Bold and italic
+      text = text
+        .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+        .replace(/\*\*(.+?)\*\*/g,     '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g,         '<em>$1</em>');
+
+      // 5. Headings (### or ##)
+      text = text.replace(/^### (.+)$/gm, '<h4 class="msg-heading">$1</h4>');
+      text = text.replace(/^## (.+)$/gm,  '<h3 class="msg-heading">$1</h3>');
+
+      // 6. Bullet and numbered lists
+      // Group consecutive list lines into a <ul> or <ol>
+      text = text.replace(/^(\d+)\. (.+)$/gm, '<li data-n="$1">$2</li>');
+      text = text.replace(/^[-*•] (.+)$/gm, '<li>$1</li>');
+      // Wrap consecutive <li> groups
+      text = text.replace(/(<li[^>]*>.*<\/li>\n?)+/g, match => {
+        const isOrdered = match.includes('data-n=');
+        const tag = isOrdered ? 'ol' : 'ul';
+        // Remove the data-n attributes from ordered items
+        const cleaned = match.replace(/ data-n="\d+"/g, '');
+        return `<${tag}>${cleaned}</${tag}>`;
+      });
+
+      // 7. Horizontal rule
+      text = text.replace(/^---+$/gm, '<hr>');
+
+      // 8. Paragraphs (double newline → new paragraph)
+      text = text.replace(/\n\n+/g, '</p><p>');
+      text = text.replace(/\n/g, '<br>');
+      text = '<p>' + text + '</p>';
+
+      // 9. Clean up empty paragraphs
+      text = text.replace(/<p><\/p>/g, '');
+      text = text.replace(/<p>(<(?:ul|ol|div|h[1-6]|hr)[^>]*>)/g, '$1');
+      text = text.replace(/(<\/(?:ul|ol|div|h[1-6]|hr)>)<\/p>/g, '$1');
+
+      return text;
     }
 
     // ── Send message ──

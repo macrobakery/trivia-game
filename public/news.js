@@ -187,6 +187,10 @@ function renderCard(trend, index) {
   const bmIcon = bookmarked ? '🔖' : '🤍';
   const bmTitle = bookmarked ? 'Remove bookmark' : 'Save article';
 
+  const shareHtml = (navigator.share && sourceUrl)
+    ? `<button class="news-share-btn" data-headline="${escapeHtml(headline)}" data-url="${escapeHtml(sourceUrl)}" title="Share this story" aria-label="Share">📤</button>`
+    : '';
+
   return `
     <article class="news-card${read ? ' news-card-read' : ''}" data-headline="${escapeHtml(headline)}">
       <div class="news-card-top-row">
@@ -194,6 +198,7 @@ function renderCard(trend, index) {
         <div class="news-card-actions">
           ${readBadge}
           ${readTimeHtml}
+          ${shareHtml}
           <button class="news-bm-btn" data-headline="${escapeHtml(headline)}" title="${bmTitle}" aria-label="${bmTitle}">${bmIcon}</button>
         </div>
       </div>
@@ -279,6 +284,18 @@ function renderNews(data) {
         }
         if (_activeFilter === 'unread') card.style.display = 'none';
       }
+    });
+  });
+
+  // Wire share buttons
+  grid.querySelectorAll('.news-share-btn').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const hl  = btn.dataset.headline;
+      const url = btn.dataset.url;
+      try {
+        await navigator.share({ title: hl, url });
+      } catch (_) { /* user cancelled or not supported */ }
     });
   });
 
