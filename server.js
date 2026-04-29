@@ -575,20 +575,23 @@ app.get('/api/leaderboard/rank', async (req, res) => {
   res.json({ rank: row ? row.rank : 1, total: total ? total.total : 0 });
 });
 
-// GET /api/stats/today — player count and game count for today
+// GET /api/stats/today — player count, game count, and top score for today
 app.get('/api/stats/today', async (req, res) => {
   try {
     const todayStart = new Date();
     todayStart.setUTCHours(0, 0, 0, 0);
     const ts = todayStart.toISOString().replace('T', ' ').slice(0, 19);
-    const [todayRow, totalRow] = await Promise.all([
+    const [todayRow, totalRow, topRow] = await Promise.all([
       dbGet(`SELECT COUNT(*) AS games, COUNT(DISTINCT LOWER(player_name)) AS players FROM scores WHERE created_at >= ?`, [ts]),
-      dbGet(`SELECT COUNT(*) AS total FROM scores`)
+      dbGet(`SELECT COUNT(*) AS total FROM scores`),
+      dbGet(`SELECT player_name, score FROM scores WHERE created_at >= ? ORDER BY score DESC LIMIT 1`, [ts])
     ]);
     res.json({
-      today_games:   todayRow ? todayRow.games   : 0,
-      today_players: todayRow ? todayRow.players : 0,
-      total_games:   totalRow ? totalRow.total   : 0
+      today_games:    todayRow ? todayRow.games   : 0,
+      today_players:  todayRow ? todayRow.players : 0,
+      total_games:    totalRow ? totalRow.total   : 0,
+      today_top_score: topRow  ? topRow.score      : 0,
+      today_top_name:  topRow  ? topRow.player_name : null
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

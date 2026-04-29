@@ -1174,6 +1174,9 @@ function showResults() {
 
   // Difficulty ramp suggestion
   if (!isPractice) showDifficultyRamp(correctCount, total, selectedDifficulty, selectedLevel);
+
+  // Lesson recommendation — show when accuracy < 80% (could improve with study)
+  showLessonRecommendation(correctCount, total, selectedLevel, isPractice);
 }
 
 function showDifficultyRamp(correct, total, difficulty, level) {
@@ -1227,6 +1230,33 @@ function showDifficultyRamp(correct, total, difficulty, level) {
       loadLeaderboardPreview();
     });
   }
+}
+
+// ── Lesson recommendation (post-quiz) ─────────────────────────
+function showLessonRecommendation(correct, total, level, isPractice) {
+  const recEl   = $('lesson-rec');
+  const subEl   = $('lesson-rec-sub');
+  const linkEl  = $('lesson-rec-link');
+  if (!recEl) return;
+  recEl.style.display = 'none';
+
+  // Only show if <80% accuracy and not practice
+  if (isPractice || correct / total >= 0.8) return;
+
+  const LEVEL_TOPIC_MAP = {
+    'AI Foundations':                 { topic: 'foundations',       label: 'AI Foundations' },
+    'Data Preparation':               { topic: 'data-prep',         label: 'Data Preparation' },
+    'Model Building':                 { topic: 'model-building',    label: 'Model Building' },
+    'AI App Development':             { topic: 'ai-app-dev',        label: 'AI App Development' },
+    'Deployment and Responsible AI':  { topic: 'deployment-ethics', label: 'Deployment & Ethics' },
+  };
+
+  const mapping = LEVEL_TOPIC_MAP[level];
+  if (!mapping) return;
+
+  if (subEl) subEl.textContent = `The structured ${mapping.label} lessons can help solidify these concepts.`;
+  if (linkEl) linkEl.href = `/lessons.html?topic=${mapping.topic}`;
+  recEl.style.display = 'flex';
 }
 
 // ── Results buttons ────────────────────────────────────────────
@@ -2240,10 +2270,19 @@ initWelcomeBanner();
     .then(r => r.ok ? r.json() : null)
     .then(data => {
       if (!data) return;
-      const n = data.today_players || 0;
-      if (n < 1) return; // hide when no data
-      const label = n === 1 ? '1 player challenged themselves today'
-                             : `${n.toLocaleString()} players challenged themselves today`;
+      const n    = data.today_players || 0;
+      const top  = data.today_top_score || 0;
+      const name = data.today_top_name  || '';
+      if (n < 1) return; // hide when no data yet
+
+      const myName = (localStorage.getItem('aiChallenge_playerName') || '').toLowerCase();
+      const isMe   = name && myName && name.toLowerCase() === myName;
+
+      let label = n === 1 ? '1 player played today' : `${n.toLocaleString()} players played today`;
+      if (top > 0) {
+        const topLabel = isMe ? 'you lead!' : `top score: ${top.toLocaleString()}`;
+        label += ` · ${topLabel}`;
+      }
       text.textContent = label;
       el.style.display = 'flex';
     })

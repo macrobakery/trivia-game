@@ -1769,6 +1769,39 @@ ul     { list-style: none; }
   padding: 8px 14px !important; font-size: 0.8rem !important;
 }
 
+/* ── Lesson recommendation (post-quiz) ── */
+.lesson-rec {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--cyan-dim);
+  border: 1px solid var(--cyan);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  animation: fadeIn 0.4s ease;
+}
+.lesson-rec-icon { font-size: 1.4rem; flex-shrink: 0; }
+.lesson-rec-text { flex: 1; min-width: 0; }
+.lesson-rec-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.lesson-rec-sub { font-size: 0.76rem; color: var(--ink-faint); }
+.lesson-rec-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+.lesson-rec-btn:hover {
+  background: var(--cyan-dim);
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
 /* ── Streak celebration keyframes ── */
 @keyframes scaleIn {
   from { transform: scale(0.7); opacity: 0; }

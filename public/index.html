@@ -456,6 +456,16 @@
       <!-- Difficulty ramp suggestion (shown after result) -->
       <div id="difficulty-ramp" class="difficulty-ramp" style="display:none"></div>
 
+      <!-- Related lesson recommendation (shown when score < 80%) -->
+      <div id="lesson-rec" class="lesson-rec" style="display:none">
+        <span class="lesson-rec-icon">📚</span>
+        <div class="lesson-rec-text">
+          <div class="lesson-rec-title">Brush up on this topic</div>
+          <div class="lesson-rec-sub" id="lesson-rec-sub">Review the structured lessons to strengthen your understanding.</div>
+        </div>
+        <a id="lesson-rec-link" href="/lessons.html" class="btn-ghost-sm lesson-rec-btn">Study →</a>
+      </div>
+
       <!-- Action buttons -->
       <div class="results-actions">
         <button class="btn-primary" id="save-score-btn">💾 Save Score</button>
