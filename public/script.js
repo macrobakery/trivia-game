@@ -1984,32 +1984,32 @@ function initHubStreakDisplay() {
 
   // Lesson titles for client-side instant matching — must match lessons.js CURRICULUM
   const LESSON_INDEX = [
-    { title:'What Is Artificial Intelligence?',         url:'/lessons.html', icon:'◐', topic:'AI Foundations' },
-    { title:'Machine Learning: Teaching Computers to Learn', url:'/lessons.html', icon:'◐', topic:'AI Foundations' },
-    { title:'Deep Learning & Neural Networks',          url:'/lessons.html', icon:'◐', topic:'AI Foundations' },
-    { title:'How Models Are Trained',                   url:'/lessons.html', icon:'◐', topic:'AI Foundations' },
-    { title:'AI Ethics & Bias',                         url:'/lessons.html', icon:'◐', topic:'AI Foundations' },
-    { title:'Why Data Is the Foundation of AI',         url:'/lessons.html', icon:'◇', topic:'Data Preparation' },
-    { title:'Collecting & Sourcing Data',               url:'/lessons.html', icon:'◇', topic:'Data Preparation' },
-    { title:'Cleaning & Preprocessing Data',            url:'/lessons.html', icon:'◇', topic:'Data Preparation' },
-    { title:'Feature Engineering',                      url:'/lessons.html', icon:'◇', topic:'Data Preparation' },
-    { title:'Train, Validation & Test Splits',          url:'/lessons.html', icon:'◇', topic:'Data Preparation' },
-    { title:'Supervised vs Unsupervised Learning',      url:'/lessons.html', icon:'◈', topic:'Model Building' },
-    { title:'Regression vs Classification',             url:'/lessons.html', icon:'◈', topic:'Model Building' },
-    { title:'Decision Trees & Random Forests',          url:'/lessons.html', icon:'◈', topic:'Model Building' },
-    { title:'Model Evaluation Metrics',                 url:'/lessons.html', icon:'◈', topic:'Model Building' },
-    { title:'Overfitting & Regularisation',             url:'/lessons.html', icon:'◈', topic:'Model Building' },
-    { title:'Choosing an AI API',                       url:'/lessons.html', icon:'◉', topic:'AI App Development' },
-    { title:'Prompt Engineering',                       url:'/lessons.html', icon:'◉', topic:'AI App Development' },
-    { title:'Retrieval-Augmented Generation (RAG)',     url:'/lessons.html', icon:'◉', topic:'AI App Development' },
-    { title:'AI Agents & Tool Use',                     url:'/lessons.html', icon:'◉', topic:'AI App Development' },
-    { title:'Testing AI Applications',                  url:'/lessons.html', icon:'◉', topic:'AI App Development' },
-    { title:'Deploying AI Models to Production',        url:'/lessons.html', icon:'✦', topic:'Deployment & Ethics' },
-    { title:'Monitoring AI Systems',                    url:'/lessons.html', icon:'✦', topic:'Deployment & Ethics' },
-    { title:'AI Safety & Alignment',                    url:'/lessons.html', icon:'✦', topic:'Deployment & Ethics' },
-    { title:'Fairness & Bias in AI',                    url:'/lessons.html', icon:'✦', topic:'Deployment & Ethics' },
-    { title:'The Future of AI',                         url:'/lessons.html', icon:'✦', topic:'Deployment & Ethics' },
-  ];
+    { title:'What Is Artificial Intelligence?',         icon:'◐', topic:'AI Foundations',      topicId:'foundations',       lessonId:'what-is-ai' },
+    { title:'Machine Learning: Teaching Computers to Learn', icon:'◐', topic:'AI Foundations', topicId:'foundations',       lessonId:'machine-learning' },
+    { title:'Deep Learning & Neural Networks',          icon:'◐', topic:'AI Foundations',      topicId:'foundations',       lessonId:'deep-learning' },
+    { title:'How Models Are Trained',                   icon:'◐', topic:'AI Foundations',      topicId:'foundations',       lessonId:'model-training' },
+    { title:'AI Ethics & Bias',                         icon:'◐', topic:'AI Foundations',      topicId:'foundations',       lessonId:'ai-ethics' },
+    { title:'Why Data Is the Foundation of AI',         icon:'◇', topic:'Data Preparation',    topicId:'data-prep',         lessonId:'data-foundation' },
+    { title:'Collecting & Sourcing Data',               icon:'◇', topic:'Data Preparation',    topicId:'data-prep',         lessonId:'collecting-data' },
+    { title:'Cleaning & Preprocessing Data',            icon:'◇', topic:'Data Preparation',    topicId:'data-prep',         lessonId:'cleaning-data' },
+    { title:'Feature Engineering',                      icon:'◇', topic:'Data Preparation',    topicId:'data-prep',         lessonId:'feature-engineering' },
+    { title:'Train, Validation & Test Splits',          icon:'◇', topic:'Data Preparation',    topicId:'data-prep',         lessonId:'train-val-test' },
+    { title:'Supervised vs Unsupervised Learning',      icon:'◈', topic:'Model Building',       topicId:'model-building',    lessonId:'supervised-unsupervised' },
+    { title:'Regression vs Classification',             icon:'◈', topic:'Model Building',       topicId:'model-building',    lessonId:'regression-classification' },
+    { title:'Decision Trees & Random Forests',          icon:'◈', topic:'Model Building',       topicId:'model-building',    lessonId:'trees-forests' },
+    { title:'Model Evaluation Metrics',                 icon:'◈', topic:'Model Building',       topicId:'model-building',    lessonId:'model-evaluation' },
+    { title:'Overfitting & Regularisation',             icon:'◈', topic:'Model Building',       topicId:'model-building',    lessonId:'overfitting' },
+    { title:'Choosing an AI API',                       icon:'◉', topic:'AI App Development',   topicId:'ai-app-dev',        lessonId:'choosing-api' },
+    { title:'Prompt Engineering',                       icon:'◉', topic:'AI App Development',   topicId:'ai-app-dev',        lessonId:'prompt-engineering' },
+    { title:'Retrieval-Augmented Generation (RAG)',     icon:'◉', topic:'AI App Development',   topicId:'ai-app-dev',        lessonId:'rag' },
+    { title:'AI Agents & Tool Use',                     icon:'◉', topic:'AI App Development',   topicId:'ai-app-dev',        lessonId:'ai-agents' },
+    { title:'Testing AI Applications',                  icon:'◉', topic:'AI App Development',   topicId:'ai-app-dev',        lessonId:'testing-ai-apps' },
+    { title:'Deploying AI Models to Production',        icon:'✦', topic:'Deployment & Ethics',  topicId:'deployment-ethics', lessonId:'deploying-models' },
+    { title:'Monitoring AI Systems',                    icon:'✦', topic:'Deployment & Ethics',  topicId:'deployment-ethics', lessonId:'monitoring-ai' },
+    { title:'AI Safety & Alignment',                    icon:'✦', topic:'Deployment & Ethics',  topicId:'deployment-ethics', lessonId:'ai-safety' },
+    { title:'Fairness & Bias in AI',                    icon:'✦', topic:'Deployment & Ethics',  topicId:'deployment-ethics', lessonId:'fairness-bias' },
+    { title:'The Future of AI',                         icon:'✦', topic:'Deployment & Ethics',  topicId:'deployment-ethics', lessonId:'future-ai' },
+  ].map(l => ({ ...l, url: `/lessons.html?topic=${l.topicId}&lesson=${l.lessonId}` }));
 
   let _debounce = null;
 
@@ -2417,10 +2417,14 @@ function initWelcomeBanner() {
   const iconEl   = $('cl-lesson-icon');
   const topicEl  = $('cl-lesson-topic');
   const titleEl  = $('cl-lesson-title');
+  const linkEl   = $('cl-lesson-link');
 
   if (iconEl)  iconEl.textContent  = nextTopic.icon;
   if (topicEl) topicEl.textContent = nextTopic.title;
   if (titleEl) titleEl.textContent = LESSON_TITLES[nextLesson] || nextLesson;
+
+  // Deep-link directly to the specific lesson on the lessons page
+  if (linkEl) linkEl.href = `/lessons.html?topic=${nextTopic.id}&lesson=${nextLesson}`;
 
   container.style.display = '';
 })();

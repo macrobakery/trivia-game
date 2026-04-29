@@ -1050,8 +1050,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Show initial view
-  showTopics();
+  // Show initial view — support ?topic=ID and ?topic=ID&lesson=ID deep-links
+  (function initDeepLink() {
+    try {
+      const params   = new URLSearchParams(window.location.search);
+      const topicId  = params.get('topic');
+      const lessonId = params.get('lesson');
+      if (topicId && lessonId) {
+        showLessonDetail(topicId, lessonId);
+        return;
+      }
+      if (topicId) {
+        showLessonList(topicId);
+        return;
+      }
+    } catch {}
+    showTopics();
+  })();
 
   // Track visit for activity calendar
   try {
