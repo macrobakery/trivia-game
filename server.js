@@ -601,6 +601,25 @@ app.get('/api/analytics', adminAuth, async (req, res) => {
   });
 });
 
+// GET /api/search?q=term — search quiz questions by text
+app.get('/api/search', async (req, res) => {
+  const q = (req.query.q || '').trim();
+  if (!q || q.length < 2) return res.json({ questions: [] });
+  const term = `%${q}%`;
+  try {
+    const questions = await dbAll(
+      `SELECT id, question_text, level, difficulty, correct_option, option_a, option_b, option_c, option_d
+       FROM questions
+       WHERE status='approved' AND (question_text LIKE ? OR option_a LIKE ? OR option_b LIKE ? OR option_c LIKE ? OR option_d LIKE ?)
+       LIMIT 12`,
+      [term, term, term, term, term]
+    );
+    res.json({ questions });
+  } catch (err) {
+    res.json({ questions: [] });
+  }
+});
+
 // POST /api/analytics/event — track a user interaction (fire-and-forget)
 app.post('/api/analytics/event', async (req, res) => {
   const { event, props } = req.body;

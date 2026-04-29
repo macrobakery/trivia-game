@@ -1556,6 +1556,72 @@ ul     { list-style: none; }
 /* ── Practice mode: hide the timer ── */
 .practice-mode .timer-wrap { visibility: hidden; }
 
+/* ── Search bar (home screen) ── */
+.hub-search-wrap {
+  width: 100%; max-width: 480px;
+  margin: 0 auto 0; padding: 0 0 8px;
+  position: relative; z-index: 50;
+}
+.hub-search-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-pill); padding: 10px 16px;
+  transition: border-color var(--t), box-shadow var(--t);
+}
+.hub-search-bar:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+.hub-search-icon { font-size: 0.95rem; flex-shrink: 0; opacity: 0.55; }
+.hub-search-input {
+  flex: 1; background: none; border: none; outline: none;
+  font-size: 0.88rem; color: var(--ink);
+  font-family: 'Geist', sans-serif;
+}
+.hub-search-input::placeholder { color: var(--ink-faint); }
+.hub-search-clear {
+  background: none; border: none; cursor: pointer;
+  color: var(--ink-faint); font-size: 0.8rem; padding: 2px 4px;
+  border-radius: 50%; transition: color var(--t), background var(--t);
+}
+.hub-search-clear:hover { color: var(--ink); background: var(--surface-2); }
+.hub-search-results {
+  position: absolute; top: calc(100% - 4px);
+  left: 0; right: 0;
+  background: var(--modal-bg);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius); padding: 8px 0;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+  max-height: 400px; overflow-y: auto;
+  z-index: 200; animation: fadeIn 0.15s ease;
+}
+.search-group-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem; font-weight: 700;
+  color: var(--ink-faint); text-transform: uppercase;
+  letter-spacing: 0.6px; padding: 6px 14px 4px;
+}
+.search-result-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px; cursor: pointer;
+  text-decoration: none; color: var(--ink);
+  transition: background var(--t);
+}
+.search-result-item:hover { background: var(--surface); }
+.sri-icon { font-size: 1rem; flex-shrink: 0; }
+.sri-info { flex: 1; min-width: 0; }
+.sri-title {
+  font-size: 0.83rem; font-weight: 600;
+  color: var(--ink); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  margin-bottom: 1px;
+}
+.sri-meta { font-size: 0.7rem; color: var(--ink-faint); }
+.sri-arr { font-size: 0.8rem; color: var(--ink-faint); flex-shrink: 0; }
+.search-q-item { cursor: pointer; }
+.search-news-link { border-top: 1px solid var(--border); margin-top: 4px; padding-top: 10px; }
+.search-empty { padding: 16px 14px; font-size: 0.83rem; color: var(--ink-faint); text-align: center; }
+
 /* ── ELI5 — Explain Like I'm 5 ── */
 .qtext-wrap {
   display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;

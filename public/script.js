@@ -1865,6 +1865,154 @@ function initHubStreakDisplay() {
 }
 
 // ══════════════════════════════════════════════════════════════
+// SEARCH
+// ══════════════════════════════════════════════════════════════
+
+(function initSearch() {
+  const input   = $('hub-search-input');
+  const results = $('hub-search-results');
+  const clear   = $('hub-search-clear');
+  if (!input) return;
+
+  // Lesson titles for client-side instant matching
+  const LESSON_INDEX = [
+    { title:'What Is Artificial Intelligence?',       url:'/lessons.html', icon:'◐', topic:'AI Foundations' },
+    { title:'Machine Learning: Teaching Computers',   url:'/lessons.html', icon:'◐', topic:'AI Foundations' },
+    { title:'Deep Learning & Neural Networks',        url:'/lessons.html', icon:'◐', topic:'AI Foundations' },
+    { title:'How LLMs Work',                          url:'/lessons.html', icon:'◐', topic:'AI Foundations' },
+    { title:'AI in the Real World',                   url:'/lessons.html', icon:'◐', topic:'AI Foundations' },
+    { title:'What Is Data & Why It Matters',          url:'/lessons.html', icon:'◇', topic:'Data Preparation' },
+    { title:'Cleaning & Preprocessing Data',          url:'/lessons.html', icon:'◇', topic:'Data Preparation' },
+    { title:'Feature Engineering',                    url:'/lessons.html', icon:'◇', topic:'Data Preparation' },
+    { title:'Train/Test Split & Validation',          url:'/lessons.html', icon:'◇', topic:'Data Preparation' },
+    { title:'Bias & Data Ethics',                     url:'/lessons.html', icon:'◇', topic:'Data Preparation' },
+    { title:'Choosing the Right Model',               url:'/lessons.html', icon:'◈', topic:'Model Building' },
+    { title:'Training & Loss Functions',              url:'/lessons.html', icon:'◈', topic:'Model Building' },
+    { title:'Overfitting & Regularisation',           url:'/lessons.html', icon:'◈', topic:'Model Building' },
+    { title:'Evaluation Metrics',                     url:'/lessons.html', icon:'◈', topic:'Model Building' },
+    { title:'Hyperparameter Tuning',                  url:'/lessons.html', icon:'◈', topic:'Model Building' },
+    { title:'Working with AI APIs',                   url:'/lessons.html', icon:'◉', topic:'AI App Development' },
+    { title:'Prompt Engineering',                     url:'/lessons.html', icon:'◉', topic:'AI App Development' },
+    { title:'Tokens, Context & Latency',              url:'/lessons.html', icon:'◉', topic:'AI App Development' },
+    { title:'Streaming & UX Patterns',                url:'/lessons.html', icon:'◉', topic:'AI App Development' },
+    { title:'Building a Chat Interface',              url:'/lessons.html', icon:'◉', topic:'AI App Development' },
+    { title:'Deploying AI Models',                    url:'/lessons.html', icon:'✦', topic:'Deployment' },
+    { title:'Monitoring in Production',               url:'/lessons.html', icon:'✦', topic:'Deployment' },
+    { title:'AI Safety & Alignment',                  url:'/lessons.html', icon:'✦', topic:'Deployment' },
+    { title:'Fairness & Bias in Deployment',          url:'/lessons.html', icon:'✦', topic:'Deployment' },
+    { title:'Responsible AI Principles',              url:'/lessons.html', icon:'✦', topic:'Deployment' },
+  ];
+
+  let _debounce = null;
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim();
+    clear.style.display = q ? 'block' : 'none';
+    if (!q) { results.style.display = 'none'; return; }
+    clearTimeout(_debounce);
+    _debounce = setTimeout(() => runSearch(q), 280);
+  });
+
+  clear.addEventListener('click', () => {
+    input.value = '';
+    clear.style.display = 'none';
+    results.style.display = 'none';
+    input.focus();
+  });
+
+  // Close on outside click
+  document.addEventListener('click', e => {
+    if (!$('hub-search-wrap').contains(e.target)) {
+      results.style.display = 'none';
+    }
+  });
+
+  async function runSearch(q) {
+    const ql = q.toLowerCase();
+
+    // Instant lesson matches (client-side)
+    const lessonMatches = LESSON_INDEX
+      .filter(l => l.title.toLowerCase().includes(ql) || l.topic.toLowerCase().includes(ql))
+      .slice(0, 4);
+
+    // Show immediate results while API loads
+    render(lessonMatches, [], true);
+
+    try {
+      const data = await fetch(`/api/search?q=${encodeURIComponent(q)}`).then(r => r.json());
+      render(lessonMatches, data.questions || []);
+    } catch (_) {
+      render(lessonMatches, []);
+    }
+  }
+
+  function render(lessons, questions, loading = false) {
+    if (!lessons.length && !questions.length && !loading) {
+      results.innerHTML = `<div class="search-empty">No results for that term — try broader keywords</div>`;
+      results.style.display = 'block';
+      return;
+    }
+
+    let html = '';
+
+    if (lessons.length) {
+      html += `<div class="search-group-label">📚 Lessons</div>`;
+      html += lessons.map(l => `
+        <a href="${l.url}" class="search-result-item">
+          <span class="sri-icon">${l.icon}</span>
+          <div class="sri-info">
+            <div class="sri-title">${escapeHtml(l.title)}</div>
+            <div class="sri-meta">${escapeHtml(l.topic)}</div>
+          </div>
+          <span class="sri-arr">→</span>
+        </a>`).join('');
+    }
+
+    if (questions.length) {
+      html += `<div class="search-group-label">🎮 Quiz Questions</div>`;
+      html += questions.slice(0, 5).map(q => `
+        <div class="search-result-item search-q-item" data-level="${escapeHtml(q.level)}" data-diff="${escapeHtml(q.difficulty)}">
+          <span class="sri-icon">❓</span>
+          <div class="sri-info">
+            <div class="sri-title">${escapeHtml(q.question_text.length > 80 ? q.question_text.slice(0,80)+'…' : q.question_text)}</div>
+            <div class="sri-meta">${escapeHtml(q.level)} · ${escapeHtml(q.difficulty)}</div>
+          </div>
+        </div>`).join('');
+    }
+
+    if (loading && !html) {
+      html = `<div class="search-empty">Searching…</div>`;
+    }
+
+    html += `<a href="/news.html" class="search-result-item search-news-link">
+      <span class="sri-icon">📰</span>
+      <div class="sri-info"><div class="sri-title">Browse Latest AI News</div><div class="sri-meta">news.html</div></div>
+      <span class="sri-arr">→</span>
+    </a>`;
+
+    results.innerHTML = html;
+    results.style.display = 'block';
+
+    // Quiz question click → set level/diff and start
+    results.querySelectorAll('.search-q-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const level = el.dataset.level;
+        const diff  = el.dataset.diff;
+        if (level && diff && DIFFICULTY_CONFIG[diff]) {
+          state.selectedLevel      = level;
+          state.selectedDifficulty = diff;
+          localStorage.setItem('aiChallenge_lastLevel', level);
+          localStorage.setItem('aiChallenge_lastDiff',  diff);
+          results.style.display = 'none';
+          input.value = '';
+          startGame();
+        }
+      });
+    });
+  }
+})();
+
+// ══════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════
 

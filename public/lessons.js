@@ -1027,3 +1027,31 @@ document.addEventListener('DOMContentLoaded', () => {
   // Show initial view
   showTopics();
 });
+
+
+// ── Lesson search ──────────────────────────────────────────────
+(function initLessonsSearch() {
+  const input = document.getElementById('lessons-search');
+  if (!input) return;
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    const topicCards = document.querySelectorAll('.topic-card');
+    const lessonCards = document.querySelectorAll('.lesson-item');
+
+    if (!q) {
+      topicCards.forEach(c => c.style.display = '');
+      lessonCards.forEach(c => c.style.display = '');
+      return;
+    }
+
+    topicCards.forEach(c => {
+      const text = c.textContent.toLowerCase();
+      c.style.display = text.includes(q) ? '' : 'none';
+    });
+    lessonCards.forEach(c => {
+      const text = c.textContent.toLowerCase();
+      c.style.display = text.includes(q) ? '' : 'none';
+    });
+  });
+})();
