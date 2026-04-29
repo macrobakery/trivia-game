@@ -97,8 +97,12 @@
   gap: 12px;
   margin-bottom: 20px;
 }
-/* 7th item spans full row — used for Total Points highlight */
-.prof-stats-row .prof-stat:last-child { grid-column: 1 / -1; }
+/* Last two items (Global Rank + Total Points) span full row each for visual emphasis */
+.prof-stats-row .prof-stat:nth-last-child(-n+2) { grid-column: span 3; }
+/* On small screens fall back to natural grid */
+@media (max-width: 400px) {
+  .prof-stats-row .prof-stat:nth-last-child(-n+2) { grid-column: span 2; }
+}
 
 .prof-stat {
   background: var(--surface);
@@ -392,6 +396,20 @@
   line-height: 1.45;
 }
 
+/* ── Share button ── */
+.prof-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-color: var(--border-hi);
+  font-size: 0.8rem;
+  transition: all var(--t);
+}
+.prof-share-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* ── CTA row ── */
 .prof-cta {
   display: flex;
@@ -511,8 +529,8 @@
   }
 
   .prof-stats-row { gap: 16px; grid-template-columns: repeat(3, 1fr); }
-  /* 7th stat (Total Points) — make it visually stand out on its own row */
-  .prof-stats-row .prof-stat:last-child { grid-column: 1 / -1; }
+  /* Last two stats span full row for visual emphasis */
+  .prof-stats-row .prof-stat:nth-last-child(-n+2) { grid-column: 1 / -1; }
   .prof-stat-val  { font-size: 1.6rem; }
 
   .activity-calendar {

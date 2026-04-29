@@ -575,6 +575,26 @@ app.get('/api/leaderboard/rank', async (req, res) => {
   res.json({ rank: row ? row.rank : 1, total: total ? total.total : 0 });
 });
 
+// GET /api/stats/today — player count and game count for today
+app.get('/api/stats/today', async (req, res) => {
+  try {
+    const todayStart = new Date();
+    todayStart.setUTCHours(0, 0, 0, 0);
+    const ts = todayStart.toISOString().replace('T', ' ').slice(0, 19);
+    const [todayRow, totalRow] = await Promise.all([
+      dbGet(`SELECT COUNT(*) AS games, COUNT(DISTINCT LOWER(player_name)) AS players FROM scores WHERE created_at >= ?`, [ts]),
+      dbGet(`SELECT COUNT(*) AS total FROM scores`)
+    ]);
+    res.json({
+      today_games:   todayRow ? todayRow.games   : 0,
+      today_players: todayRow ? todayRow.players : 0,
+      total_games:   totalRow ? totalRow.total   : 0
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/leaderboard/all — all scores (admin)
 app.get('/api/leaderboard/all', adminAuth, async (req, res) => {
   res.json(await dbAll('SELECT * FROM scores ORDER BY score DESC'));

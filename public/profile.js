@@ -361,6 +361,75 @@ function renderDailyChallenge() {
   }
 }
 
+// ── Global rank fetch ──────────────────────────────────────────
+async function fetchGlobalRank() {
+  const rankEl = $('ps-global-rank');
+  if (!rankEl) return;
+  try {
+    const levelStats = read('aiChallenge_levelStats', {});
+    const total      = levelStats._total || {};
+    // Use the highest score ever (bestScore across all levels)
+    let bestScore = 0;
+    LEVELS.forEach(l => {
+      const rec = levelStats[l.name];
+      if (rec && rec.bestScore > bestScore) bestScore = rec.bestScore;
+    });
+    if (bestScore <= 0) { rankEl.textContent = '—'; return; }
+    const data = await fetch(`/api/leaderboard/rank?score=${bestScore}`).then(r => r.json());
+    if (data && data.rank) {
+      rankEl.textContent = `#${data.rank}`;
+      rankEl.title       = `out of ${data.total} players`;
+    }
+  } catch { /* non-critical */ }
+}
+
+// ── Share profile card ─────────────────────────────────────────
+function buildShareCard() {
+  const name       = localStorage.getItem('aiChallenge_playerName') || 'Anonymous';
+  const streak     = read('aiChallenge_streak', { count: 0 });
+  const levelStats = read('aiChallenge_levelStats', {});
+  const total      = levelStats._total || { answered: 0, correct: 0, totalScore: 0 };
+  const lessonProg = read('aiChallenge_lessonProgress', {});
+  const lessonsDone = Object.values(lessonProg).filter(Boolean).length;
+  const unlocked   = read('aiChallenge_unlocked', []);
+  const accuracy   = total.answered
+    ? Math.round((total.correct / total.answered) * 100)
+    : 0;
+  const pts = (total.totalScore || 0);
+  const ptsStr = pts >= 1000 ? (pts / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : pts.toLocaleString();
+
+  return [
+    `🤖 AI Challenge — My Progress`,
+    ``,
+    `👤 ${name}`,
+    `🔥 Streak: ${streak.count || 0} day${streak.count !== 1 ? 's' : ''}`,
+    `🎯 Accuracy: ${accuracy || 0}%`,
+    `📚 Lessons: ${lessonsDone}/25`,
+    `⭐ Points: ${ptsStr}`,
+    `🏅 Achievements: ${unlocked.length}/16`,
+    ``,
+    `Can you beat me? 👉 ai-app-builder-challenge.vercel.app`,
+    `#AIChallenge #LearnAI`
+  ].join('\n');
+}
+
+document.addEventListener('click', e => {
+  const btn = e.target.closest('#share-profile-btn');
+  if (!btn) return;
+  const card = buildShareCard();
+  if (navigator.share) {
+    navigator.share({ title: 'My AI Challenge Progress', text: card }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(card).then(() => {
+      btn.textContent = '✅ Copied!';
+      setTimeout(() => { btn.innerHTML = '📤 Share My Progress'; }, 2200);
+    }).catch(() => {
+      // Final fallback: prompt
+      window.prompt('Copy your progress card:', card);
+    });
+  }
+});
+
 // ── Init ───────────────────────────────────────────────────────
 renderHeader();
 renderStats();
@@ -369,6 +438,7 @@ renderLevelRecords();
 renderLessonsProgress();
 renderAchievements();
 renderDailyChallenge();
+fetchGlobalRank();
 
 // Register service worker
 if ('serviceWorker' in navigator) {

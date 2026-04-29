@@ -3221,6 +3221,43 @@ button, a, input, select {
 
 .hub-cs-sep { opacity: 0.3; }
 
+/* ── Social proof strip ── */
+.hub-social-proof {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.67rem;
+  font-weight: 600;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 6px 0 2px;
+  width: 100%;
+  animation: fadeIn 0.5s ease both;
+}
+
+.hub-sp-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  flex-shrink: 0;
+  animation: spPulse 2.2s ease-in-out infinite;
+}
+
+@keyframes spPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.55; transform: scale(0.75); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 @keyframes questionSlideIn {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }

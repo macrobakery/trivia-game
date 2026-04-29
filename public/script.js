@@ -2189,6 +2189,25 @@ initHomeStatsStrip();
 renderDailyGoals();
 initWelcomeBanner();
 
+// ── Social proof: players active today ────────────────────────
+(function loadSocialProof() {
+  const el   = $('hub-social-proof');
+  const text = $('hub-sp-text');
+  if (!el || !text) return;
+  fetch('/api/stats/today')
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (!data) return;
+      const n = data.today_players || 0;
+      if (n < 1) return; // hide when no data
+      const label = n === 1 ? '1 player challenged themselves today'
+                             : `${n.toLocaleString()} players challenged themselves today`;
+      text.textContent = label;
+      el.style.display = 'flex';
+    })
+    .catch(() => {}); // silent — non-critical UI element
+})();
+
 // ══════════════════════════════════════════════════════════════
 // DAILY GOALS — 3 simple daily targets
 // ══════════════════════════════════════════════════════════════
