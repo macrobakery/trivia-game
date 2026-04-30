@@ -509,7 +509,7 @@
   font-weight: 600;
   font-family: inherit;
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-text);
   border: none;
   border-radius: var(--radius-pill);
   cursor: pointer;

@@ -301,7 +301,7 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.6rem;
   font-weight: 800;
-  color: #fff;
+  color: var(--accent-text);
   background: var(--accent);
   border-radius: var(--radius-pill);
   padding: 2px 6px;
@@ -693,7 +693,7 @@
   height: 40px;
   border-radius: 50%;
   background: var(--accent);
-  color: #0a0013;
+  color: var(--accent-text);
   font-size: 1.1rem;
   font-weight: 700;
   border: none;
