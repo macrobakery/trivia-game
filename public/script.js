@@ -1601,8 +1601,49 @@ function renderLeaderboardTable(scores, containerId) {
 // LEADERBOARD PREVIEW (start screen)
 // ══════════════════════════════════════════════════════════════
 
+// ── In-memory cache for the leaderboard preview (5-min TTL) ──
+let _lbPreviewCache     = null;
+let _lbPreviewCacheTime = 0;
+const LB_PREVIEW_TTL    = 5 * 60 * 1000; // 5 minutes
+
 async function loadLeaderboardPreview() {
-  // Leaderboard preview removed from home screen — no-op
+  const container = $('hub-lb-preview');
+  const rows      = $('hub-lb-rows');
+  if (!container || !rows) return;
+
+  // Serve from cache if fresh
+  const now = Date.now();
+  if (_lbPreviewCache && now - _lbPreviewCacheTime < LB_PREVIEW_TTL) {
+    _renderLbPreview(rows, _lbPreviewCache);
+    container.style.display = '';
+    return;
+  }
+
+  try {
+    const data = await fetch('/api/leaderboard').then(r => r.json());
+    if (!Array.isArray(data) || data.length === 0) { container.style.display = 'none'; return; }
+    _lbPreviewCache     = data.slice(0, 5);
+    _lbPreviewCacheTime = now;
+    _renderLbPreview(rows, _lbPreviewCache);
+    container.style.display = '';
+  } catch (_) {
+    container.style.display = 'none';
+  }
+}
+
+function _renderLbPreview(rows, scores) {
+  const MEDALS   = ['🥇', '🥈', '🥉', '4', '5'];
+  const myName   = (localStorage.getItem('aiChallenge_playerName') || '').trim().toLowerCase();
+  rows.innerHTML = scores.map((s, i) => {
+    const isYou  = myName && s.player_name && s.player_name.trim().toLowerCase() === myName;
+    const medal  = MEDALS[i] || String(i + 1);
+    const level  = s.level === 'Deployment and Responsible AI' ? 'Deploy & Ethics' : (s.level || '—');
+    return `<div class="hub-lb-row ${isYou ? 'hub-lb-row-you' : ''}">
+      <span class="hub-lb-medal">${medal}</span>
+      <span class="hub-lb-name" title="${escapeHtml(s.player_name)}">${escapeHtml(s.player_name)}${isYou ? ' <em style="font-size:0.6rem;opacity:0.6">(you)</em>' : ''}</span>
+      <span class="hub-lb-pts">${Number(s.score).toLocaleString()} pts</span>
+    </div>`;
+  }).join('');
 }
 
 // ══════════════════════════════════════════════════════════════
