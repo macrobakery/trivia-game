@@ -3184,17 +3184,20 @@ function updateDailyChallengeUI() {
   const homeChip  = $('home-daily-chip');
   const sub       = $('daily-sub');
   const quizSub   = $('quiz-card-sub');
+  const quizCta   = document.querySelector('#hn-quiz-card .hn-card-cta');
   if (!btn) return;
   if (isDailyDone()) {
     if (chip)     chip.style.display     = 'inline-flex';
     if (homeChip) homeChip.style.display = 'inline-flex';
     btn.classList.add('daily-done');
-    if (sub) sub.textContent = 'Already played today — come back tomorrow!';
-    if (quizSub)  quizSub.textContent    = 'Daily challenge complete! ✓';
+    if (sub)     sub.textContent = 'Already played today — come back tomorrow!';
+    if (quizSub) quizSub.textContent = 'Daily challenge complete! ✓';
+    if (quizCta) { quizCta.textContent = 'Play again →'; quizCta.style.color = 'var(--green)'; }
   } else {
     if (chip)     chip.style.display     = 'none';
     if (homeChip) homeChip.style.display = 'none';
     btn.classList.remove('daily-done');
+    if (quizCta) { quizCta.textContent = 'Play →'; quizCta.style.color = ''; }
     _updateDailyCountdown();
   }
 }
