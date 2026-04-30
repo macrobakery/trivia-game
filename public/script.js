@@ -456,6 +456,40 @@ loadPlayDefaults();
   if (chip) chip.textContent = match.length > 18 ? match.slice(0, 16) + '…' : match;
 })();
 
+// ── Quiz bottom-sheet panel ───────────────────────────────────
+function openQuizPanel() {
+  const overlay = $('qp-overlay');
+  if (overlay) {
+    overlay.style.display = 'flex';
+    document.body.classList.add('qp-open');
+  }
+}
+function closeQuizPanel() {
+  const overlay = $('qp-overlay');
+  if (overlay) {
+    overlay.style.display = 'none';
+    document.body.classList.remove('qp-open');
+  }
+}
+
+const hnQuizCard = $('hn-quiz-card');
+if (hnQuizCard) {
+  hnQuizCard.addEventListener('click', openQuizPanel);
+  hnQuizCard.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openQuizPanel(); }
+  });
+}
+
+const qpClose = $('qp-close');
+if (qpClose) qpClose.addEventListener('click', closeQuizPanel);
+
+const qpOverlay = $('qp-overlay');
+if (qpOverlay) {
+  qpOverlay.addEventListener('click', e => {
+    if (!e.target.closest('.quiz-panel')) closeQuizPanel();
+  });
+}
+
 // ── Customize modal ───────────────────────────────────────────
 function openCustomizeModal() {
   $('customize-modal').style.display = 'flex';
@@ -489,6 +523,7 @@ $('discard-btn').addEventListener('click', () => {
 
 async function startGame() {
   if (!state.selectedLevel || !state.selectedDifficulty) return;
+  closeQuizPanel();
 
   // Show loading state
   const btn     = $('start-btn');
@@ -2665,7 +2700,7 @@ function renderDailyGoals() {
   const lessonDone = localStorage.getItem('aiChallenge_lastLessonDone') === today;
 
   // Always show daily goals so new users understand the platform's daily habit
-  goals.style.display = 'block';
+  goals.style.display = 'flex';
 
   function setGoal(id, checkId, done) {
     const item  = $(id);
@@ -3131,16 +3166,19 @@ function markDailyDone() {
 }
 
 function updateDailyChallengeUI() {
-  const btn  = $('daily-challenge-btn');
-  const chip = $('daily-done-chip');
-  const sub  = $('daily-sub');
+  const btn       = $('daily-challenge-btn');
+  const chip      = $('daily-done-chip');
+  const homeChip  = $('home-daily-chip');
+  const sub       = $('daily-sub');
   if (!btn) return;
   if (isDailyDone()) {
-    if (chip) chip.style.display = 'inline-flex';
+    if (chip)     chip.style.display     = 'inline-flex';
+    if (homeChip) homeChip.style.display = 'inline-flex';
     btn.classList.add('daily-done');
     if (sub) sub.textContent = 'Already played today — come back tomorrow!';
   } else {
-    if (chip) chip.style.display = 'none';
+    if (chip)     chip.style.display     = 'none';
+    if (homeChip) homeChip.style.display = 'none';
     btn.classList.remove('daily-done');
     _updateDailyCountdown();
   }
@@ -3160,6 +3198,7 @@ function _updateDailyCountdown() {
 }
 
 async function startDailyChallenge() {
+  closeQuizPanel();
   const btn = $('daily-challenge-btn');
   const lbl = btn ? btn.querySelector('.hub-cta-daily-label') : null;
   if (btn) btn.disabled = true;

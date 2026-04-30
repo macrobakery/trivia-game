@@ -4068,3 +4068,381 @@ button, a, input, select {
   color: var(--accent);
   flex-shrink: 0;
 }
+
+/* ══════════════════════════════════════════════
+   HOME REDESIGN — 4-CARD HUB LAYOUT
+══════════════════════════════════════════════ */
+
+/* ── New top bar ── */
+.hn-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 8px;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+}
+.hn-logo {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.hn-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hn-avatar {
+  font-size: 1.1rem;
+  text-decoration: none;
+  opacity: 0.75;
+  transition: opacity var(--t);
+}
+.hn-avatar:hover { opacity: 1; }
+
+/* ── Hero area ── */
+.hn-hero {
+  padding: 4px 20px 16px;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+}
+.hn-hero .hub-greeting {
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+}
+h1.hn-hero-headline {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0;
+}
+h1.hn-hero-headline em {
+  color: var(--accent);
+  font-style: italic;
+}
+
+/* ── Goals row (inline strip) ── */
+.hn-goals-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px 14px;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+.hn-goals-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-family: 'JetBrains Mono', monospace;
+  flex-shrink: 0;
+}
+.hn-goal-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+}
+.hn-goal-item .dg-check {
+  font-size: 0.85rem;
+  width: auto;
+  height: auto;
+}
+.hn-goal-item.done .dg-check { color: var(--green); }
+.hn-goal-item.done .dg-label {
+  color: var(--green);
+  text-decoration: none;
+}
+.hn-goals-sep {
+  color: var(--border);
+  font-size: 0.9rem;
+}
+
+/* ── 2×2 Card Grid ── */
+.hn-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  padding: 0 20px 16px;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.hn-card {
+  border-radius: 20px;
+  padding: 20px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--t), box-shadow var(--t);
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--ink);
+  border: 1px solid transparent;
+}
+.hn-card:hover,
+.hn-card:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+  outline: none;
+}
+
+/* Quiz card — purple */
+.hn-card-quiz {
+  background: linear-gradient(135deg, hsl(270 60% 16%), hsl(270 40% 12%));
+  border-color: hsl(270 90% 70% / 0.3);
+}
+.hn-card-quiz:hover { box-shadow: 0 12px 40px hsl(270 90% 70% / 0.2); }
+
+/* Lessons card — teal */
+.hn-card-lessons {
+  background: linear-gradient(135deg, hsl(172 60% 14%), hsl(172 40% 10%));
+  border-color: hsl(172 90% 60% / 0.3);
+}
+.hn-card-lessons:hover { box-shadow: 0 12px 40px hsl(172 80% 50% / 0.2); }
+
+/* News card — amber/orange */
+.hn-card-news {
+  background: linear-gradient(135deg, hsl(35 60% 14%), hsl(35 40% 10%));
+  border-color: hsl(35 90% 60% / 0.3);
+}
+.hn-card-news:hover { box-shadow: 0 12px 40px hsl(35 80% 50% / 0.2); }
+
+/* Alex card — blue */
+.hn-card-alex {
+  background: linear-gradient(135deg, hsl(220 60% 16%), hsl(220 40% 12%));
+  border-color: hsl(220 90% 70% / 0.3);
+}
+.hn-card-alex:hover { box-shadow: 0 12px 40px hsl(220 80% 60% / 0.2); }
+
+.hn-card-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.hn-card-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+.hn-card-sub {
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  margin-top: 3px;
+  line-height: 1.35;
+}
+.hn-card .daily-done-chip {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+/* ── Quiz Bottom-Sheet Panel ── */
+.qp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 500;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.quiz-panel {
+  width: 100%;
+  max-width: 600px;
+  background: var(--surface-2);
+  border-radius: 24px 24px 0 0;
+  padding: 0 20px 32px;
+  animation: qpSlideUp 0.32s cubic-bezier(0.34, 1.36, 0.64, 1) both;
+  position: relative;
+}
+
+@keyframes qpSlideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.qp-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 10px auto 16px;
+}
+
+.qp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.qp-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.qp-close {
+  font-size: 0.85rem;
+  padding: 6px 10px;
+}
+
+.qp-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+}
+.qp-divider::before,
+.qp-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.qp-divider span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+}
+
+.qp-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.qp-custom-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.qp-play-btn {
+  flex-shrink: 0;
+  padding: 12px 22px;
+  font-size: 0.95rem;
+}
+
+/* Desktop: panel as centered modal */
+@media (min-width: 601px) {
+  .qp-overlay {
+    align-items: center;
+  }
+  .quiz-panel {
+    border-radius: 24px;
+    max-height: 80vh;
+    overflow-y: auto;
+    margin: 0 16px;
+    animation: qpFadeIn 0.22s ease both;
+  }
+  @keyframes qpFadeIn {
+    from { opacity: 0; transform: scale(0.96) translateY(10px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+}
+
+/* Keep screen.splash padding/layout working with the new structure */
+.screen.splash {
+  padding: 0 0 100px;
+  gap: 0;
+}
+.screen.splash .hn-topbar,
+.screen.splash .hn-hero,
+.screen.splash .hn-goals-row,
+.screen.splash .resume-banner,
+.screen.splash .streak-rescue,
+.screen.splash .hn-cards,
+.screen.splash .hub-social-proof,
+.screen.splash .hub-search-wrap,
+.screen.splash .continue-learning,
+.screen.splash .recent-games,
+.screen.splash .hub-lb-preview,
+.screen.splash .daily-tip,
+.screen.splash .splash-meta,
+.screen.splash .hub-stats-strip {
+  width: 100%;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+.screen.splash .resume-banner,
+.screen.splash .streak-rescue {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+.screen.splash .hub-social-proof {
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-bottom: 4px;
+}
+.screen.splash .hub-search-wrap {
+  padding: 0 20px;
+}
+.screen.splash .continue-learning,
+.screen.splash .recent-games,
+.screen.splash .hub-lb-preview {
+  margin: 4px 20px;
+  width: calc(100% - 40px);
+}
+.screen.splash .daily-tip {
+  margin: 14px 20px 4px;
+  width: calc(100% - 40px);
+}
+.screen.splash .splash-meta {
+  padding: 8px 20px 4px;
+}
+
+/* hub-stats-strip now lives inside hn-topbar-right, reset its old width/center styles */
+.hn-topbar-right .hub-stats-strip {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  font-size: 0.72rem;
+}
+
+@media (max-width: 600px) {
+  h1.hn-hero-headline { font-size: 1.6rem; }
+  .hn-cards { gap: 10px; padding: 0 14px 14px; }
+  .hn-card  { min-height: 100px; padding: 16px; }
+  .hn-card-icon { font-size: 1.5rem; }
+  .hn-card-title { font-size: 0.88rem; }
+  .hn-topbar { padding: 12px 14px 6px; }
+  .hn-hero { padding: 4px 14px 12px; }
+  .hn-goals-row { padding: 0 14px 10px; }
+  .hn-topbar-right .hub-stats-strip { display: none; }
+}
+
+@media (max-width: 380px) {
+  h1.hn-hero-headline { font-size: 1.4rem; }
+  .hn-card  { min-height: 90px; padding: 12px; }
+  .hn-card-icon { font-size: 1.3rem; margin-bottom: 5px; }
+}

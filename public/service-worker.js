@@ -3,7 +3,7 @@
 // Caches static assets for offline / instant load
 // ============================================================
 
-const CACHE_NAME   = 'ai-challenge-v19';
+const CACHE_NAME   = 'ai-challenge-v20';
 const STATIC_ASSETS = [
   '/',
   '/style.css',

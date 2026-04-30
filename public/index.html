@@ -50,216 +50,181 @@
   ════════════════════════════════════════ -->
   <div id="start-screen" class="screen splash active">
 
-    <!-- ── Hub top bar: greeting + theme toggle ── -->
-    <div class="hub-topbar">
+    <!-- ── New top bar: logo + streak + avatar + theme toggle ── -->
+    <div class="hn-topbar">
+      <div class="hn-logo">⚡ AI Challenge</div>
+      <div class="hn-topbar-right">
+        <!-- Stats strip (streak badge inline) -->
+        <div class="hub-stats-strip" id="hub-stats-strip">
+          <span class="hub-stat-item" id="hs-streak">🔥 0 days</span>
+          <span class="hub-stat-sep">·</span>
+          <span class="hub-stat-item" id="hs-accuracy">🎯 —</span>
+          <span class="hub-stat-sep">·</span>
+          <a href="/profile.html" class="hub-stat-item hub-stat-link" id="hs-games">0 games</a>
+        </div>
+        <a href="/profile.html" class="hn-avatar" aria-label="Profile">👤</a>
+        <button class="theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+      </div>
+    </div>
+
+    <!-- ── Hero: personalized greeting + headline ── -->
+    <div class="hn-hero">
       <div class="hub-greeting" id="hub-greeting">
-        AI Challenge
-        <span id="hub-greeting-sub">Learn, quiz, and stay sharp every day</span>
+        Good morning!
+        <span id="hub-greeting-sub">Ready to learn something new today?</span>
       </div>
-      <button class="theme-toggle" id="theme-toggle" title="Toggle theme">🌙</button>
+      <h1 class="hn-hero-headline"><em>Learn AI in 5 min a day</em></h1>
+      <!-- Hidden welcome sub (used by script.js) -->
+      <div id="hub-welcome" style="display:none">
+        <div id="hub-welcome-sub"></div>
+      </div>
     </div>
 
-    <!-- ── Mini stats strip (always visible) ── -->
-    <div class="hub-stats-strip" id="hub-stats-strip">
-      <span class="hub-stat-item" id="hs-streak">🔥 0 days</span>
-      <span class="hub-stat-sep">·</span>
-      <span class="hub-stat-item" id="hs-accuracy">🎯 —</span>
-      <span class="hub-stat-sep">·</span>
-      <a href="/profile.html" class="hub-stat-item hub-stat-link" id="hs-games">0 games</a>
+    <!-- ── Goals strip ── -->
+    <div class="hn-goals-row" id="daily-goals" style="display:none">
+      <span class="hn-goals-label">Today:</span>
+      <span class="dg-item hn-goal-item" id="dg-game">
+        <span class="dg-check" id="dg-game-check">○</span>
+        <span class="dg-label">Play</span>
+      </span>
+      <span class="hn-goals-sep">·</span>
+      <span class="dg-item hn-goal-item" id="dg-news">
+        <span class="dg-check" id="dg-news-check">○</span>
+        <span class="dg-label">Read</span>
+      </span>
+      <span class="hn-goals-sep">·</span>
+      <span class="dg-item hn-goal-item" id="dg-lesson">
+        <span class="dg-check" id="dg-lesson-check">○</span>
+        <span class="dg-label">Learn</span>
+      </span>
     </div>
 
-    <!-- ── Main content ── -->
-    <div class="splash-content">
-
-      <!-- ── New-user welcome (hidden after first game) ── -->
-      <div class="hub-welcome" id="hub-welcome" style="display:none">
-        <div class="hub-welcome-headline">Learn AI in 5 minutes a day</div>
-        <div class="hub-welcome-pills">
-          <span class="hub-wp">🎮 Daily quiz</span>
-          <span class="hub-wp">📚 25 lessons</span>
-          <span class="hub-wp">🤖 AI tutor</span>
-          <span class="hub-wp">📰 Live news</span>
-        </div>
-        <div class="hub-welcome-sub">No experience needed. Start with Today's Challenge below ↓</div>
-      </div>
-
-      <!-- Resume banner -->
-      <div id="resume-banner" class="resume-banner" style="display:none" role="alert">
-        <div class="resume-info">
-          <span class="resume-icon">⚡</span>
-          <div>
-            <div class="resume-title">Game in progress</div>
-            <div class="resume-meta" id="resume-meta">Loading…</div>
-          </div>
-        </div>
-        <div class="resume-actions">
-          <button class="btn-primary" id="resume-btn">Resume →</button>
-          <button class="btn-ghost-sm" id="discard-btn">Discard</button>
+    <!-- ── Resume banner ── -->
+    <div id="resume-banner" class="resume-banner" style="display:none" role="alert">
+      <div class="resume-info">
+        <span class="resume-icon">⚡</span>
+        <div>
+          <div class="resume-title">Game in progress</div>
+          <div class="resume-meta" id="resume-meta">Loading…</div>
         </div>
       </div>
-
-      <!-- ── CTA Stack: simplified, clear hierarchy ── -->
-      <div class="hub-cta-stack">
-
-        <!-- 1st — Daily Challenge HERO (gold, most prominent) -->
-        <button class="hub-cta-daily" id="daily-challenge-btn">
-          <span class="hub-cta-icon">🗓</span>
-          <div class="hub-cta-daily-inner">
-            <span class="hub-cta-daily-label">Today's Daily Challenge</span>
-            <span class="hub-cta-daily-sub" id="daily-sub">Same 10 questions for all players · Resets at midnight</span>
-          </div>
-          <span class="daily-done-chip" id="daily-done-chip" style="display:none">✓ Done</span>
-          <span class="hub-cta-arr">→</span>
-        </button>
-
-        <!-- 2nd — Custom Game (secondary, outlined) -->
-        <div class="hub-cta-primary">
-          <button id="start-btn" class="btn-primary play-main-btn">
-            <span id="start-btn-spinner" class="start-spinner" style="display:none">⟳</span>
-            <span id="start-btn-text">🎮 Custom Game</span>
-            <span class="arrow" id="start-btn-arrow">→</span>
-          </button>
-          <div class="play-settings-row">
-            <span id="play-level-chip" class="play-setting-chip">AI Foundations</span>
-            <span class="play-setting-sep">·</span>
-            <span id="play-diff-chip" class="play-setting-chip">Intermediate</span>
-            <button class="btn-ghost-sm" id="customize-btn">⚙ Customize</button>
-          </div>
-        </div>
-
-        <!-- 3rd — Quick-access 3-column grid: Learn · News · Alex -->
-        <div class="hub-quick-links">
-          <a href="/lessons.html" class="hub-quick-link">
-            <span class="hub-quick-icon">📚</span>
-            <span>Learn</span>
-          </a>
-          <a href="/news.html" class="hub-quick-link">
-            <span class="hub-quick-icon">📰</span>
-            <span>AI News</span>
-          </a>
-          <a href="/chat.html" class="hub-quick-link">
-            <span class="hub-quick-icon">🤖</span>
-            <span>Ask Alex</span>
-          </a>
-        </div>
-
-        <!-- Curriculum summary strip — always visible -->
-        <div class="hub-curriculum-strip">
-          <span>5 topics</span>
-          <span class="hub-cs-sep">·</span>
-          <span>25 lessons</span>
-          <span class="hub-cs-sep">·</span>
-          <span>3 difficulty levels</span>
-          <span class="hub-cs-sep">·</span>
-          <span>🤖 AI tutor</span>
-        </div>
-
-        <!-- Social proof strip — players active today -->
-        <div class="hub-social-proof" id="hub-social-proof" style="display:none" aria-live="polite">
-          <span class="hub-sp-dot"></span>
-          <span id="hub-sp-text">Loading…</span>
-        </div>
-
-        <!-- Weak spots practice (shown only if there are stored wrong answers) -->
-        <button class="hub-cta-weakspots" id="weak-spots-btn" style="display:none">
-          <span class="hub-cta-icon">🎯</span>
-          <span class="hub-cta-label">Practice Weak Spots</span>
-          <span class="ws-count" id="ws-count">0</span>
-          <span class="hub-cta-arr">→</span>
-        </button>
-
-        <!-- Search bar (below CTAs, power-user feature) -->
-        <div class="hub-search-wrap" id="hub-search-wrap">
-          <div class="hub-search-bar">
-            <span class="hub-search-icon">🔍</span>
-            <input type="search" id="hub-search-input" class="hub-search-input" placeholder="Search lessons, topics, questions…" autocomplete="off" />
-            <button class="hub-search-clear" id="hub-search-clear" aria-label="Clear search" style="display:none">✕</button>
-          </div>
-          <div class="hub-search-results" id="hub-search-results" style="display:none"></div>
-        </div>
-
+      <div class="resume-actions">
+        <button class="btn-primary" id="resume-btn">Resume →</button>
+        <button class="btn-ghost-sm" id="discard-btn">Discard</button>
       </div>
+    </div>
 
-      <!-- ── Streak Rescue Banner (shown when streak at risk today) ── -->
-      <div class="streak-rescue" id="streak-rescue" style="display:none" role="alert">
-        <div class="sr-left">
-          <span class="sr-flame">🔥</span>
-          <div class="sr-text">
-            <div class="sr-title" id="sr-title">Your 5-day streak ends in 2:14:33</div>
-            <div class="sr-sub">Play today's challenge to keep it alive!</div>
-          </div>
-        </div>
-        <div class="sr-actions">
-          <button class="btn-primary sr-play-btn" id="sr-play-btn">Play Now →</button>
-          <button class="sr-dismiss" id="sr-dismiss" aria-label="Dismiss">✕</button>
+    <!-- ── Streak Rescue Banner ── -->
+    <div class="streak-rescue" id="streak-rescue" style="display:none" role="alert">
+      <div class="sr-left">
+        <span class="sr-flame">🔥</span>
+        <div class="sr-text">
+          <div class="sr-title" id="sr-title">Your 5-day streak ends in 2:14:33</div>
+          <div class="sr-sub">Play today's challenge to keep it alive!</div>
         </div>
       </div>
+      <div class="sr-actions">
+        <button class="btn-primary sr-play-btn" id="sr-play-btn">Play Now →</button>
+        <button class="sr-dismiss" id="sr-dismiss" aria-label="Dismiss">✕</button>
+      </div>
+    </div>
 
-      <!-- ── Daily Goals ── -->
-      <div class="daily-goals" id="daily-goals" style="display:none">
-        <div class="dg-title">Today's Goals</div>
-        <div class="dg-list">
-          <div class="dg-item" id="dg-game">
-            <span class="dg-check" id="dg-game-check">○</span>
-            <span class="dg-label">Play a quiz game</span>
-          </div>
-          <div class="dg-item" id="dg-news">
-            <span class="dg-check" id="dg-news-check">○</span>
-            <span class="dg-label">Read the AI news</span>
-          </div>
-          <div class="dg-item" id="dg-lesson">
-            <span class="dg-check" id="dg-lesson-check">○</span>
-            <span class="dg-label">Complete a lesson</span>
-          </div>
+    <!-- ── 2×2 Card Grid ── -->
+    <div class="hn-cards">
+
+      <!-- Quiz card — opens bottom sheet -->
+      <div class="hn-card hn-card-quiz" id="hn-quiz-card" role="button" tabindex="0" aria-label="Play Daily Quiz">
+        <div class="hn-card-icon">🎮</div>
+        <div class="hn-card-title">Daily Quiz</div>
+        <div class="hn-card-sub">Test your knowledge</div>
+        <span class="daily-done-chip" id="home-daily-chip" style="display:none">✓ Done</span>
+      </div>
+
+      <!-- Lessons card -->
+      <a href="/lessons.html" class="hn-card hn-card-lessons" aria-label="Go to Lessons">
+        <div class="hn-card-icon">📚</div>
+        <div class="hn-card-title">Lessons</div>
+        <div class="hn-card-sub hn-card-lessons-sub">
+          <span id="hn-lessons-progress">25 lessons</span>
         </div>
-      </div>
+      </a>
 
-      <!-- ── Continue Learning ── -->
-      <div class="continue-learning" id="continue-learning" style="display:none">
-        <div class="cl-header">
-          <span class="cl-title">📚 Continue Learning</span>
-          <a href="/lessons.html" class="cl-see-all">All lessons →</a>
+      <!-- News card -->
+      <a href="/news.html" class="hn-card hn-card-news" aria-label="Read AI News">
+        <div class="hn-card-icon">📰</div>
+        <div class="hn-card-title">AI News</div>
+        <div class="hn-card-sub">Latest from the field</div>
+      </a>
+
+      <!-- Ask Alex card -->
+      <a href="/chat.html" class="hn-card hn-card-alex" aria-label="Ask Alex AI Tutor">
+        <div class="hn-card-icon">🤖</div>
+        <div class="hn-card-title">Ask Alex</div>
+        <div class="hn-card-sub">Your AI tutor</div>
+      </a>
+
+    </div><!-- /hn-cards -->
+
+    <!-- ── Social proof strip ── -->
+    <div class="hub-social-proof" id="hub-social-proof" style="display:none" aria-live="polite">
+      <span class="hub-sp-dot"></span>
+      <span id="hub-sp-text">Loading…</span>
+    </div>
+
+    <!-- ── Search bar ── -->
+    <div class="hub-search-wrap" id="hub-search-wrap">
+      <div class="hub-search-bar" id="hub-search-bar">
+        <span class="hub-search-icon">🔍</span>
+        <input type="search" id="hub-search-input" class="hub-search-input" placeholder="Search lessons, topics, questions…" autocomplete="off" />
+        <button class="hub-search-clear" id="hub-search-clear" aria-label="Clear search" style="display:none">✕</button>
+      </div>
+      <div class="hub-search-results" id="hub-search-results" style="display:none"></div>
+    </div>
+
+    <!-- ── Continue Learning ── -->
+    <div class="continue-learning" id="continue-learning" style="display:none">
+      <div class="cl-header">
+        <span class="cl-title">📚 Continue Learning</span>
+        <a href="/lessons.html" class="cl-see-all">All lessons →</a>
+      </div>
+      <a href="/lessons.html" class="cl-lesson-card" id="cl-lesson-link">
+        <span class="cl-lesson-icon" id="cl-lesson-icon">◐</span>
+        <div class="cl-lesson-info">
+          <div class="cl-lesson-topic" id="cl-lesson-topic">AI Foundations</div>
+          <div class="cl-lesson-title" id="cl-lesson-title">What Is Artificial Intelligence?</div>
         </div>
-        <a href="/lessons.html" class="cl-lesson-card" id="cl-lesson-link">
-          <span class="cl-lesson-icon" id="cl-lesson-icon">◐</span>
-          <div class="cl-lesson-info">
-            <div class="cl-lesson-topic" id="cl-lesson-topic">AI Foundations</div>
-            <div class="cl-lesson-title" id="cl-lesson-title">What Is Artificial Intelligence?</div>
-          </div>
-          <span class="cl-lesson-arrow">→</span>
-        </a>
-      </div>
+        <span class="cl-lesson-arrow">→</span>
+      </a>
+    </div>
 
-      <!-- ── Recent Games ── -->
-      <div class="recent-games" id="recent-games" style="display:none">
-        <div class="rg-header">
-          <span class="rg-title">📊 Recent Games</span>
-          <a href="/profile.html" class="rg-see-all">All stats →</a>
-        </div>
-        <div class="rg-list" id="rg-list"></div>
+    <!-- ── Recent Games ── -->
+    <div class="recent-games" id="recent-games" style="display:none">
+      <div class="rg-header">
+        <span class="rg-title">📊 Recent Games</span>
+        <a href="/profile.html" class="rg-see-all">All stats →</a>
       </div>
+      <div class="rg-list" id="rg-list"></div>
+    </div>
 
-      <!-- ── Leaderboard Preview ── -->
-      <div class="hub-lb-preview" id="hub-lb-preview" style="display:none">
-        <div class="hub-lb-header">
-          <span class="hub-lb-title">🏆 Top Scores</span>
-          <a href="/leaderboard.html" class="hub-lb-see-all">Full board →</a>
-        </div>
-        <div class="hub-lb-rows" id="hub-lb-rows"></div>
+    <!-- ── Leaderboard Preview ── -->
+    <div class="hub-lb-preview" id="hub-lb-preview" style="display:none">
+      <div class="hub-lb-header">
+        <span class="hub-lb-title">🏆 Top Scores</span>
+        <a href="/leaderboard.html" class="hub-lb-see-all">Full board →</a>
       </div>
+      <div class="hub-lb-rows" id="hub-lb-rows"></div>
+    </div>
 
-      <!-- ── Daily AI Tip ── -->
-      <div class="daily-tip" id="daily-tip">
-        <span class="daily-tip-label">💡 AI Tip of the Day</span>
-        <p class="daily-tip-text" id="daily-tip-text"></p>
-        <button class="daily-tip-next" id="daily-tip-next" title="Next tip" aria-label="Next tip">→</button>
-      </div>
+    <!-- ── Daily AI Tip ── -->
+    <div class="daily-tip" id="daily-tip">
+      <span class="daily-tip-label">💡 AI Tip of the Day</span>
+      <p class="daily-tip-text" id="daily-tip-text"></p>
+      <button class="daily-tip-next" id="daily-tip-next" title="Next tip" aria-label="Next tip">→</button>
+    </div>
 
-      <div class="splash-meta">
-        <span>AI App Builder Challenge</span>
-      </div>
-
-    </div><!-- /splash-content -->
+    <div class="splash-meta">
+      <span>AI App Builder Challenge</span>
+    </div>
 
     <!-- PWA install pill (compact, floats above nav) -->
     <div id="pwa-banner" class="pwa-banner">
@@ -276,10 +241,65 @@
       <a href="/news.html"    class="app-nav-item"><span class="app-nav-icon">📰</span><span class="app-nav-label">News</span></a>
       <a href="/profile.html" class="app-nav-item"><span class="app-nav-icon">👤</span><span class="app-nav-label">Profile</span></a>
       <a href="/leaderboard.html" class="app-nav-item"><span class="app-nav-icon">🏆</span><span class="app-nav-label">Rank</span></a>
-    <a href="/chat.html" class="app-nav-item"><span class="app-nav-icon">🤖</span><span class="app-nav-label">Alex</span></a>
+      <a href="/chat.html" class="app-nav-item"><span class="app-nav-icon">🤖</span><span class="app-nav-label">Alex</span></a>
     </nav>
 
   </div><!-- /start-screen -->
+
+
+  <!-- ════════════════════════════════════════
+       QUIZ BOTTOM-SHEET PANEL
+  ════════════════════════════════════════ -->
+  <div id="qp-overlay" class="qp-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Play Quiz">
+    <div class="quiz-panel" id="quiz-panel">
+      <!-- Handle bar -->
+      <div class="qp-handle"></div>
+
+      <!-- Header -->
+      <div class="qp-header">
+        <span class="qp-title">🎮 Play Quiz</span>
+        <button class="qp-close btn-ghost-sm" id="qp-close" aria-label="Close">✕</button>
+      </div>
+
+      <!-- Daily challenge hero button -->
+      <button class="hub-cta-daily" id="daily-challenge-btn">
+        <span class="hub-cta-icon">🗓</span>
+        <div class="hub-cta-daily-inner">
+          <span class="hub-cta-daily-label">Today's Daily Challenge</span>
+          <span class="hub-cta-daily-sub" id="daily-sub">Same 10 questions for all players · Resets at midnight</span>
+        </div>
+        <span class="daily-done-chip" id="daily-done-chip" style="display:none">✓ Done</span>
+        <span class="hub-cta-arr">→</span>
+      </button>
+
+      <!-- Divider -->
+      <div class="qp-divider"><span>or play custom</span></div>
+
+      <!-- Custom game row -->
+      <div class="qp-custom-row">
+        <div class="qp-custom-chips">
+          <span id="play-level-chip" class="play-setting-chip">AI Foundations</span>
+          <span class="play-setting-sep">·</span>
+          <span id="play-diff-chip" class="play-setting-chip">Intermediate</span>
+          <button class="btn-ghost-sm" id="customize-btn">⚙ Change</button>
+        </div>
+        <button id="start-btn" class="btn-primary qp-play-btn">
+          <span id="start-btn-spinner" class="start-spinner" style="display:none">⟳</span>
+          <span id="start-btn-text">Play →</span>
+          <span class="arrow" id="start-btn-arrow"></span>
+        </button>
+      </div>
+
+      <!-- Weak spots -->
+      <button class="hub-cta-weakspots" id="weak-spots-btn" style="display:none">
+        <span class="hub-cta-icon">🎯</span>
+        <span class="hub-cta-label">Practice Weak Spots</span>
+        <span class="ws-count" id="ws-count">0</span>
+        <span class="hub-cta-arr">→</span>
+      </button>
+
+    </div><!-- /quiz-panel -->
+  </div><!-- /qp-overlay -->
 
 
   <!-- ════════════════════════════════════════
