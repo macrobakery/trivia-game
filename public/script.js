@@ -1632,12 +1632,11 @@ async function loadLeaderboardPreview() {
 }
 
 function _renderLbPreview(rows, scores) {
-  const MEDALS   = ['🥇', '🥈', '🥉', '4', '5'];
-  const myName   = (localStorage.getItem('aiChallenge_playerName') || '').trim().toLowerCase();
+  const MEDALS  = ['🥇', '🥈', '🥉', '4', '5'];
+  const myName  = (localStorage.getItem('aiChallenge_playerName') || '').trim().toLowerCase();
   rows.innerHTML = scores.map((s, i) => {
-    const isYou  = myName && s.player_name && s.player_name.trim().toLowerCase() === myName;
-    const medal  = MEDALS[i] || String(i + 1);
-    const level  = s.level === 'Deployment and Responsible AI' ? 'Deploy & Ethics' : (s.level || '—');
+    const isYou = myName && s.player_name && s.player_name.trim().toLowerCase() === myName;
+    const medal = MEDALS[i] || String(i + 1);
     return `<div class="hub-lb-row ${isYou ? 'hub-lb-row-you' : ''}">
       <span class="hub-lb-medal">${medal}</span>
       <span class="hub-lb-name" title="${escapeHtml(s.player_name)}">${escapeHtml(s.player_name)}${isYou ? ' <em style="font-size:0.6rem;opacity:0.6">(you)</em>' : ''}</span>
@@ -3343,41 +3342,7 @@ async function startDailyChallenge() {
   setInterval(_updateDailyCountdown, 1000);
 })();
 
-// ══════════════════════════════════════════════════════════════
-// LEADERBOARD PREVIEW — top 3 on home screen
-// ══════════════════════════════════════════════════════════════
-
-(async function initLbPreview() {
-  const section  = $('hub-lb-preview');
-  const rowsEl   = $('hub-lb-rows');
-  if (!section || !rowsEl) return;
-
-  // Only load after a small delay so it doesn't block the main content
-  await new Promise(r => setTimeout(r, 1200));
-
-  try {
-    const scores = await fetch('/api/leaderboard').then(r => r.json());
-    if (!Array.isArray(scores) || scores.length === 0) return;
-
-    const medals  = ['🥇','🥈','🥉'];
-    const you     = localStorage.getItem('aiChallenge_playerName') || '';
-    const top3    = scores.slice(0, 3);
-
-    rowsEl.innerHTML = top3.map((s, i) => {
-      const isYou = you && s.player_name.toLowerCase() === you.toLowerCase();
-      const name  = String(s.player_name || 'Anonymous').substring(0, 18);
-      return `
-        <div class="hub-lb-row${isYou ? ' hub-lb-row-you' : ''}">
-          <span class="hub-lb-medal">${medals[i]}</span>
-          <span class="hub-lb-name">${name}${isYou ? ' (you)' : ''}</span>
-          <span class="hub-lb-pts">${(s.score || 0).toLocaleString()}</span>
-        </div>
-      `;
-    }).join('');
-
-    section.style.display = '';
-  } catch { /* non-critical */ }
-})();
+// Leaderboard preview is initialised via loadLeaderboardPreview() above.
 
 // ══════════════════════════════════════════════════════════════
 // HOME STATS STRIP — show streak + accuracy + games on home screen

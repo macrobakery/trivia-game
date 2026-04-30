@@ -272,7 +272,7 @@ function showStreakCelebration(days, icon, message) {
       <h2 style="font-family:'Fraunces',serif;font-size:1.5rem;color:var(--ink);margin-bottom:10px;">${days}-Day Streak!</h2>
       <p style="font-size:0.88rem;color:var(--ink-faint);line-height:1.6;margin-bottom:24px;">${message}</p>
       <button id="streak-celebrate-close" style="
-        background:var(--accent);color:#0a0013;border:none;border-radius:999px;
+        background:var(--accent);color:var(--accent-text);border:none;border-radius:999px;
         padding:12px 28px;font-size:0.9rem;font-weight:700;cursor:pointer;width:100%;
       ">Keep it going! 🚀</button>
     </div>

@@ -525,12 +525,28 @@ app.post('/api/scores', scoreLimiter, async (req, res) => {
     `INSERT INTO scores (player_name,score,correct_answers,accuracy,level,difficulty) VALUES (?,?,?,?,?,?)`,
     [player_name, score, correct_answers, accuracy, level, difficulty]
   );
+  // Bust leaderboard caches when a new score is submitted
+  _lbCache       = null;
+  _lbWeeklyCache = null;
   res.status(201).json({ id, message: 'Score saved successfully.' });
 });
 
+// Leaderboard in-memory caches (busted on new score submission)
+let _lbCache           = null;
+let _lbWeeklyCache     = null;
+let _lbWeeklyCacheWeek = null;
+const LB_TTL           = 5 * 60 * 1000; // 5 min max staleness
+let _lbCacheTime       = 0;
+let _lbWeeklyCacheTime = 0;
+
 // GET /api/leaderboard — top 10 scores
 app.get('/api/leaderboard', async (req, res) => {
-  res.json(await dbAll('SELECT * FROM scores ORDER BY score DESC LIMIT 10'));
+  const now = Date.now();
+  if (_lbCache && now - _lbCacheTime < LB_TTL) return res.json(_lbCache);
+  const data = await dbAll('SELECT * FROM scores ORDER BY score DESC LIMIT 10');
+  _lbCache     = data;
+  _lbCacheTime = now;
+  res.json(data);
 });
 
 // GET /api/leaderboard/weekly — top 10 scores this Mon–Sun week
@@ -542,12 +558,24 @@ app.get('/api/leaderboard/weekly', async (req, res) => {
     const monday = new Date(now);
     monday.setUTCDate(now.getUTCDate() + diff);
     monday.setUTCHours(0, 0, 0, 0);
+    const weekKey   = monday.toISOString().split('T')[0];
+    const nowMs     = Date.now();
+
+    // Cache hit: same week + within TTL
+    if (_lbWeeklyCache && _lbWeeklyCacheWeek === weekKey && nowMs - _lbWeeklyCacheTime < LB_TTL) {
+      return res.json(_lbWeeklyCache);
+    }
+
     const weekStart = monday.toISOString().replace('T', ' ').slice(0, 19);
     const scores = await dbAll(
       `SELECT * FROM scores WHERE created_at >= ? ORDER BY score DESC LIMIT 10`,
       [weekStart]
     );
-    res.json({ scores, weekStart: monday.toISOString().split('T')[0] });
+    const result = { scores, weekStart: weekKey };
+    _lbWeeklyCache     = result;
+    _lbWeeklyCacheWeek = weekKey;
+    _lbWeeklyCacheTime = nowMs;
+    res.json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
