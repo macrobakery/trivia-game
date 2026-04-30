@@ -30,10 +30,10 @@ const TOUR_STEPS = [
     position: 'top'
   },
   {
-    target:   '.chat-fab',
+    target:   null,
     title:    'Meet Alex — your AI tutor 🤖',
-    text:     'Got a question? Ask Alex anything and get instant, beginner-friendly explanations powered by Claude AI. Available on every page.',
-    position: 'top'
+    text:     'Got a question? Tap <strong>Alex</strong> in the bottom nav anytime. He gives instant, beginner-friendly explanations powered by Claude AI. Available on every page.',
+    position: 'center'
   }
 ];
 
@@ -94,9 +94,16 @@ function _showStep(stepIdx) {
     el.style.removeProperty('position');
   });
 
-  // Highlight target
+  // Highlight target — skip if element is missing or not visible
   const target = s.target ? document.querySelector(s.target) : null;
-  if (s.target && !target) { _showStep(stepIdx + 1); return; } // skip if not found
+  if (s.target && !target) { _showStep(stepIdx + 1); return; }
+  if (target) {
+    const cs = window.getComputedStyle(target);
+    if (cs.display === 'none' || cs.visibility === 'hidden') {
+      _showStep(stepIdx + 1);
+      return;
+    }
+  }
 
   if (target) {
     target.classList.add('tour-highlight');
