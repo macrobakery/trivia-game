@@ -1772,6 +1772,7 @@ ul     { list-style: none; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
+[data-theme="light"] .sr-title { color: hsl(25 90% 45%); }
 .sr-sub {
   font-size: 0.74rem;
   color: var(--ink-faint);
@@ -2644,8 +2645,8 @@ button, a, input, select {
 
 .chat-fab {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  right: 20px;
   z-index: 350;
   display: flex;
   align-items: center;

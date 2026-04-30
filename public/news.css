@@ -733,10 +733,10 @@
 #news-kb-hint kbd {
   display: inline-block;
   padding: 1px 6px;
-  border: 1px solid var(--surface-3, #2a2540);
+  border: 1px solid var(--border-hi);
   border-radius: 4px;
-  background: var(--surface-2, #1a1830);
-  color: var(--ink-2);
+  background: var(--surface-2);
+  color: var(--ink-faint);
   font-family: inherit;
   font-size: 0.68rem;
   margin: 0 2px;
