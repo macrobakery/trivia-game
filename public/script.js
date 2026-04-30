@@ -3336,10 +3336,18 @@ function initHomeStatsStrip() {
     $('hs-accuracy').textContent = accuracy ? `🎯 ${accuracy}` : (lessonsDone > 0 ? `📚 ${lessonsDone}/25` : '🎯 Start playing!');
     $('hs-games').textContent    = games > 0 ? `${games} game${games !== 1 ? 's' : ''}` : 'Your profile →';
 
-    // Update lessons card progress
+    // Update lessons card progress text + ring
     const lessonsProg = $('hn-lessons-progress');
     if (lessonsProg) {
       lessonsProg.textContent = lessonsDone > 0 ? `${lessonsDone} / 25 done` : '25 lessons';
+    }
+    const lessonRing = $('hn-lessons-ring');
+    if (lessonRing) {
+      const pct = Math.round((lessonsDone / 25) * 100);
+      // Animate on next frame so CSS transition fires
+      requestAnimationFrame(() => {
+        lessonRing.style.strokeDasharray = `${pct} 100`;
+      });
     }
 
     // Update quiz card subtitle with streak context
