@@ -1217,15 +1217,11 @@ function initReadingProgress() {
 ────────────────────────────────────────────────────────────── */
 
 function applyTheme(theme) {
-  if (theme === 'light') {
-    document.documentElement.setAttribute('data-theme', 'light');
-    const btn = document.getElementById('theme-toggle');
-    if (btn) btn.textContent = '☀️';
-  } else {
-    document.documentElement.removeAttribute('data-theme');
-    const btn = document.getElementById('theme-toggle');
-    if (btn) btn.textContent = '🌙';
-  }
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = theme === 'light' ? '☀️' : '🌙';
+  const metaEl = document.getElementById('meta-theme-color');
+  if (metaEl) metaEl.setAttribute('content', theme === 'light' ? '#f0eff8' : '#07060c');
 }
 
 function toggleTheme() {

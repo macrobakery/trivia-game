@@ -37,6 +37,20 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
 
 applyTheme();
 
+// ── Visit tracking for profile calendar ──────────────────────
+(function trackVisit() {
+  try {
+    const d   = new Date();
+    const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    let dates = JSON.parse(localStorage.getItem('aiChallenge_visitDates') || '[]');
+    if (!dates.includes(str)) {
+      dates.push(str);
+      if (dates.length > 90) dates = dates.slice(-90);
+      localStorage.setItem('aiChallenge_visitDates', JSON.stringify(dates));
+    }
+  } catch {}
+})();
+
 // ── Read / Bookmark persistence ───────────────────────────────
 
 const READ_KEY     = 'aiChallenge_newsRead';      // Set of headline strings
