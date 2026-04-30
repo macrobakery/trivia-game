@@ -688,10 +688,17 @@
 .wc-bar-fill.wc-bar-active {
   background: linear-gradient(to top, var(--accent), hsl(270 90% 75%));
 }
+[data-theme="light"] .wc-bar-fill.wc-bar-active {
+  background: linear-gradient(to top, var(--accent), hsl(270 70% 70%));
+}
 
 .wc-bar-fill.wc-bar-today {
   background: linear-gradient(to top, var(--green), hsl(142 70% 65%));
   box-shadow: 0 0 10px hsl(142 70% 50% / 0.35);
+}
+[data-theme="light"] .wc-bar-fill.wc-bar-today {
+  background: linear-gradient(to top, var(--green), hsl(142 60% 55%));
+  box-shadow: 0 0 8px hsl(142 55% 38% / 0.25);
 }
 
 .wc-day-label {

@@ -258,7 +258,12 @@
 
   <!-- Inline theme restore -->
   <script>
-    (function(){const t=localStorage.getItem('aiChallenge_theme');if(t==='light')document.documentElement.setAttribute('data-theme','light');})();
+    (function(){
+      const t = localStorage.getItem('aiChallenge_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+      const m = document.getElementById('meta-theme-color');
+      if (m) m.setAttribute('content', t === 'dark' ? '#07060c' : '#f0eff8');
+    })();
   </script>
 
   <!-- ── Background ── -->

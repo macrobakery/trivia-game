@@ -940,8 +940,9 @@
   font-family: 'JetBrains Mono', monospace;
 }
 .lesson-kb-hint kbd {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--ink-faint);
   border-radius: 3px;
   padding: 1px 4px;
   font-size: 0.58rem;

@@ -781,11 +781,21 @@ app.get('/api/analytics/events', adminAuth, async (req, res) => {
   res.json({ summary, recent: rows });
 });
 
+// ── Daily challenge in-memory cache (invalidates at date change) ──
+let _dcCache     = null;
+let _dcCacheDate = null;
+
 // GET /api/daily-challenge — same 10 questions for everyone today (seeded by date)
 app.get('/api/daily-challenge', async (req, res) => {
   // Use today's date string as a deterministic seed
   const today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
-  const seed  = today.split('').reduce((n, c) => n + c.charCodeAt(0), 0);
+
+  // Return cached result if we already computed today's set
+  if (_dcCache && _dcCacheDate === today) {
+    return res.json(_dcCache);
+  }
+
+  const seed = today.split('').reduce((n, c) => n + c.charCodeAt(0), 0);
 
   // Seeded pseudo-random shuffle (mulberry32)
   function seededShuffle(arr, s) {
@@ -798,7 +808,13 @@ app.get('/api/daily-challenge', async (req, res) => {
 
   const all      = await dbAll('SELECT * FROM questions WHERE difficulty = ?', ['Intermediate']);
   const shuffled = seededShuffle(all, seed);
-  res.json(shuffled.slice(0, 10));
+  const result   = shuffled.slice(0, 10);
+
+  // Cache for the rest of the day
+  _dcCache     = result;
+  _dcCacheDate = today;
+
+  res.json(result);
 });
 
 // GET /api/flagged — view flagged questions (admin)

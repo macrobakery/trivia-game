@@ -8,6 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Geist:wght@300..700&family=JetBrains+Mono:wght@400..600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#07060c" id="meta-theme-color" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <style>
     /* ── Chat page overrides ── */
     body { overflow: hidden; }
@@ -533,6 +537,8 @@
     (function(){
       const t = localStorage.getItem('aiChallenge_theme') || 'dark';
       document.documentElement.setAttribute('data-theme', t);
+      const m = document.getElementById('meta-theme-color');
+      if (m) m.setAttribute('content', t === 'dark' ? '#07060c' : '#f0eff8');
     })();
   </script>
 
