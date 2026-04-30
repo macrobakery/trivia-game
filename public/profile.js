@@ -560,6 +560,69 @@ function renderWeeklyChart() {
   }).join('');
 }
 
+// ── Continue Learning (moved from home screen) ────────────────
+function renderContinueLearning() {
+  const section  = $('prof-continue-section');
+  if (!section) return;
+
+  // Curriculum must match lessons.js CURRICULUM
+  const TOPICS = [
+    { id: 'foundations',       title: 'AI Foundations',      icon: '◐',
+      lessons: ['what-is-ai','machine-learning','deep-learning','model-training','ai-ethics'] },
+    { id: 'data-prep',         title: 'Data Preparation',    icon: '◇',
+      lessons: ['data-foundation','collecting-data','cleaning-data','feature-engineering','train-val-test'] },
+    { id: 'model-building',    title: 'Model Building',      icon: '◈',
+      lessons: ['supervised-unsupervised','regression-classification','trees-forests','model-evaluation','overfitting'] },
+    { id: 'ai-app-dev',        title: 'AI App Development',  icon: '◉',
+      lessons: ['choosing-api','prompt-engineering','rag','ai-agents','testing-ai-apps'] },
+    { id: 'deployment-ethics', title: 'Deployment & Ethics', icon: '✦',
+      lessons: ['deploying-models','monitoring-ai','ai-safety','fairness-bias','future-ai'] },
+  ];
+  const LESSON_TITLES = {
+    'what-is-ai':'What Is Artificial Intelligence?','machine-learning':'Machine Learning: Teaching Computers to Learn',
+    'deep-learning':'Deep Learning & Neural Networks','model-training':'How Models Are Trained','ai-ethics':'AI Ethics & Bias',
+    'data-foundation':'Why Data Is the Foundation of AI','collecting-data':'Collecting & Sourcing Data',
+    'cleaning-data':'Cleaning & Preprocessing Data','feature-engineering':'Feature Engineering',
+    'train-val-test':'Train, Validation & Test Splits','supervised-unsupervised':'Supervised vs Unsupervised Learning',
+    'regression-classification':'Regression vs Classification','trees-forests':'Decision Trees & Random Forests',
+    'model-evaluation':'Model Evaluation Metrics','overfitting':'Overfitting & Regularisation',
+    'choosing-api':'Choosing an AI API','prompt-engineering':'Prompt Engineering',
+    'rag':'Retrieval-Augmented Generation (RAG)','ai-agents':'AI Agents & Tool Use',
+    'testing-ai-apps':'Testing AI Applications','deploying-models':'Deploying AI Models to Production',
+    'monitoring-ai':'Monitoring AI Systems','ai-safety':'AI Safety & Alignment',
+    'fairness-bias':'Fairness & Bias in AI','future-ai':'The Future of AI',
+  };
+
+  let progress = {};
+  try { progress = JSON.parse(localStorage.getItem('aiChallenge_lessonProgress') || '{}'); } catch {}
+
+  let nextTopic = null, nextLesson = null;
+  outer: for (const topic of TOPICS) {
+    for (const id of topic.lessons) {
+      if (!progress[`${topic.id}/${id}`]) { nextTopic = topic; nextLesson = id; break outer; }
+    }
+  }
+
+  const iconEl  = $('prof-cl-icon');
+  const topicEl = $('prof-cl-topic');
+  const titleEl = $('prof-cl-title');
+  const linkEl  = $('prof-cl-link');
+
+  if (!nextTopic) {
+    // All done — show completion state
+    if (iconEl)  iconEl.textContent  = '🎓';
+    if (topicEl) { topicEl.textContent = 'All 25 lessons done!'; topicEl.style.color = 'var(--green)'; }
+    if (titleEl) titleEl.textContent = 'You\'ve mastered every AI topic.';
+    if (linkEl)  linkEl.href         = '/lessons.html';
+  } else {
+    if (iconEl)  iconEl.textContent  = nextTopic.icon;
+    if (topicEl) topicEl.textContent = nextTopic.title;
+    if (titleEl) titleEl.textContent = LESSON_TITLES[nextLesson] || nextLesson;
+    if (linkEl)  linkEl.href         = `/lessons.html?topic=${nextTopic.id}&lesson=${nextLesson}`;
+  }
+  section.style.display = '';
+}
+
 // ── Init ───────────────────────────────────────────────────────
 renderHeader();
 renderStats();
@@ -570,6 +633,7 @@ renderLessonsProgress();
 renderAchievements();
 renderDailyChallenge();
 renderGameHistory();
+renderContinueLearning();
 fetchGlobalRank();
 
 // Register service worker

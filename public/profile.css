@@ -746,3 +746,60 @@
     gap: 4px;
   }
 }
+
+/* ── Continue Learning card (moved from home) ── */
+.prof-section-link {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--accent);
+  text-decoration: none;
+  transition: opacity var(--t);
+}
+.prof-section-link:hover { opacity: 0.7; }
+
+.prof-cl-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  text-decoration: none;
+  color: var(--ink);
+  transition: border-color var(--t), background var(--t);
+}
+.prof-cl-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.prof-cl-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+  color: var(--accent);
+}
+.prof-cl-info { flex: 1; min-width: 0; }
+.prof-cl-topic {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--accent);
+  margin-bottom: 2px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.prof-cl-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prof-cl-arrow {
+  color: var(--ink-faint);
+  font-size: 1rem;
+  flex-shrink: 0;
+}

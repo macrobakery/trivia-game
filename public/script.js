@@ -1609,7 +1609,8 @@ const LB_PREVIEW_TTL    = 5 * 60 * 1000; // 5 minutes
 async function loadLeaderboardPreview() {
   const container = $('hub-lb-preview');
   const rows      = $('hub-lb-rows');
-  if (!container || !rows) return;
+  // Inactive stub on home (removed from view) — skip silently
+  if (!container || !rows || container.hasAttribute('aria-hidden')) return;
 
   // Serve from cache if fresh
   const now = Date.now();
@@ -2896,7 +2897,8 @@ function initWelcomeBanner() {
 
 (function initContinueLearning() {
   const container = $('continue-learning');
-  if (!container) return;
+  // Inactive stub on home (moved to profile page) — skip silently
+  if (!container || container.hasAttribute('aria-hidden')) return;
 
   // Curriculum mirror (must match lessons.js CURRICULUM)
   const TOPICS = [
@@ -3053,9 +3055,12 @@ renderRecentGames();
 // ══════════════════════════════════════════════════════════════
 
 (function initDailyTip() {
-  const textEl = $('daily-tip-text');
-  const nextBtn = $('daily-tip-next');
-  if (!textEl) return;
+  // Populate both the hero tip block (hn-tip-text) and legacy hidden element (daily-tip-text)
+  const heroTextEl = $('hn-tip-text');
+  const heroBlock  = $('hn-tip-block');
+  const legacyText = $('daily-tip-text'); // hidden stub — kept for JS compatibility
+
+  if (!heroTextEl && !legacyText) return;
 
   const TIPS = [
     "The term 'Artificial Intelligence' was coined by John McCarthy in 1956 at the Dartmouth Conference.",
@@ -3090,22 +3095,37 @@ renderRecentGames();
     "The Turing Test, proposed in 1950, asks whether a machine can converse indistinguishably from a human.",
   ];
 
-  // Tip index: rotate by day of year, but let user manually advance within session
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-  let tipKey = 'aiChallenge_tipIdx';
-  let savedIdx = parseInt(localStorage.getItem(tipKey) || '-1', 10);
-  let idx = savedIdx >= 0 ? savedIdx : dayOfYear % TIPS.length;
+  const tipKey    = 'aiChallenge_tipIdx';
+  let savedIdx    = parseInt(localStorage.getItem(tipKey) || '-1', 10);
+  let idx         = savedIdx >= 0 ? savedIdx : dayOfYear % TIPS.length;
 
-  function showTip(i) {
+  function showTip(i, animate) {
     idx = ((i % TIPS.length) + TIPS.length) % TIPS.length;
-    textEl.textContent = TIPS[idx];
+    const text = TIPS[idx];
+    if (legacyText) legacyText.textContent = text;
+    if (heroTextEl) {
+      if (animate) {
+        heroTextEl.style.opacity   = '0';
+        heroTextEl.style.transform = 'translateY(4px)';
+        heroTextEl.style.transition = 'opacity 0.18s, transform 0.18s';
+        setTimeout(() => {
+          heroTextEl.textContent = text;
+          heroTextEl.style.opacity   = '1';
+          heroTextEl.style.transform = 'translateY(0)';
+        }, 180);
+      } else {
+        heroTextEl.textContent = text;
+      }
+    }
     try { localStorage.setItem(tipKey, String(idx)); } catch {}
   }
 
-  showTip(idx);
+  showTip(idx, false);
 
-  if (nextBtn) {
-    nextBtn.addEventListener('click', () => showTip(idx + 1));
+  // Tap/click on hero block to cycle to next tip
+  if (heroBlock) {
+    heroBlock.addEventListener('click', () => showTip(idx + 1, true));
   }
 })();
 

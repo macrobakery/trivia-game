@@ -69,17 +69,18 @@
       </div>
     </div>
 
-    <!-- ── Hero: personalized greeting + headline ── -->
+    <!-- ── Hero: AI Tip of the Day ── -->
     <div class="hn-hero">
-      <div class="hub-greeting" id="hub-greeting">
-        Good morning!
-        <span id="hub-greeting-sub">Ready to learn something new today?</span>
-      </div>
-      <h1 class="hn-hero-headline"><em>Learn AI in 5 min a day</em></h1>
-      <!-- Hidden welcome sub (used by script.js) -->
-      <div id="hub-welcome" style="display:none">
-        <div id="hub-welcome-sub"></div>
-      </div>
+      <!-- Tip of the Day (replaces greeting) -->
+      <button class="hn-tip-block" id="hn-tip-block" aria-label="AI tip — tap for next">
+        <span class="hn-tip-label">💡 AI Tip of the Day</span>
+        <p class="hn-tip-text" id="hn-tip-text">The term "Artificial Intelligence" was coined by John McCarthy in 1956 at the Dartmouth Conference.</p>
+        <span class="hn-tip-next" aria-hidden="true">tap for next →</span>
+      </button>
+      <!-- Hidden elements kept so script.js greeting logic doesn't throw -->
+      <div id="hub-greeting"   style="display:none" aria-hidden="true"><span id="hub-greeting-sub"></span></div>
+      <div id="hub-welcome"    style="display:none" aria-hidden="true"><div id="hub-welcome-sub"></div></div>
+      <h1 class="hn-hero-headline" style="display:none" aria-hidden="true"><em>Learn AI in 5 min a day</em></h1>
     </div>
 
     <!-- ── Goals strip ── -->
@@ -195,49 +196,21 @@
       <div class="hub-search-results" id="hub-search-results" style="display:none"></div>
     </div>
 
-    <!-- ── Continue Learning ── -->
-    <div class="continue-learning" id="continue-learning" style="display:none">
-      <div class="cl-header">
-        <span class="cl-title">📚 Continue Learning</span>
-        <a href="/lessons.html" class="cl-see-all">All lessons →</a>
-      </div>
-      <a href="/lessons.html" class="cl-lesson-card" id="cl-lesson-link">
-        <span class="cl-lesson-icon" id="cl-lesson-icon">◐</span>
-        <div class="cl-lesson-info">
-          <div class="cl-lesson-topic" id="cl-lesson-topic">AI Foundations</div>
-          <div class="cl-lesson-title" id="cl-lesson-title">What Is Artificial Intelligence?</div>
-        </div>
-        <span class="cl-lesson-arrow">→</span>
-      </a>
+    <!-- Continue Learning, Recent Games, Leaderboard Preview, and Daily Tip
+         have been moved out of the home screen to keep it clean:
+         - Continue Learning → profile.html
+         - Leaderboard Preview → leaderboard.html (already there)
+         - Daily AI Tip → lessons.html
+         - Recent Games → profile.html (game history section)
+         Keeping the hidden anchor elements so JS doesn't throw, but they render nothing. -->
+    <div id="continue-learning"  style="display:none" aria-hidden="true"></div>
+    <div id="recent-games"       style="display:none" aria-hidden="true"></div>
+    <div id="hub-lb-preview"     style="display:none" aria-hidden="true">
+      <div id="hub-lb-rows"></div>
     </div>
-
-    <!-- ── Recent Games ── -->
-    <div class="recent-games" id="recent-games" style="display:none">
-      <div class="rg-header">
-        <span class="rg-title">📊 Recent Games</span>
-        <a href="/profile.html" class="rg-see-all">All stats →</a>
-      </div>
-      <div class="rg-list" id="rg-list"></div>
-    </div>
-
-    <!-- ── Leaderboard Preview ── -->
-    <div class="hub-lb-preview" id="hub-lb-preview" style="display:none">
-      <div class="hub-lb-header">
-        <span class="hub-lb-title">🏆 Top Scores</span>
-        <a href="/leaderboard.html" class="hub-lb-see-all">Full board →</a>
-      </div>
-      <div class="hub-lb-rows" id="hub-lb-rows"></div>
-    </div>
-
-    <!-- ── Daily AI Tip ── -->
-    <div class="daily-tip" id="daily-tip">
-      <span class="daily-tip-label">💡 AI Tip of the Day</span>
-      <p class="daily-tip-text" id="daily-tip-text"></p>
-      <button class="daily-tip-next" id="daily-tip-next" title="Next tip" aria-label="Next tip">→</button>
-    </div>
-
-    <div class="splash-meta">
-      <span>AI App Builder Challenge</span>
+    <div id="daily-tip"          style="display:none" aria-hidden="true">
+      <p id="daily-tip-text"></p>
+      <button id="daily-tip-next" style="display:none"></button>
     </div>
 
     <!-- PWA install pill (compact, floats above nav) -->
