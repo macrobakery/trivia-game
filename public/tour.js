@@ -2,29 +2,29 @@
 // AI Challenge — First-Visit Onboarding Tour
 // ============================================================
 
-const TOUR_KEY = 'aiChallenge_toured_v3';
+const TOUR_KEY = 'aiChallenge_toured_v4';
 
 const TOUR_STEPS = [
   {
     target:   null,
     title:    'Welcome to AI Challenge! 👋',
-    text:     "Your daily AI learning platform — live quizzes, bite-sized lessons, AI news, and a personal tutor. This 30-second tour shows you everything.",
+    text:     "Your daily AI learning platform — live quizzes, bite-sized lessons, AI news, and a personal tutor. This 30-second tour shows you around.",
     position: 'center'
   },
   {
-    target:   '#daily-challenge-btn',
-    title:    'Daily Challenge 🗓',
+    target:   '#hn-quiz-card',
+    title:    'Daily Challenge 🎮',
     text:     'Everyone worldwide gets the same 10 questions each day. Beat the global leaderboard and build your streak! Resets every 24 hours.',
     position: 'bottom'
   },
   {
-    target:   '.hub-quick-links',
+    target:   '.hn-cards',
     title:    'Learn · News · Ask Alex 📚',
-    text:     'Browse 25 structured AI lessons, catch live AI news from the web, or ask Alex (your AI tutor) any question — all three are one tap away.',
+    text:     'Four cards, four habits: play the daily quiz, read today\'s AI news, work through a structured lesson, or chat with Alex your AI tutor.',
     position: 'top'
   },
   {
-    target:   '.daily-goals',
+    target:   '#daily-goals',
     title:    'Daily goals 🎯',
     text:     'Three simple goals every day: play a quiz, read AI news, complete a lesson. Hit all three to build your streak!',
     position: 'top'
@@ -216,7 +216,7 @@ function _endTour() {
       <div class="tour-finale">
         <div class="tour-finale-icon">🚀</div>
         <h4 class="tour-title">You're all set!</h4>
-        <p class="tour-text">Start with today's Learning Hub, then pick a level and take a quiz. New content every day!</p>
+        <p class="tour-text">Start with today's Daily Challenge, explore a lesson, or chat with Alex. New content every day!</p>
         <button class="btn-primary" id="tour-done-btn" style="width:100%;margin-top:4px">Start learning →</button>
       </div>
     `;
