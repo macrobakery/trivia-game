@@ -4183,6 +4183,23 @@ h1.hn-hero-headline em {
 /* ── Logo "AI" accent ── */
 .hn-logo-ai { color: var(--accent); }
 
+/* ── "New" dot badge on cards ── */
+.hn-card-news-dot {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: hsl(35 90% 60%);
+  box-shadow: 0 0 6px hsl(35 90% 60% / 0.5);
+  animation: dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.6; transform: scale(0.85); }
+}
+
 /* ── Card entrance stagger animation ── */
 @keyframes cardIn {
   from { opacity: 0; transform: translateY(14px) scale(0.98); }

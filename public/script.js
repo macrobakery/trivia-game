@@ -2719,13 +2719,21 @@ function renderDailyGoals() {
   setGoal('dg-news',   'dg-news-check',   newsDone);
   setGoal('dg-lesson', 'dg-lesson-check', lessonDone);
 
-  // Animate newly completed goals
+  // Animate newly completed goals — update label text
   const all = gameDone && newsDone && lessonDone;
   const titleEl = goals.querySelector('.dg-title');
   if (titleEl) {
-    titleEl.textContent = all ? '🎉 All goals done!' : `Today's Goals (${[gameDone,newsDone,lessonDone].filter(Boolean).length}/3)`;
-    if (all) titleEl.style.color = 'var(--green)';
-    else     titleEl.style.color = '';
+    const done = [gameDone, newsDone, lessonDone].filter(Boolean).length;
+    if (all) {
+      titleEl.textContent = '🎉 All done!';
+      titleEl.style.color = 'var(--green)';
+    } else if (done > 0) {
+      titleEl.textContent = `${done}/3 done:`;
+      titleEl.style.color = '';
+    } else {
+      titleEl.textContent = 'Today:';
+      titleEl.style.color = '';
+    }
   }
 
   // Confetti burst the first time all goals are done in this session
@@ -3359,6 +3367,32 @@ function initHomeStatsStrip() {
         quizCardSub.textContent = `${games} game${games !== 1 ? 's' : ''} played · go again!`;
       }
     }
+
+    // Update news card subtitle + dot with read status
+    const newsCardSub = $('news-card-sub');
+    const newsCardDot = $('news-card-dot');
+    if (newsCardSub) {
+      try {
+        const readSet      = new Set(JSON.parse(localStorage.getItem('aiChallenge_newsRead') || '[]'));
+        const lastNewsDate = localStorage.getItem('aiChallenge_lastNewsRead') || '';
+        const todayDate    = (() => {
+          const d = new Date();
+          return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        })();
+        const readToday = lastNewsDate === todayDate;
+        if (readSet.size > 0 && readToday) {
+          newsCardSub.textContent = `${readSet.size} article${readSet.size !== 1 ? 's' : ''} read today`;
+          if (newsCardDot) newsCardDot.style.display = 'none'; // already read today
+        } else if (readSet.size > 0) {
+          newsCardSub.textContent = 'New stories · tap to read';
+          if (newsCardDot) newsCardDot.style.display = '';     // new unread content
+        } else {
+          // Brand-new user
+          if (newsCardDot) newsCardDot.style.display = '';     // show dot to attract
+        }
+      } catch {}
+    }
+
     // strip is already visible by default (no display:none in HTML)
   } catch (_) {}
 }

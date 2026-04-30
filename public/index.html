@@ -82,19 +82,19 @@
 
     <!-- ── Goals strip ── -->
     <div class="hn-goals-row" id="daily-goals" style="display:none">
-      <span class="hn-goals-label">Today:</span>
+      <span class="hn-goals-label dg-title">Today:</span>
       <span class="dg-item hn-goal-item" id="dg-game">
-        <span class="dg-check" id="dg-game-check">○</span>
+        <span class="dg-check" id="dg-game-check"></span>
         <span class="dg-label">Play</span>
       </span>
       <span class="hn-goals-sep">·</span>
       <span class="dg-item hn-goal-item" id="dg-news">
-        <span class="dg-check" id="dg-news-check">○</span>
+        <span class="dg-check" id="dg-news-check"></span>
         <span class="dg-label">Read</span>
       </span>
       <span class="hn-goals-sep">·</span>
       <span class="dg-item hn-goal-item" id="dg-lesson">
-        <span class="dg-check" id="dg-lesson-check">○</span>
+        <span class="dg-check" id="dg-lesson-check"></span>
         <span class="dg-label">Learn</span>
       </span>
     </div>
@@ -161,7 +161,8 @@
       <a href="/news.html" class="hn-card hn-card-news" aria-label="Read AI News">
         <div class="hn-card-icon">📰</div>
         <div class="hn-card-title">AI News</div>
-        <div class="hn-card-sub">Latest from the field</div>
+        <div class="hn-card-sub" id="news-card-sub">Latest from the field</div>
+        <span class="hn-card-news-dot" id="news-card-dot" style="display:none" aria-hidden="true"></span>
       </a>
 
       <!-- Ask Alex card — full-width compact row -->
