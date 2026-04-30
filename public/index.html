@@ -52,7 +52,7 @@
 
     <!-- ── New top bar: logo + streak + avatar + theme toggle ── -->
     <div class="hn-topbar">
-      <div class="hn-logo">⚡ AI Challenge</div>
+      <div class="hn-logo">⚡ <span class="hn-logo-ai">AI</span> Challenge</div>
       <div class="hn-topbar-right">
         <!-- Stats strip (streak badge inline) -->
         <div class="hub-stats-strip" id="hub-stats-strip">
@@ -132,11 +132,14 @@
     <!-- ── 2×2 Card Grid ── -->
     <div class="hn-cards">
 
-      <!-- Quiz card — opens bottom sheet -->
+      <!-- Quiz card — full-width featured, opens bottom sheet -->
       <div class="hn-card hn-card-quiz" id="hn-quiz-card" role="button" tabindex="0" aria-label="Play Daily Quiz">
         <div class="hn-card-icon">🎮</div>
-        <div class="hn-card-title">Daily Quiz</div>
-        <div class="hn-card-sub">Test your knowledge</div>
+        <div class="hn-card-body">
+          <div class="hn-card-title">Daily Quiz</div>
+          <div class="hn-card-sub" id="quiz-card-sub">Test your knowledge</div>
+        </div>
+        <div class="hn-card-cta">Play →</div>
         <span class="daily-done-chip" id="home-daily-chip" style="display:none">✓ Done</span>
       </div>
 
@@ -156,11 +159,14 @@
         <div class="hn-card-sub">Latest from the field</div>
       </a>
 
-      <!-- Ask Alex card -->
+      <!-- Ask Alex card — full-width compact row -->
       <a href="/chat.html" class="hn-card hn-card-alex" aria-label="Ask Alex AI Tutor">
         <div class="hn-card-icon">🤖</div>
-        <div class="hn-card-title">Ask Alex</div>
-        <div class="hn-card-sub">Your AI tutor</div>
+        <div class="hn-card-body">
+          <div class="hn-card-title">Ask Alex</div>
+          <div class="hn-card-sub">Your AI tutor · instant answers</div>
+        </div>
+        <div class="hn-card-cta">Chat →</div>
       </a>
 
     </div><!-- /hn-cards -->

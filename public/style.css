@@ -4155,11 +4155,22 @@ h1.hn-hero-headline em {
   color: var(--ink-faint);
 }
 .hn-goal-item .dg-check {
-  font-size: 0.85rem;
-  width: auto;
-  height: auto;
+  /* CSS circle — hides ○/✓ text, shows pure CSS dot */
+  font-size: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--ink-faint);
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
 }
-.hn-goal-item.done .dg-check { color: var(--green); }
+.hn-goal-item.done .dg-check {
+  background: var(--green);
+  border-color: var(--green);
+  transform: scale(1.15);
+}
 .hn-goal-item.done .dg-label {
   color: var(--green);
   text-decoration: none;
@@ -4167,6 +4178,15 @@ h1.hn-hero-headline em {
 .hn-goals-sep {
   color: var(--border);
   font-size: 0.9rem;
+}
+
+/* ── Logo "AI" accent ── */
+.hn-logo-ai { color: var(--accent); }
+
+/* ── Card entrance stagger animation ── */
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* ── 2×2 Card Grid ── */
@@ -4194,20 +4214,35 @@ h1.hn-hero-headline em {
   text-decoration: none;
   color: var(--ink);
   border: 1px solid transparent;
+  animation: cardIn 0.42s ease both;
 }
+.hn-card:nth-child(1) { animation-delay: 0ms; }
+.hn-card:nth-child(2) { animation-delay: 70ms; }
+.hn-card:nth-child(3) { animation-delay: 140ms; }
+.hn-card:nth-child(4) { animation-delay: 210ms; }
 .hn-card:hover,
 .hn-card:focus-visible {
   transform: translateY(-3px);
   box-shadow: 0 12px 40px rgba(0,0,0,0.35);
   outline: none;
 }
+.hn-card:active {
+  transform: scale(0.97) translateY(1px) !important;
+  transition: transform 0.1s ease !important;
+}
 
-/* Quiz card — purple */
+/* Quiz card — purple, full-width featured row */
 .hn-card-quiz {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  min-height: 100px;
+  padding: 20px 24px;
   background: linear-gradient(135deg, hsl(270 60% 16%), hsl(270 40% 12%));
   border-color: hsl(270 90% 70% / 0.3);
 }
-.hn-card-quiz:hover { box-shadow: 0 12px 40px hsl(270 90% 70% / 0.2); }
+.hn-card-quiz:hover { box-shadow: 0 12px 40px hsl(270 90% 70% / 0.25); }
 
 /* Lessons card — teal */
 .hn-card-lessons {
@@ -4223,12 +4258,69 @@ h1.hn-hero-headline em {
 }
 .hn-card-news:hover { box-shadow: 0 12px 40px hsl(35 80% 50% / 0.2); }
 
-/* Alex card — blue */
+/* Alex card — blue, full-width compact row */
 .hn-card-alex {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  min-height: 72px;
+  padding: 14px 20px;
   background: linear-gradient(135deg, hsl(220 60% 16%), hsl(220 40% 12%));
   border-color: hsl(220 90% 70% / 0.3);
 }
 .hn-card-alex:hover { box-shadow: 0 12px 40px hsl(220 80% 60% / 0.2); }
+
+/* Icon sizing for horizontal cards */
+.hn-card-quiz .hn-card-icon  { font-size: 2.4rem; margin-bottom: 0; flex-shrink: 0; }
+.hn-card-alex .hn-card-icon  { font-size: 1.6rem; margin-bottom: 0; flex-shrink: 0; }
+
+/* Body wrapper (for horizontal card layout) */
+.hn-card-body { flex: 1; min-width: 0; }
+
+/* CTA arrow for horizontal cards */
+.hn-card-cta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  opacity: 0.6;
+  flex-shrink: 0;
+  transition: opacity var(--t), transform var(--t);
+}
+.hn-card:hover .hn-card-cta,
+.hn-card:focus-visible .hn-card-cta { opacity: 1; transform: translateX(4px); }
+
+/* ── Light Mode: Feature Cards ── */
+[data-theme="light"] .hn-card-quiz {
+  background: linear-gradient(135deg, hsl(270 55% 93%), hsl(270 40% 89%));
+  border-color: hsl(270 70% 55% / 0.35);
+}
+[data-theme="light"] .hn-card-quiz:hover { box-shadow: 0 12px 40px hsl(270 70% 55% / 0.18); }
+
+[data-theme="light"] .hn-card-lessons {
+  background: linear-gradient(135deg, hsl(172 45% 88%), hsl(172 35% 84%));
+  border-color: hsl(172 55% 38% / 0.35);
+}
+[data-theme="light"] .hn-card-lessons:hover { box-shadow: 0 12px 40px hsl(172 55% 38% / 0.18); }
+
+[data-theme="light"] .hn-card-news {
+  background: linear-gradient(135deg, hsl(35 65% 90%), hsl(35 50% 86%));
+  border-color: hsl(35 80% 44% / 0.35);
+}
+[data-theme="light"] .hn-card-news:hover { box-shadow: 0 12px 40px hsl(35 80% 44% / 0.18); }
+
+[data-theme="light"] .hn-card-alex {
+  background: linear-gradient(135deg, hsl(220 55% 91%), hsl(220 40% 87%));
+  border-color: hsl(220 70% 55% / 0.35);
+}
+[data-theme="light"] .hn-card-alex:hover { box-shadow: 0 12px 40px hsl(220 70% 55% / 0.18); }
+
+/* Text in light mode cards */
+[data-theme="light"] .hn-card-title { color: hsl(240 20% 12%); }
+[data-theme="light"] .hn-card-sub   { color: hsl(240 10% 40%); }
+[data-theme="light"] .hn-card-cta   { color: hsl(240 10% 35%); }
+[data-theme="light"] .hn-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
 
 .hn-card-icon {
   font-size: 1.8rem;
@@ -4439,10 +4531,17 @@ h1.hn-hero-headline em {
   .hn-hero { padding: 4px 14px 12px; }
   .hn-goals-row { padding: 0 14px 10px; }
   .hn-topbar-right .hub-stats-strip { display: none; }
+  /* Horizontal cards on mobile */
+  .hn-card-quiz  { min-height: 88px; padding: 16px 18px; gap: 12px; }
+  .hn-card-alex  { min-height: 64px; padding: 12px 16px; gap: 10px; }
+  .hn-card-quiz .hn-card-icon  { font-size: 2rem; }
+  .hn-card-alex .hn-card-icon  { font-size: 1.4rem; }
 }
 
 @media (max-width: 380px) {
   h1.hn-hero-headline { font-size: 1.4rem; }
   .hn-card  { min-height: 90px; padding: 12px; }
   .hn-card-icon { font-size: 1.3rem; margin-bottom: 5px; }
+  .hn-card-quiz  { min-height: 80px; padding: 14px 16px; }
+  .hn-card-alex  { min-height: 60px; }
 }

@@ -2463,11 +2463,14 @@ initHubStreakDisplay();
   const name    = localStorage.getItem('aiChallenge_playerName') || '';
   const hour    = new Date().getHours();
   const tod     = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const wave    = hour < 12 ? '☀️' : hour < 17 ? '👋' : '🌙';
 
   if (name) {
-    greetEl.childNodes[0].nodeValue = `${tod}, ${name}`;
+    // Friendly first-name only display
+    const firstName = name.split(' ')[0];
+    greetEl.childNodes[0].nodeValue = `${tod}, ${firstName}! ${wave}`;
   } else {
-    greetEl.childNodes[0].nodeValue = 'AI Challenge';
+    greetEl.childNodes[0].nodeValue = `${tod}! ${wave}`;
   }
 
   // Dynamic sub-greeting based on streak
@@ -2475,10 +2478,12 @@ initHubStreakDisplay();
     try { return JSON.parse(localStorage.getItem('aiChallenge_streak') || '{}').count || 0; } catch { return 0; }
   })();
   if (subEl) {
-    if (streak >= 7)       subEl.textContent = `${streak}-day streak 🔥 — you're unstoppable!`;
+    if (streak >= 30)      subEl.textContent = `${streak}-day legend 🔥 — you're on fire!`;
+    else if (streak >= 7)  subEl.textContent = `${streak}-day streak 🔥 — you're unstoppable!`;
     else if (streak >= 3)  subEl.textContent = `${streak}-day streak 🔥 — keep it going!`;
-    else if (streak === 1) subEl.textContent = 'Day 1 streak — great start!';
-    else                   subEl.textContent = 'Learn, quiz, and stay sharp every day';
+    else if (streak === 1) subEl.textContent = 'Day 1 streak started — great beginning!';
+    else if (name)         subEl.textContent = 'Ready to learn something new today?';
+    else                   subEl.textContent = 'Learn AI in 5 minutes a day.';
   }
 })();
 
@@ -3170,12 +3175,14 @@ function updateDailyChallengeUI() {
   const chip      = $('daily-done-chip');
   const homeChip  = $('home-daily-chip');
   const sub       = $('daily-sub');
+  const quizSub   = $('quiz-card-sub');
   if (!btn) return;
   if (isDailyDone()) {
     if (chip)     chip.style.display     = 'inline-flex';
     if (homeChip) homeChip.style.display = 'inline-flex';
     btn.classList.add('daily-done');
     if (sub) sub.textContent = 'Already played today — come back tomorrow!';
+    if (quizSub)  quizSub.textContent    = 'Daily challenge complete! ✓';
   } else {
     if (chip)     chip.style.display     = 'none';
     if (homeChip) homeChip.style.display = 'none';
@@ -3328,6 +3335,22 @@ function initHomeStatsStrip() {
     $('hs-streak').textContent   = `🔥 ${streakCnt} day${streakCnt !== 1 ? 's' : ''}`;
     $('hs-accuracy').textContent = accuracy ? `🎯 ${accuracy}` : (lessonsDone > 0 ? `📚 ${lessonsDone}/25` : '🎯 Start playing!');
     $('hs-games').textContent    = games > 0 ? `${games} game${games !== 1 ? 's' : ''}` : 'Your profile →';
+
+    // Update lessons card progress
+    const lessonsProg = $('hn-lessons-progress');
+    if (lessonsProg) {
+      lessonsProg.textContent = lessonsDone > 0 ? `${lessonsDone} / 25 done` : '25 lessons';
+    }
+
+    // Update quiz card subtitle with streak context
+    const quizCardSub = $('quiz-card-sub');
+    if (quizCardSub && !isDailyDone()) {
+      if (streakCnt > 1) {
+        quizCardSub.textContent = `${streakCnt}-day streak · keep going!`;
+      } else if (games > 0) {
+        quizCardSub.textContent = `${games} game${games !== 1 ? 's' : ''} played · go again!`;
+      }
+    }
     // strip is already visible by default (no display:none in HTML)
   } catch (_) {}
 }
