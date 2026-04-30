@@ -2927,7 +2927,22 @@ button, a, input, select {
   background: transparent;
 }
 .app-nav-item:hover  { color: var(--ink); }
-.app-nav-item.active { color: var(--accent); }
+.app-nav-item.active {
+  color: var(--accent);
+  position: relative;
+}
+.app-nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 32px;
+  background: var(--accent-dim);
+  border-radius: var(--radius-pill);
+  z-index: -1;
+}
 
 .app-nav-icon  { font-size: 1.18rem; line-height: 1; }
 .app-nav-label {

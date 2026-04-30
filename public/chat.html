@@ -32,8 +32,12 @@
       border-bottom: 1px solid var(--border);
       background: rgba(7,6,12,0.85);
       backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       flex-shrink: 0;
       gap: 12px;
+    }
+    [data-theme="light"] .chat-header {
+      background: rgba(240, 239, 248, 0.90);
     }
     .chat-header-left { display: flex; align-items: center; gap: 12px; }
     .chat-avatar {
@@ -232,10 +236,15 @@
       border-radius: var(--radius-sm);
       padding: 12px 14px;
       text-align: left;
-      cursor: default;
-      transition: border-color var(--t), background var(--t);
+      cursor: pointer;
+      transition: border-color var(--t), background var(--t), transform var(--t);
     }
-    .starter-card:hover { border-color: var(--border-hi); background: var(--surface-2); }
+    .starter-card:hover {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      transform: translateY(-1px);
+    }
+    .starter-card:active { transform: scale(0.98); }
     .starter-card-header {
       display: flex;
       align-items: center;
