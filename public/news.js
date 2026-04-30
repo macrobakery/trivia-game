@@ -140,6 +140,8 @@ function setFilter(f) {
   document.querySelectorAll('.news-filter-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.filter === f);
   });
+  // Clear any active category chip when switching main filter
+  document.querySelectorAll('.news-cat-btn').forEach(b => b.classList.remove('active'));
   applyFilter();
 }
 
@@ -152,8 +154,12 @@ function applyFilter() {
     let show = true;
 
     // Filter check
-    if (_activeFilter === 'unread')     show = !isRead(headline);
-    if (_activeFilter === 'bookmarked') show = isBookmarked(headline);
+    if (_activeFilter === 'unread')          show = !isRead(headline);
+    else if (_activeFilter === 'bookmarked') show = isBookmarked(headline);
+    else if (_activeFilter.startsWith('cat:')) {
+      const slug = _activeFilter.slice(4);
+      show = card.dataset.category === slug;
+    }
 
     // Search check (headline + body text)
     if (show && q) {
@@ -178,8 +184,8 @@ function applyFilter() {
       msg.textContent = `No stories matching "${_searchQuery}".`;
     } else if (_activeFilter !== 'all') {
       msg.className = 'news-filter-empty';
-      const label = _activeFilter === 'unread' ? 'unread stories' : 'saved stories';
-      msg.textContent = `No ${label} right now.`;
+      const catNames = { unread: 'unread stories', bookmarked: 'saved stories' };
+      msg.textContent = `No ${catNames[_activeFilter] || _activeFilter.replace('cat:', '') + ' stories'} right now.`;
     }
     if (msg.textContent) grid.appendChild(msg);
   }
@@ -212,6 +218,31 @@ function applyFilter() {
 // ── Render ────────────────────────────────────────────────────
 
 /**
+ * Detect a category label for a news item based on keyword matching.
+ * Returns { label, slug, color } for the badge.
+ */
+function detectCategory(trend) {
+  const text = ((trend.headline || '') + ' ' + (trend.plain_english || '') + ' ' + (trend.why_it_matters || '')).toLowerCase();
+
+  if (/\b(paper|research|study|arxiv|university|lab|benchmark|dataset|published|findings|journal)\b/.test(text))
+    return { label: 'Research', slug: 'research', color: 'hsl(220 80% 65%)' };
+
+  if (/\b(regulation|law|government|policy|ban|congress|eu|act|legal|rules|compliance|senate|regulator)\b/.test(text))
+    return { label: 'Policy', slug: 'policy', color: 'hsl(35 90% 60%)' };
+
+  if (/\b(safety|alignment|risk|bias|concern|harm|misuse|ethical|responsible|guardrail|jailbreak)\b/.test(text))
+    return { label: 'Safety', slug: 'safety', color: 'hsl(0 75% 62%)' };
+
+  if (/\b(raise|funding|billion|million|startup|invest|acquire|merger|ipo|valuation|company|launch|announced|unveil)\b/.test(text))
+    return { label: 'Industry', slug: 'industry', color: 'hsl(270 75% 68%)' };
+
+  if (/\b(tool|api|model|release|update|version|open.?source|github|plugin|app|product|platform|integrat)\b/.test(text))
+    return { label: 'Tools', slug: 'tools', color: 'hsl(142 65% 52%)' };
+
+  return { label: 'General', slug: 'general', color: 'hsl(220 15% 55%)' };
+}
+
+/**
  * Estimate reading time in minutes (200 wpm average).
  */
 function estimateReadTime(text) {
@@ -231,6 +262,7 @@ function renderCard(trend, index) {
   const sourceUrl    = trend.source_url || '';
   const read         = isRead(headline);
   const bookmarked   = isBookmarked(headline);
+  const cat          = detectCategory(trend);
 
   // Reading time estimate (plain_english + why_it_matters combined)
   const rawText    = (trend.plain_english || '') + ' ' + (trend.why_it_matters || '');
@@ -267,11 +299,14 @@ function renderCard(trend, index) {
     : '';
 
   return `
-    <article class="news-card${read ? ' news-card-read' : ''}" data-headline="${escapeHtml(headline)}">
+    <article class="news-card${read ? ' news-card-read' : ''}"
+             data-headline="${escapeHtml(headline)}"
+             data-category="${escapeHtml(cat.slug)}">
       <div class="news-card-top-row">
         <span class="news-card-emoji">${escapeHtml(emoji)}</span>
         <div class="news-card-actions">
           ${readBadge}
+          <span class="news-cat-badge" style="--cat-color:${cat.color}">${cat.label}</span>
           ${readTimeHtml}
           ${shareHtml}
           <button class="news-bm-btn" data-headline="${escapeHtml(headline)}" title="${bmTitle}" aria-label="${bmTitle}">${bmIcon}</button>
@@ -381,7 +416,53 @@ function renderNews(data) {
   });
 
   updateUnreadBadge();
+  buildCategoryFilterRow(trends);
   applyFilter();
+}
+
+/**
+ * Builds the category chip row above the news cards once articles have loaded.
+ * Only shows categories that actually appear in the current article set.
+ */
+function buildCategoryFilterRow(trends) {
+  const row = document.getElementById('news-cat-filter-row');
+  if (!row) return;
+
+  // Gather unique categories present in this batch
+  const seen = new Map(); // slug → { label, color, count }
+  trends.forEach(t => {
+    const c = detectCategory(t);
+    if (!seen.has(c.slug)) seen.set(c.slug, { label: c.label, color: c.color, count: 0 });
+    seen.get(c.slug).count++;
+  });
+
+  if (seen.size <= 1) { row.style.display = 'none'; return; }
+
+  row.innerHTML = '<span class="news-cat-label">Category:</span>';
+  seen.forEach(({ label, color, count }, slug) => {
+    const btn = document.createElement('button');
+    btn.className = 'news-cat-btn';
+    btn.style.setProperty('--cat-color', color);
+    btn.dataset.slug = slug;
+    btn.textContent = `${label} (${count})`;
+    btn.addEventListener('click', () => {
+      const isActive = _activeFilter === 'cat:' + slug;
+      // Toggle: clicking active cat returns to 'all'
+      _activeFilter = isActive ? 'all' : 'cat:' + slug;
+      // Update styling on category buttons
+      row.querySelectorAll('.news-cat-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.slug === slug && !isActive);
+      });
+      // Clear the main filter bar active state (category is separate)
+      document.querySelectorAll('.news-filter-btn').forEach(b => b.classList.remove('active'));
+      if (_activeFilter === 'all') {
+        document.querySelector('.news-filter-btn[data-filter="all"]')?.classList.add('active');
+      }
+      applyFilter();
+    });
+    row.appendChild(btn);
+  });
+  row.style.display = 'flex';
 }
 
 // ── Data fetching ─────────────────────────────────────────────

@@ -308,6 +308,60 @@
   margin-left: 2px;
 }
 
+/* ── Category filter row ─────────────────────────────── */
+.news-cat-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  margin-top: -12px; /* pull closer to the main filter bar */
+}
+.news-cat-label {
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-right: 2px;
+  white-space: nowrap;
+}
+.news-cat-btn {
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ink-faint);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.news-cat-btn:hover { border-color: var(--border-hi); color: var(--ink); }
+.news-cat-btn.active {
+  background: color-mix(in srgb, var(--cat-color, var(--accent)) 18%, transparent);
+  border-color: var(--cat-color, var(--accent));
+  color: var(--cat-color, var(--accent));
+}
+
+/* ── Category badge on cards ─────────────────────────── */
+.news-cat-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid color-mix(in srgb, var(--cat-color) 35%, transparent);
+  background: color-mix(in srgb, var(--cat-color) 12%, transparent);
+  color: var(--cat-color);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 /* ── Mark all read button ─────────────────────────────── */
 .news-mark-all-btn {
   margin-left: auto;
