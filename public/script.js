@@ -467,6 +467,16 @@ function openQuizPanel() {
       const primary = isDailyDone() ? $('start-btn') : $('daily-challenge-btn');
       if (primary) primary.focus({ preventScroll: true });
     }, 340);
+    // Enhance daily label with streak info
+    try {
+      const streak = JSON.parse(localStorage.getItem('aiChallenge_streak') || '{}').count || 0;
+      const label  = document.querySelector('#daily-challenge-btn .hub-cta-daily-label');
+      if (label && !isDailyDone()) {
+        label.textContent = streak > 1
+          ? `🔥 ${streak}-Day Streak · Daily Challenge`
+          : "Today's Daily Challenge";
+      }
+    } catch {}
   }
 }
 function closeQuizPanel() {

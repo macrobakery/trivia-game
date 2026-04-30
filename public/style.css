@@ -4423,15 +4423,22 @@ h1.hn-hero-headline em {
   align-items: flex-end;
   justify-content: center;
 }
+[data-theme="light"] .qp-overlay {
+  background: rgba(30, 20, 60, 0.45);
+}
 
 .quiz-panel {
   width: 100%;
   max-width: 600px;
-  background: var(--surface-2);
+  background: var(--modal-bg);
   border-radius: 24px 24px 0 0;
   padding: 0 20px 32px;
   animation: qpSlideUp 0.32s cubic-bezier(0.34, 1.36, 0.64, 1) both;
   position: relative;
+  box-shadow: 0 -4px 40px rgba(0,0,0,0.35);
+}
+[data-theme="light"] .quiz-panel {
+  box-shadow: 0 -4px 30px rgba(0,0,0,0.12);
 }
 
 @keyframes qpSlideUp {

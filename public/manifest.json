@@ -45,6 +45,20 @@
       "description": "See top AI trivia players worldwide",
       "url": "/leaderboard.html",
       "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text y='80' font-size='80'>🏆</text></svg>", "sizes": "96x96" }]
+    },
+    {
+      "name": "Learn AI",
+      "short_name": "Learn",
+      "description": "25 structured AI lessons from Foundations to Ethics",
+      "url": "/lessons.html",
+      "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text y='80' font-size='80'>📚</text></svg>", "sizes": "96x96" }]
+    },
+    {
+      "name": "Ask Alex",
+      "short_name": "Alex",
+      "description": "Chat with your AI tutor for instant explanations",
+      "url": "/chat.html",
+      "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text y='80' font-size='80'>🤖</text></svg>", "sizes": "96x96" }]
     }
   ]
 }
