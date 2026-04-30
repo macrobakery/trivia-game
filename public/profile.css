@@ -53,6 +53,23 @@
   background: var(--accent-dim);
   border: 1px solid var(--accent);
   border-radius: 50%;
+  box-shadow: 0 0 20px hsl(270 90% 70% / 0.15);
+  transition: box-shadow 0.3s ease;
+}
+.prof-avatar.has-initials {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, hsl(270 60% 28%), hsl(270 80% 16%));
+  border-color: var(--accent);
+  box-shadow: 0 0 24px hsl(270 90% 70% / 0.25);
+  color: var(--accent);
+}
+[data-theme="light"] .prof-avatar.has-initials {
+  background: linear-gradient(135deg, hsl(270 55% 92%), hsl(270 40% 86%));
+  color: hsl(270 70% 45%);
+  border-color: hsl(270 70% 55% / 0.5);
 }
 
 .prof-header-info { flex: 1; min-width: 0; }

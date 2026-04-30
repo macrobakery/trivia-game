@@ -4288,6 +4288,16 @@ h1.hn-hero-headline em {
 }
 .hn-card-alex:hover { box-shadow: 0 12px 40px hsl(220 80% 60% / 0.2); }
 
+/* Quiz card "done today" visual state */
+.hn-card-quiz.card-daily-done {
+  border-color: hsl(142 68% 50% / 0.4);
+  box-shadow: 0 0 20px hsl(142 68% 50% / 0.1);
+}
+[data-theme="light"] .hn-card-quiz.card-daily-done {
+  background: linear-gradient(135deg, hsl(142 40% 90%), hsl(142 30% 86%));
+  border-color: hsl(142 55% 38% / 0.4);
+}
+
 /* Icon sizing for horizontal cards */
 .hn-card-quiz .hn-card-icon  { font-size: 2.4rem; margin-bottom: 0; flex-shrink: 0; }
 .hn-card-alex .hn-card-icon  { font-size: 1.6rem; margin-bottom: 0; flex-shrink: 0; }

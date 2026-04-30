@@ -458,10 +458,15 @@ loadPlayDefaults();
 
 // ── Quiz bottom-sheet panel ───────────────────────────────────
 function openQuizPanel() {
-  const overlay = $('qp-overlay');
+  const overlay  = $('qp-overlay');
   if (overlay) {
     overlay.style.display = 'flex';
     document.body.classList.add('qp-open');
+    // Focus the primary action button after animation settles
+    setTimeout(() => {
+      const primary = isDailyDone() ? $('start-btn') : $('daily-challenge-btn');
+      if (primary) primary.focus({ preventScroll: true });
+    }, 340);
   }
 }
 function closeQuizPanel() {
@@ -3183,21 +3188,27 @@ function updateDailyChallengeUI() {
   const chip      = $('daily-done-chip');
   const homeChip  = $('home-daily-chip');
   const sub       = $('daily-sub');
-  const quizSub   = $('quiz-card-sub');
-  const quizCta   = document.querySelector('#hn-quiz-card .hn-card-cta');
+  const quizSub    = $('quiz-card-sub');
+  const quizCta    = document.querySelector('#hn-quiz-card .hn-card-cta');
+  const quizCard   = $('hn-quiz-card');
+  const quizIcon   = quizCard ? quizCard.querySelector('.hn-card-icon') : null;
   if (!btn) return;
   if (isDailyDone()) {
     if (chip)     chip.style.display     = 'inline-flex';
     if (homeChip) homeChip.style.display = 'inline-flex';
     btn.classList.add('daily-done');
-    if (sub)     sub.textContent = 'Already played today — come back tomorrow!';
-    if (quizSub) quizSub.textContent = 'Daily challenge complete! ✓';
-    if (quizCta) { quizCta.textContent = 'Play again →'; quizCta.style.color = 'var(--green)'; }
+    if (sub)      sub.textContent        = 'Already played today — come back tomorrow!';
+    if (quizSub)  quizSub.textContent    = 'Daily challenge complete! ✓';
+    if (quizCta)  { quizCta.textContent = 'Play again →'; quizCta.style.color = 'var(--green)'; }
+    if (quizCard) quizCard.classList.add('card-daily-done');
+    if (quizIcon) quizIcon.textContent   = '✅';
   } else {
     if (chip)     chip.style.display     = 'none';
     if (homeChip) homeChip.style.display = 'none';
     btn.classList.remove('daily-done');
-    if (quizCta) { quizCta.textContent = 'Play →'; quizCta.style.color = ''; }
+    if (quizCta)  { quizCta.textContent = 'Play →'; quizCta.style.color = ''; }
+    if (quizCard) quizCard.classList.remove('card-daily-done');
+    if (quizIcon) quizIcon.textContent   = '🎮';
     _updateDailyCountdown();
   }
 }

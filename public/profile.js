@@ -100,9 +100,21 @@ function renderHeader() {
   else if (topScore >= 700) badgeObj = BADGES[2];
   else if (topScore >= 400) badgeObj = BADGES[1];
 
-  $('prof-avatar').textContent    = badgeObj.icon;
-  $('prof-name').textContent      = escapeHtml(name);
-  $('prof-badge-name').textContent = badgeObj.name;
+  // Avatar: show initials for named users, badge icon for anonymous
+  const avatarEl = $('prof-avatar');
+  if (avatarEl) {
+    const isNamed = name && name !== 'Anonymous';
+    if (isNamed) {
+      const initials = name.trim().split(/\s+/).map(w => w[0].toUpperCase()).slice(0, 2).join('');
+      avatarEl.textContent = initials;
+      avatarEl.classList.add('has-initials');
+    } else {
+      avatarEl.textContent = badgeObj.icon;
+      avatarEl.classList.remove('has-initials');
+    }
+  }
+  $('prof-name').textContent       = escapeHtml(name);
+  $('prof-badge-name').textContent = `${badgeObj.icon} ${badgeObj.name}`;
   $('prof-games-played').textContent = `${games} game${games !== 1 ? 's' : ''} played`;
 
   // ── Next-badge progress bar ──
