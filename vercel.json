@@ -5,5 +5,11 @@
   ],
   "routes": [
     { "src": "/(.*)", "dest": "/server.js" }
+  ],
+  "crons": [
+    {
+      "path": "/api/push/send-daily",
+      "schedule": "0 18 * * *"
+    }
   ]
 }

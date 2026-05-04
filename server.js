@@ -210,7 +210,8 @@ async function createTables() {
   // Schema migrations for tables that existed before these columns were added
   for (const migration of [
     'ALTER TABLE questions ADD COLUMN flag_count INTEGER NOT NULL DEFAULT 0',
-    "ALTER TABLE questions ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'"
+    "ALTER TABLE questions ADD COLUMN status TEXT NOT NULL DEFAULT 'approved'",
+    'ALTER TABLE push_subscriptions ADD COLUMN last_pushed_at TEXT'
   ]) {
     try { await dbClient.execute(migration); } catch (_) { /* column exists, skip */ }
   }
@@ -714,28 +715,53 @@ app.post('/api/push/unsubscribe', async (req, res) => {
   }
 });
 
-// POST /api/push/send-daily (admin) — send daily reminder to all subscribers
-app.post('/api/push/send-daily', adminAuth, async (req, res) => {
+// Auth gate that accepts either admin Basic auth OR Vercel cron header.
+// Vercel automatically attaches `X-Vercel-Cron: 1` to scheduled requests.
+function adminOrCronAuth(req, res, next) {
+  if (req.headers['x-vercel-cron']) return next();
+  return adminAuth(req, res, next);
+}
+
+// POST or GET /api/push/send-daily — send daily reminder to all subscribers.
+// Vercel cron pings this with GET. Manual admin trigger uses POST + Basic auth.
+async function sendDailyPushHandler(req, res) {
   if (!webPush) return res.status(503).json({ error: 'Push not configured.' });
-  const { title = '🔥 Daily AI Challenge', body = 'New questions are live! Keep your streak going.' } = req.body;
-  const subs = await dbAll('SELECT endpoint, keys FROM push_subscriptions');
-  let sent = 0, failed = 0;
+
+  const { title = '🔥 AI Challenge', body = "⏰ 5 min to keep your streak alive — today's challenge is live" } = req.body || {};
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD UTC
+
+  // Skip subscriptions that already received a push today (prevents Vercel
+  // cron duplicates if the function is invoked more than once per day).
+  const subs = await dbAll(
+    'SELECT endpoint, keys FROM push_subscriptions WHERE last_pushed_at IS NULL OR substr(last_pushed_at,1,10) <> ?',
+    [today]
+  );
+
+  let sent = 0, failed = 0, dropped = 0;
   for (const sub of subs) {
     try {
       await webPush.sendNotification(
         { endpoint: sub.endpoint, keys: JSON.parse(sub.keys) },
-        JSON.stringify({ title, body, icon: '/icons/icon-192.png', url: '/' })
+        JSON.stringify({ title, body, icon: '/icons/icon.svg', url: '/' })
+      );
+      await dbRun(
+        'UPDATE push_subscriptions SET last_pushed_at = CURRENT_TIMESTAMP WHERE endpoint = ?',
+        [sub.endpoint]
       );
       sent++;
     } catch (err) {
       failed++;
-      if (err.statusCode === 410) {
+      if (err.statusCode === 404 || err.statusCode === 410) {
         await dbRun('DELETE FROM push_subscriptions WHERE endpoint = ?', [sub.endpoint]);
+        dropped++;
       }
     }
   }
-  res.json({ ok: true, sent, failed });
-});
+  res.json({ ok: true, sent, failed, dropped, candidates: subs.length });
+}
+
+app.post('/api/push/send-daily', adminOrCronAuth, sendDailyPushHandler);
+app.get('/api/push/send-daily',  adminOrCronAuth, sendDailyPushHandler);
 
 // POST /api/questions/suggest — user submits a question for review
 app.post('/api/questions/suggest', apiLimiter, async (req, res) => {
