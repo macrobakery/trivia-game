@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — AI Challenge</title>
+  <meta name="description" content="How AI Challenge collects, uses, and stores your data. Plain-English summary first." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Geist:wght@300..700&family=JetBrains+Mono:wght@400..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#07060c" id="meta-theme-color" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <script>
+    (function(){
+      const t = localStorage.getItem('aiChallenge_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <style>
+    .legal-wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 120px; line-height: 1.65; }
+    .legal-wrap h1 { font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 2.2rem; margin: 0 0 8px; }
+    .legal-wrap .updated { color: var(--ink-faint); font-size: 0.86rem; margin-bottom: 28px; }
+    .legal-wrap h2 { font-size: 1.2rem; margin: 28px 0 8px; color: var(--accent); }
+    .legal-wrap p, .legal-wrap li { color: var(--ink); font-size: 0.96rem; }
+    .legal-wrap ul { padding-left: 22px; }
+    .legal-wrap .tldr {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px 18px; margin: 18px 0 24px;
+    }
+    .legal-wrap .tldr h2 { margin-top: 0; }
+    .legal-wrap a { color: var(--accent); }
+    .legal-back { display: inline-block; margin-bottom: 18px; color: var(--ink-faint); text-decoration: none; font-size: 0.86rem; }
+  </style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+    <div class="bg-blob bg-blob-3"></div>
+    <div class="bg-grain"></div>
+  </div>
+
+  <main class="legal-wrap">
+    <a href="/" class="legal-back">← Back to AI Challenge</a>
+    <h1>Privacy Policy</h1>
+    <div class="updated">Last updated: 4 May 2026</div>
+
+    <div class="tldr">
+      <h2>The 30-second version</h2>
+      <p>
+        AI Challenge stores your scores, push subscription (if you opt in), and basic
+        usage events to make the app better. We do not show ads, do not sell data,
+        and do not run third-party trackers. Analytics fire only after you tap
+        <strong>Accept</strong> on the cookie banner.
+      </p>
+    </div>
+
+    <h2>Who runs this app</h2>
+    <p>
+      AI Challenge is operated as a personal project by Abdulaziz, registered with
+      <strong>The Approved Market Central Co. W.L.L.</strong>, Kuwait City, Kuwait.
+      Contact: <a href="mailto:macrobakery@gmail.com">macrobakery@gmail.com</a>.
+    </p>
+
+    <h2>What we collect</h2>
+    <ul>
+      <li><strong>Quiz scores</strong> — the player name you type when saving (free-form), the score, level, difficulty, and timestamp. Stored in our Turso (libSQL) database.</li>
+      <li><strong>Anonymous usage events</strong> — for example "game_started", "lesson_opened". Tied to a randomly generated browser ID, not your real identity. Only sent if you accept analytics on the banner.</li>
+      <li><strong>Push subscription</strong> — only if you tap "Allow" on the browser push prompt. We store the subscription endpoint your browser provides and use it to send daily notifications.</li>
+      <li><strong>Local storage</strong> — your streak, theme preference, completed lessons, and consent decision live entirely in your browser. We never read them.</li>
+    </ul>
+
+    <h2>What we don't collect</h2>
+    <ul>
+      <li>Real names, email addresses, or phone numbers.</li>
+      <li>Payment data — there is nothing to pay for.</li>
+      <li>Precise location, contacts, or device fingerprints.</li>
+      <li>Cross-site tracking. There are no third-party advertising or analytics scripts.</li>
+    </ul>
+
+    <h2>How we use it</h2>
+    <ul>
+      <li>To run the leaderboard and your personal stats.</li>
+      <li>To send the daily push reminder if you opted in.</li>
+      <li>To understand which features people use, so we can improve them.</li>
+      <li>To prevent abuse (rate limiting + flagged questions).</li>
+    </ul>
+
+    <h2>Where data lives</h2>
+    <p>
+      Scores, subscriptions, and usage events are stored on Turso (libSQL) in the EU/US
+      region. The frontend is served from Vercel's global edge network. Both providers
+      are GDPR-aligned.
+    </p>
+
+    <h2>Your rights</h2>
+    <ul>
+      <li><strong>Erase your data</strong> — email <a href="mailto:macrobakery@gmail.com">macrobakery@gmail.com</a> with the player name(s) you used and we'll delete the matching scores and events within 14 days.</li>
+      <li><strong>Disable analytics</strong> — clear your browser storage for this site, or click "Decline" the next time the banner appears.</li>
+      <li><strong>Disable push</strong> — turn it off in your browser's notification settings.</li>
+    </ul>
+
+    <h2>Children</h2>
+    <p>
+      The app is intended for users aged 13 and over. If you are under 13, please ask
+      a parent or guardian before using the app. We do not knowingly collect data
+      from children under 13.
+    </p>
+
+    <h2>Changes to this policy</h2>
+    <p>
+      If we change anything material, we'll bump the "Last updated" date and post a
+      banner at the top of the home page for at least 7 days.
+    </p>
+
+    <footer class="app-footer" style="padding-top: 32px;">
+      <a href="/">Home</a>
+      <span class="app-footer-sep">·</span>
+      <a href="/terms.html">Terms</a>
+    </footer>
+  </main>
+</body>
+</html>

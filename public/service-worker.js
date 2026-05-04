@@ -3,7 +3,7 @@
 // Caches static assets for offline / instant load
 // ============================================================
 
-const CACHE_NAME   = 'ai-challenge-v27';
+const CACHE_NAME   = 'ai-challenge-v28';
 const STATIC_ASSETS = [
   '/',
   '/style.css',
@@ -11,6 +11,7 @@ const STATIC_ASSETS = [
   '/manifest.json',
   '/tour.css',
   '/tour.js',
+  '/consent.js',
   '/leaderboard.html',
   '/news.html',
   '/news.css',
@@ -25,6 +26,8 @@ const STATIC_ASSETS = [
   '/learn.html',
   '/learn.css',
   '/offline.html',
+  '/privacy.html',
+  '/terms.html',
   '/og-image.svg',
   '/icons/icon.svg',
   '/screenshots/home.svg',

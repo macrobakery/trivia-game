@@ -83,9 +83,10 @@ function clearMasteredQuestions(correctTexts) {
   saveSRStore(store);
 }
 
-// ── Analytics (fire-and-forget) ────────────────────────────────
+// ── Analytics (fire-and-forget, gated by user consent) ─────────
 function track(event, props = {}) {
   try {
+    if (typeof window.canTrackAnalytics === 'function' && !window.canTrackAnalytics()) return;
     fetch('/api/analytics/event', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
