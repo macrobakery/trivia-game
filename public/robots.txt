@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Block admin panel and API endpoints from crawlers
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api/
+
+# Block PWA artifacts crawlers don't need
+Disallow: /service-worker.js
+Disallow: /manifest.json
+
+Sitemap: https://ai-app-builder-challenge.vercel.app/sitemap.xml

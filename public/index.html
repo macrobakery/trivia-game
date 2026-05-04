@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Challenge — Daily AI Quiz, News & Lessons</title>
   <meta name="description" content="Test your AI knowledge daily with timed quizzes, get instant explanations from your AI tutor Alex, read the latest AI news, and track your progress with streaks and achievements." />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <link rel="canonical" href="https://ai-app-builder-challenge.vercel.app/" />
   <!-- Design fonts: Fraunces (serif italic titles), Geist (UI), JetBrains Mono (labels) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -26,6 +28,51 @@
   <meta name="twitter:title"      content="AI Challenge — Daily AI Quiz & Learning" />
   <meta name="twitter:description" content="Quiz yourself on AI every day. Wrong answers explained by Alex, your AI tutor. Streaks, leaderboards, and structured lessons included." />
   <meta name="twitter:image"      content="https://ai-app-builder-challenge.vercel.app/og-image.svg" />
+
+  <!-- Schema.org structured data for rich Google results -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://ai-app-builder-challenge.vercel.app/#app",
+        "name": "AI Challenge",
+        "url": "https://ai-app-builder-challenge.vercel.app/",
+        "description": "Daily AI quiz, news, lessons, and an AI tutor named Alex. Learn AI in 5 minutes a day with timed quizzes, streaks, and a global leaderboard.",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Any (Web, PWA)",
+        "browserRequirements": "Requires a modern browser with JavaScript enabled",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "inLanguage": "en",
+        "isAccessibleForFree": true,
+        "audience": { "@type": "Audience", "audienceType": "Anyone curious about AI, from beginners to working developers" }
+      },
+      {
+        "@type": "LearningResource",
+        "@id": "https://ai-app-builder-challenge.vercel.app/#course",
+        "name": "Learn AI in 5 minutes a day",
+        "description": "5 levels covering AI Foundations, Data Preparation, Model Building, AI App Development, and Deployment & Responsible AI. 25 structured micro-lessons + a quiz bank of 75+ hand-crafted questions.",
+        "educationalLevel": "Beginner to Advanced",
+        "learningResourceType": ["Quiz", "MicroLesson", "Tutorial"],
+        "teaches": ["Artificial Intelligence", "Machine Learning", "Neural Networks", "Prompt Engineering", "Deployment & Ethics"],
+        "isAccessibleForFree": true,
+        "url": "https://ai-app-builder-challenge.vercel.app/lessons.html"
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://ai-app-builder-challenge.vercel.app/#website",
+        "url": "https://ai-app-builder-challenge.vercel.app/",
+        "name": "AI Challenge",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": { "@type": "EntryPoint", "urlTemplate": "https://ai-app-builder-challenge.vercel.app/?search={search_term}" },
+          "query-input": "required name=search_term"
+        }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
 
