@@ -102,6 +102,21 @@
       </span>
     </div>
 
+    <!-- ── Friend challenge banner (someone shared a beat-this-score URL) ── -->
+    <div id="challenge-banner" class="challenge-banner" style="display:none" role="alert">
+      <div class="cb-info">
+        <span class="cb-icon">⚔️</span>
+        <div>
+          <div class="cb-title" id="cb-title">A friend challenged you</div>
+          <div class="cb-meta"  id="cb-meta">Beat their score on today's daily!</div>
+        </div>
+      </div>
+      <div class="cb-actions">
+        <button class="btn-primary" id="cb-play-btn">Play Daily →</button>
+        <button class="btn-ghost-sm" id="cb-dismiss" aria-label="Dismiss">✕</button>
+      </div>
+    </div>
+
     <!-- ── Resume banner ── -->
     <div id="resume-banner" class="resume-banner" style="display:none" role="alert">
       <div class="resume-info">
@@ -471,6 +486,15 @@
         </div>
       </div>
 
+      <!-- Friend-challenge comparison banner (visible only after a daily challenge that came from a shared link) -->
+      <div class="personal-best-banner" id="friend-challenge-result" style="display:none" aria-live="polite">
+        <span class="pb-icon" id="fcr-icon">⚔️</span>
+        <div class="pb-text">
+          <div class="pb-title" id="fcr-title">Challenge result</div>
+          <div class="pb-sub"   id="fcr-sub"></div>
+        </div>
+      </div>
+
       <!-- Answer timeline: dots per question -->
       <div class="answer-timeline" id="answer-timeline" aria-label="Per-question results"></div>
 
@@ -684,6 +708,7 @@
       <!-- Share action buttons -->
       <div class="share-actions">
         <button class="btn-primary"  id="share-native-btn">📤 Share</button>
+        <button class="btn-ghost"    id="share-challenge-btn" style="display:none">⚔️ Challenge a friend</button>
         <button class="btn-ghost"    id="share-x-btn">𝕏 Post to X</button>
         <button class="btn-ghost"    id="share-linkedin-btn">💼 LinkedIn</button>
         <button class="btn-ghost"    id="share-copy-btn">📋 Copy Text</button>

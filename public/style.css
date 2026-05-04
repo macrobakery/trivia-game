@@ -2059,6 +2059,48 @@ ul     { list-style: none; }
   flex-shrink: 0;
 }
 
+/* ── Friend Challenge banner — same shape as resume banner, accent tint */
+.challenge-banner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  background: linear-gradient(
+    135deg,
+    hsl(270 90% 70% / 0.14),
+    hsl(290 85% 65% / 0.10)
+  );
+  border: 1px solid hsl(270 90% 70% / 0.4);
+  border-radius: var(--radius);
+  animation: slideUp 0.3s ease;
+}
+.cb-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cb-icon  { font-size: 1.4rem; }
+.cb-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.cb-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  color: var(--ink-faint);
+}
+.cb-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 /* ══════════════════════════════════════════════
    STREAK PILL
 ══════════════════════════════════════════════ */

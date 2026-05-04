@@ -35,7 +35,8 @@ let state = {
   answered: false,
   powerUps: { fiftyFifty: true, extraTime: true, hint: true },
   scoreSaved: false,
-  roundStartTime: null
+  roundStartTime: null,
+  lastRoundWasDaily: false
 };
 
 // ── Spaced Repetition — track wrong questions across sessions ──
@@ -1792,17 +1793,29 @@ function shareScore() {
   $('share-modal').style.display = 'flex';
 
   // ── Wire up share buttons (once — remove old listeners) ──
-  const nativeBtn   = $('share-native-btn');
-  const xBtn        = $('share-x-btn');
-  const linkedinBtn = $('share-linkedin-btn');
-  const copyBtn     = $('share-copy-btn');
+  const nativeBtn    = $('share-native-btn');
+  const challengeBtn = $('share-challenge-btn');
+  const xBtn         = $('share-x-btn');
+  const linkedinBtn  = $('share-linkedin-btn');
+  const copyBtn      = $('share-copy-btn');
 
   // Replace nodes to clear any previous listeners
-  [nativeBtn, xBtn, linkedinBtn, copyBtn].forEach(btn => {
+  [nativeBtn, challengeBtn, xBtn, linkedinBtn, copyBtn].forEach(btn => {
     if (!btn) return;
     const clone = btn.cloneNode(true);
     btn.parentNode.replaceChild(clone, btn);
   });
+
+  // Daily-only: show "Challenge a friend" button with beat-this URL
+  const cb = $('share-challenge-btn');
+  if (cb) {
+    if (state.lastRoundWasDaily && state.score > 0) {
+      cb.style.display = '';
+      cb.addEventListener('click', shareFriendChallenge);
+    } else {
+      cb.style.display = 'none';
+    }
+  }
 
   const text = _shareText();
 
@@ -2155,7 +2168,38 @@ function showResults() {
   // Mark daily challenge as completed
   if (state.isDailyChallenge) {
     markDailyDone();
-    state.isDailyChallenge = false;
+    state.isDailyChallenge   = false;
+    state.lastRoundWasDaily  = true;
+
+    // If this round was opened from a friend's challenge link, show the comparison.
+    const fc = getFriendChallenge();
+    if (fc && fc.beatScore > 0 && fc.from) {
+      const banner   = document.getElementById('friend-challenge-result');
+      const iconEl   = document.getElementById('fcr-icon');
+      const titleEl  = document.getElementById('fcr-title');
+      const subEl    = document.getElementById('fcr-sub');
+      if (banner && titleEl && subEl) {
+        if (state.score > fc.beatScore) {
+          if (iconEl) iconEl.textContent = '🏆';
+          titleEl.textContent = `You beat ${fc.from}!`;
+          subEl.textContent   = `${state.score.toLocaleString()} vs ${fc.beatScore.toLocaleString()} pts`;
+        } else if (state.score === fc.beatScore) {
+          if (iconEl) iconEl.textContent = '🤝';
+          titleEl.textContent = `Tied with ${fc.from}`;
+          subEl.textContent   = `Both at ${state.score.toLocaleString()} pts`;
+        } else {
+          if (iconEl) iconEl.textContent = '🎯';
+          titleEl.textContent = `${fc.from} still leads`;
+          subEl.textContent   = `${state.score.toLocaleString()} vs ${fc.beatScore.toLocaleString()} pts — try again!`;
+        }
+        banner.style.display = 'flex';
+      }
+      clearFriendChallenge(); // one-shot — don't show on the next round
+    }
+  } else {
+    state.lastRoundWasDaily  = false;
+    const fcr = document.getElementById('friend-challenge-result');
+    if (fcr) fcr.style.display = 'none';
   }
 
   // Track game goal for daily goals
@@ -2310,6 +2354,90 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/service-worker.js').catch(() => {});
   });
 }
+
+// ══════════════════════════════════════════════════════════════
+// "BEAT A FRIEND" — Friend challenge banner + share link wiring
+// ══════════════════════════════════════════════════════════════
+
+const FRIEND_CHALLENGE_KEY = 'aiChallenge_friendChallenge';
+
+function _readChallengeFromURL() {
+  try {
+    const params = new URLSearchParams(location.search);
+    if (params.get('challenge') !== 'daily') return null;
+    const beatScore = parseInt(params.get('beatScore') || '0', 10);
+    const from      = (params.get('from') || '').trim().slice(0, 30);
+    if (!Number.isFinite(beatScore) || beatScore <= 0 || !from) return null;
+    return { beatScore, from };
+  } catch (_) { return null; }
+}
+
+function getFriendChallenge() {
+  try { return JSON.parse(sessionStorage.getItem(FRIEND_CHALLENGE_KEY) || 'null'); } catch { return null; }
+}
+function setFriendChallenge(obj) {
+  try { sessionStorage.setItem(FRIEND_CHALLENGE_KEY, JSON.stringify(obj)); } catch {}
+}
+function clearFriendChallenge() {
+  try { sessionStorage.removeItem(FRIEND_CHALLENGE_KEY); } catch {}
+}
+
+function initFriendChallenge() {
+  // Pull challenge from URL once on load and persist for the session.
+  const fromUrl = _readChallengeFromURL();
+  if (fromUrl) setFriendChallenge(fromUrl);
+
+  const challenge = getFriendChallenge();
+  const banner    = document.getElementById('challenge-banner');
+  if (!challenge || !banner) return;
+
+  document.getElementById('cb-title').textContent = `${challenge.from} challenged you`;
+  document.getElementById('cb-meta').textContent  = `Beat ${challenge.beatScore.toLocaleString()} pts on today's daily challenge`;
+  banner.style.display = 'flex';
+
+  document.getElementById('cb-play-btn')?.addEventListener('click', () => {
+    banner.style.display = 'none';
+    // Open the quiz panel and auto-start the daily challenge
+    document.getElementById('hn-quiz-card')?.click();
+    setTimeout(() => document.getElementById('daily-challenge-btn')?.click(), 150);
+  });
+
+  document.getElementById('cb-dismiss')?.addEventListener('click', () => {
+    banner.style.display = 'none';
+    clearFriendChallenge();
+  });
+}
+
+function _buildFriendChallengeURL() {
+  const playerName = (localStorage.getItem('aiChallenge_playerName') || 'A friend').slice(0, 30);
+  const params = new URLSearchParams({
+    challenge: 'daily',
+    beatScore: String(state.score || 0),
+    from:      playerName
+  });
+  return `${location.origin}/?${params.toString()}`;
+}
+
+async function shareFriendChallenge() {
+  const url  = _buildFriendChallengeURL();
+  const text = `I scored ${state.score.toLocaleString()} pts on today's AI Challenge daily — can you beat me?`;
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: 'AI Challenge — beat my score', text, url });
+      return;
+    }
+  } catch (_) { /* user dismissed share sheet, fall through to clipboard */ }
+  try {
+    await navigator.clipboard.writeText(`${text}\n${url}`);
+    if (typeof showToast === 'function') showToast('Challenge link copied! 📋');
+    else alert('Challenge link copied to clipboard.');
+  } catch (_) {
+    prompt('Copy this challenge link:', url);
+  }
+}
+
+// Run on load
+window.addEventListener('load', initFriendChallenge);
 
 // ══════════════════════════════════════════════════════════════
 // DAILY LEARNING HUB — streak display on the home screen
