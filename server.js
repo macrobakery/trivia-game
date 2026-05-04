@@ -10,14 +10,19 @@ const path         = require('path');
 const { createClient } = require('@libsql/client');
 const rateLimit    = require('express-rate-limit');
 
-// Web Push — optional, requires VAPID env vars
+// Web Push — optional, requires VAPID env vars (no fallback literals)
 let webPush = null;
 try {
-  webPush = require('web-push');
-  const vapidPublic  = process.env.VAPID_PUBLIC_KEY  || 'BGEkcus0Wdaqfw8I8g9dZ_5WEoNPJtYuuoGtthFi8hQ_fg910K66ls9DEEVaKl_lPx3m5sT2AwCOizqkWHRC61w';
-  const vapidPrivate = process.env.VAPID_PRIVATE_KEY || 'ODPynHngNH-iIjgnxTHANNIF71GPOE9qXyYY7va6bQo';
-  webPush.setVapidDetails('mailto:macrobakery@gmail.com', vapidPublic, vapidPrivate);
-  console.log('✅ Web Push configured.');
+  const vapidPublic  = process.env.VAPID_PUBLIC_KEY;
+  const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
+  if (!vapidPublic || !vapidPrivate) {
+    console.log('ℹ️  VAPID env vars not set — push notifications disabled.');
+  } else {
+    webPush = require('web-push');
+    const contact = process.env.VAPID_CONTACT_EMAIL || 'mailto:macrobakery@gmail.com';
+    webPush.setVapidDetails(contact, vapidPublic, vapidPrivate);
+    console.log('✅ Web Push configured.');
+  }
 } catch (_) {
   console.log('ℹ️  web-push not available — push notifications disabled.');
 }
