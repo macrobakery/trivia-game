@@ -2960,6 +2960,21 @@ button, a, input, select {
   background: rgba(240, 239, 248, 0.96);
 }
 
+/* Tiny screens (iPhone SE 1st gen and similar 320–360px widths):
+   the 6-item bottom nav gets cramped. Hide labels and tighten spacing
+   so the icons remain comfortably tappable. */
+@media (max-width: 360px) {
+  .app-nav-item  { padding: 6px 4px; gap: 0; }
+  .app-nav-label { display: none; }
+  .app-nav-icon  { font-size: 1.35rem; }
+  .app-nav-item.active::before {
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 36px;
+    height: 36px;
+  }
+}
+
 /* ══════════════════════════════════════════════
    HUB HOME — new splash layout
 ══════════════════════════════════════════════ */
