@@ -3,7 +3,7 @@
 // Caches static assets for offline / instant load
 // ============================================================
 
-const CACHE_NAME   = 'ai-challenge-v26';
+const CACHE_NAME   = 'ai-challenge-v27';
 const STATIC_ASSETS = [
   '/',
   '/style.css',
@@ -26,7 +26,10 @@ const STATIC_ASSETS = [
   '/learn.css',
   '/offline.html',
   '/og-image.svg',
-  '/icons/icon.svg'
+  '/icons/icon.svg',
+  '/screenshots/home.svg',
+  '/screenshots/quiz.svg',
+  '/screenshots/results.svg'
 ];
 
 // Install: pre-cache static assets

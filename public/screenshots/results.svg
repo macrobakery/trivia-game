@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#07060c"/>
+      <stop offset="100%" style="stop-color:#1a0833"/>
+    </linearGradient>
+    <radialGradient id="orbWin" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:hsl(142,68%,55%,0.5)"/>
+      <stop offset="100%" style="stop-color:transparent"/>
+    </radialGradient>
+  </defs>
+  <rect width="1080" height="1920" fill="url(#bg)"/>
+
+  <!-- Orb -->
+  <circle cx="540" cy="280" r="160" fill="url(#orbWin)"/>
+  <circle cx="540" cy="280" r="100" fill="hsl(142,68%,45%)" opacity="0.7"/>
+  <circle cx="540" cy="280" r="75"  fill="hsl(142,75%,60%)" opacity="0.9"/>
+  <ellipse cx="525" cy="255" rx="26" ry="18" fill="white" opacity="0.5"/>
+
+  <!-- Eyebrow -->
+  <text x="540" y="500" font-family="Arial, sans-serif" font-size="26" fill="hsl(270,90%,75%)" text-anchor="middle" font-weight="500">YOUR PERFORMANCE</text>
+
+  <!-- Title -->
+  <text x="540" y="600" font-family="Georgia, serif" font-size="84" font-weight="700" font-style="italic" fill="white" text-anchor="middle">AI Architect</text>
+
+  <!-- Pass banner -->
+  <rect x="240" y="640" width="600" height="80" rx="40" fill="hsl(142,68%,45%,0.18)" stroke="hsl(142,68%,55%,0.6)" stroke-width="2"/>
+  <text x="540" y="695" font-family="Arial, sans-serif" font-size="32" fill="hsl(142,75%,75%)" text-anchor="middle" font-weight="600">Level Complete! ✓</text>
+
+  <!-- Personal best banner -->
+  <rect x="60" y="755" width="960" height="100" rx="24" fill="hsl(45,90%,55%,0.12)" stroke="hsl(45,90%,55%,0.4)"/>
+  <text x="120" y="815" font-size="44">⭐</text>
+  <text x="180" y="800" font-family="Arial, sans-serif" font-size="28" fill="white" font-weight="700">New Personal Best!</text>
+  <text x="180" y="838" font-family="Arial, sans-serif" font-size="22" fill="white" opacity="0.7">+150 pts vs previous best</text>
+
+  <!-- Answer timeline dots -->
+  <g transform="translate(540, 920)">
+    <g transform="translate(-200, 0)">
+      <circle cx="0"   cy="0" r="18" fill="hsl(142,68%,55%)"/>
+      <circle cx="44"  cy="0" r="18" fill="hsl(142,68%,55%)"/>
+      <circle cx="88"  cy="0" r="18" fill="hsl(142,68%,55%)"/>
+      <circle cx="132" cy="0" r="18" fill="hsl(0,80%,60%)"/>
+      <circle cx="176" cy="0" r="18" fill="hsl(142,68%,55%)"/>
+      <circle cx="220" cy="0" r="18" fill="hsl(142,68%,55%)"/>
+      <circle cx="264" cy="0" r="18" fill="hsl(142,68%,55%)"/>
+      <circle cx="308" cy="0" r="18" fill="hsl(142,68%,55%)"/>
+      <circle cx="352" cy="0" r="18" fill="hsl(142,68%,55%)"/>
+      <circle cx="396" cy="0" r="18" fill="hsl(142,68%,55%)"/>
+    </g>
+  </g>
+
+  <!-- Stats board -->
+  <g font-family="Arial, sans-serif" fill="white">
+    <rect x="60" y="990" width="960" height="100" rx="20" fill="white" opacity="0.05"/>
+    <text x="100" y="1050" font-size="28" opacity="0.7">Final Score</text>
+    <text x="980" y="1050" font-size="40" font-weight="700" text-anchor="end" fill="hsl(270,90%,80%)">850</text>
+
+    <rect x="60" y="1100" width="960" height="100" rx="20" fill="white" opacity="0.05"/>
+    <text x="100" y="1160" font-size="28" opacity="0.7">Correct Answers</text>
+    <text x="980" y="1160" font-size="36" font-weight="700" text-anchor="end">9 / 10</text>
+
+    <rect x="60" y="1210" width="960" height="100" rx="20" fill="white" opacity="0.05"/>
+    <text x="100" y="1270" font-size="28" opacity="0.7">Accuracy</text>
+    <text x="980" y="1270" font-size="36" font-weight="700" text-anchor="end" fill="hsl(142,75%,65%)">90%</text>
+
+    <rect x="60" y="1320" width="960" height="100" rx="20" fill="hsl(45,90%,55%,0.1)" stroke="hsl(45,90%,55%,0.3)"/>
+    <text x="100" y="1380" font-size="28" opacity="0.7">Best Streak</text>
+    <text x="980" y="1380" font-size="36" font-weight="700" text-anchor="end" fill="hsl(45,90%,70%)">🔥 7</text>
+  </g>
+
+  <!-- Action buttons -->
+  <rect x="60" y="1460" width="465" height="100" rx="50" fill="hsl(270,90%,70%)" />
+  <text x="292" y="1522" font-family="Arial, sans-serif" font-size="30" fill="#0a0420" font-weight="700" text-anchor="middle">💾 Save Score</text>
+
+  <rect x="555" y="1460" width="465" height="100" rx="50" fill="white" opacity="0.08" stroke="white" stroke-opacity="0.25"/>
+  <text x="787" y="1522" font-family="Arial, sans-serif" font-size="30" fill="white" font-weight="600" text-anchor="middle">📤 Share Score</text>
+
+  <rect x="60" y="1580" width="465" height="100" rx="50" fill="white" opacity="0.06" stroke="white" stroke-opacity="0.2"/>
+  <text x="292" y="1642" font-family="Arial, sans-serif" font-size="28" fill="white" font-weight="500" text-anchor="middle">↻ Play Again</text>
+
+  <rect x="555" y="1580" width="465" height="100" rx="50" fill="white" opacity="0.06" stroke="white" stroke-opacity="0.2"/>
+  <text x="787" y="1642" font-family="Arial, sans-serif" font-size="28" fill="white" font-weight="500" text-anchor="middle">🤖 Ask Alex</text>
+
+  <!-- Bottom nav -->
+  <rect x="0" y="1740" width="1080" height="180" fill="rgba(7,6,12,0.95)" stroke="white" stroke-opacity="0.08"/>
+  <g font-family="Arial, sans-serif" font-size="22" text-anchor="middle">
+    <text x="90"  y="1810" font-size="40">🏠</text>
+    <text x="90"  y="1855" fill="white" opacity="0.55">Home</text>
+    <text x="270" y="1810" font-size="40">📚</text>
+    <text x="270" y="1855" fill="white" opacity="0.55">Learn</text>
+    <text x="450" y="1810" font-size="40">📰</text>
+    <text x="450" y="1855" fill="white" opacity="0.55">News</text>
+    <text x="630" y="1810" font-size="40">👤</text>
+    <text x="630" y="1855" fill="white" opacity="0.55">Profile</text>
+    <text x="810" y="1810" font-size="40">🏆</text>
+    <text x="810" y="1855" fill="white" opacity="0.55">Rank</text>
+    <text x="990" y="1810" font-size="40">🤖</text>
+    <text x="990" y="1855" fill="white" opacity="0.55">Alex</text>
+  </g>
+</svg>

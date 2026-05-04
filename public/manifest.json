@@ -16,7 +16,29 @@
     }
   ],
   "categories": ["education", "games"],
-  "screenshots": [],
+  "screenshots": [
+    {
+      "src": "/screenshots/home.svg",
+      "sizes": "1080x1920",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Home — Daily quiz, lessons, news, and Alex tutor"
+    },
+    {
+      "src": "/screenshots/quiz.svg",
+      "sizes": "1080x1920",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Quiz — Timed AI questions with hints and power-ups"
+    },
+    {
+      "src": "/screenshots/results.svg",
+      "sizes": "1080x1920",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Results — Score, badges, and answer review"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Play a Game",

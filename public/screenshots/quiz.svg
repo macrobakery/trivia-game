@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#07060c"/>
+      <stop offset="100%" style="stop-color:#1a0833"/>
+    </linearGradient>
+    <radialGradient id="orbGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" style="stop-color:hsl(270,90%,70%,0.5)"/>
+      <stop offset="100%" style="stop-color:transparent"/>
+    </radialGradient>
+  </defs>
+  <rect width="1080" height="1920" fill="url(#bg)"/>
+
+  <!-- Top bar: restart, score, timer -->
+  <rect x="40" y="55" width="120" height="60" rx="30" fill="white" opacity="0.06" stroke="white" stroke-opacity="0.2"/>
+  <text x="100" y="98" font-family="Arial, sans-serif" font-size="22" fill="white" text-anchor="middle">↺ Restart</text>
+
+  <text x="540" y="80" font-family="Arial, sans-serif" font-size="20" fill="white" opacity="0.55" text-anchor="middle">SCORE</text>
+  <text x="540" y="135" font-family="Arial, sans-serif" font-size="58" fill="white" font-weight="700" text-anchor="middle">340</text>
+
+  <!-- Circular timer -->
+  <circle cx="970" cy="100" r="55" fill="none" stroke="white" stroke-opacity="0.15" stroke-width="6"/>
+  <circle cx="970" cy="100" r="55" fill="none" stroke="hsl(270,90%,70%)" stroke-width="6" stroke-dasharray="220 350" transform="rotate(-90 970 100)" stroke-linecap="round"/>
+  <text x="970" y="115" font-family="Arial, sans-serif" font-size="42" fill="white" font-weight="700" text-anchor="middle">12</text>
+
+  <!-- Progress bar -->
+  <rect x="40" y="180" width="1000" height="8" rx="4" fill="white" opacity="0.1"/>
+  <rect x="40" y="180" width="400" height="8" rx="4" fill="hsl(270,90%,70%)"/>
+
+  <!-- Question count + level badge -->
+  <text x="40" y="240" font-family="Arial, sans-serif" font-size="24" fill="white" opacity="0.6">Question 4 of 10</text>
+  <rect x="700" y="215" width="320" height="40" rx="20" fill="hsl(270,90%,70%,0.18)" stroke="hsl(270,90%,70%,0.4)"/>
+  <text x="860" y="244" font-family="Arial, sans-serif" font-size="22" fill="hsl(270,90%,80%)" text-anchor="middle">⭐ AI Foundations</text>
+
+  <!-- Answer dots row -->
+  <g transform="translate(40, 290)">
+    <circle cx="20"  cy="0" r="14" fill="hsl(142,68%,55%)"/>
+    <circle cx="60"  cy="0" r="14" fill="hsl(142,68%,55%)"/>
+    <circle cx="100" cy="0" r="14" fill="hsl(0,80%,60%)"/>
+    <circle cx="140" cy="0" r="14" fill="hsl(270,90%,70%)" stroke="white" stroke-width="3"/>
+    <circle cx="180" cy="0" r="11" fill="white" opacity="0.18"/>
+    <circle cx="220" cy="0" r="11" fill="white" opacity="0.18"/>
+    <circle cx="260" cy="0" r="11" fill="white" opacity="0.18"/>
+    <circle cx="300" cy="0" r="11" fill="white" opacity="0.18"/>
+    <circle cx="340" cy="0" r="11" fill="white" opacity="0.18"/>
+    <circle cx="380" cy="0" r="11" fill="white" opacity="0.18"/>
+  </g>
+
+  <!-- AI Orb -->
+  <circle cx="540" cy="450" r="120" fill="url(#orbGlow)"/>
+  <circle cx="540" cy="450" r="80" fill="hsl(270,80%,55%)" opacity="0.7"/>
+  <circle cx="540" cy="450" r="60" fill="hsl(270,90%,70%)" opacity="0.85"/>
+  <ellipse cx="525" cy="430" rx="22" ry="14" fill="white" opacity="0.45"/>
+
+  <!-- Power-ups + Q label -->
+  <rect x="40" y="630" width="170" height="64" rx="32" fill="hsl(270,90%,70%,0.12)" stroke="hsl(270,90%,70%,0.4)"/>
+  <text x="125" y="673" font-family="Arial, sans-serif" font-size="26" fill="white" text-anchor="middle">50/50</text>
+  <rect x="225" y="630" width="170" height="64" rx="32" fill="hsl(170,75%,55%,0.12)" stroke="hsl(170,75%,55%,0.4)"/>
+  <text x="310" y="673" font-family="Arial, sans-serif" font-size="26" fill="white" text-anchor="middle">+5 sec</text>
+  <text x="900" y="675" font-family="Arial, sans-serif" font-size="22" fill="white" opacity="0.55" text-anchor="middle">⭐ AI Foundations</text>
+
+  <!-- Question text -->
+  <text x="40" y="780" font-family="Georgia, serif" font-size="42" fill="white" font-weight="600">Which technique helps prevent</text>
+  <text x="40" y="836" font-family="Georgia, serif" font-size="42" fill="white" font-weight="600">a model from overfitting on its</text>
+  <text x="40" y="892" font-family="Georgia, serif" font-size="42" fill="white" font-weight="600">training data?</text>
+
+  <!-- Answer choices -->
+  <g font-family="Arial, sans-serif" font-size="28" fill="white">
+    <rect x="40" y="950" width="1000" height="120" rx="24" fill="white" opacity="0.06" stroke="white" stroke-opacity="0.18"/>
+    <circle cx="100" cy="1010" r="32" fill="hsl(270,90%,70%,0.15)" stroke="hsl(270,90%,70%,0.4)"/>
+    <text x="100" y="1022" font-weight="700" text-anchor="middle" fill="hsl(270,90%,80%)">A</text>
+    <text x="160" y="1020">Increasing the learning rate</text>
+
+    <rect x="40" y="1090" width="1000" height="120" rx="24" fill="white" opacity="0.06" stroke="white" stroke-opacity="0.18"/>
+    <circle cx="100" cy="1150" r="32" fill="hsl(270,90%,70%,0.15)" stroke="hsl(270,90%,70%,0.4)"/>
+    <text x="100" y="1162" font-weight="700" text-anchor="middle" fill="hsl(270,90%,80%)">B</text>
+    <text x="160" y="1160">Adding regularization (e.g. L2)</text>
+
+    <rect x="40" y="1230" width="1000" height="120" rx="24" fill="white" opacity="0.06" stroke="white" stroke-opacity="0.18"/>
+    <circle cx="100" cy="1290" r="32" fill="hsl(270,90%,70%,0.15)" stroke="hsl(270,90%,70%,0.4)"/>
+    <text x="100" y="1302" font-weight="700" text-anchor="middle" fill="hsl(270,90%,80%)">C</text>
+    <text x="160" y="1300">Removing all validation data</text>
+
+    <rect x="40" y="1370" width="1000" height="120" rx="24" fill="white" opacity="0.06" stroke="white" stroke-opacity="0.18"/>
+    <circle cx="100" cy="1430" r="32" fill="hsl(270,90%,70%,0.15)" stroke="hsl(270,90%,70%,0.4)"/>
+    <text x="100" y="1442" font-weight="700" text-anchor="middle" fill="hsl(270,90%,80%)">D</text>
+    <text x="160" y="1440">Training for more epochs</text>
+  </g>
+
+  <!-- Hint button -->
+  <rect x="40" y="1560" width="1000" height="100" rx="50" fill="hsl(270,90%,70%,0.1)" stroke="hsl(270,90%,70%,0.35)" stroke-width="2"/>
+  <text x="540" y="1622" font-family="Arial, sans-serif" font-size="32" fill="white" text-anchor="middle" font-weight="500">✦ Ask AI for a hint</text>
+
+  <!-- Bottom nav -->
+  <rect x="0" y="1740" width="1080" height="180" fill="rgba(7,6,12,0.95)" stroke="white" stroke-opacity="0.08"/>
+  <g font-family="Arial, sans-serif" font-size="22" text-anchor="middle">
+    <text x="90"  y="1810" font-size="40">🏠</text>
+    <text x="90"  y="1855" fill="white" opacity="0.55">Home</text>
+    <text x="270" y="1810" font-size="40">📚</text>
+    <text x="270" y="1855" fill="white" opacity="0.55">Learn</text>
+    <text x="450" y="1810" font-size="40">📰</text>
+    <text x="450" y="1855" fill="white" opacity="0.55">News</text>
+    <text x="630" y="1810" font-size="40">👤</text>
+    <text x="630" y="1855" fill="white" opacity="0.55">Profile</text>
+    <text x="810" y="1810" font-size="40">🏆</text>
+    <text x="810" y="1855" fill="white" opacity="0.55">Rank</text>
+    <text x="990" y="1810" font-size="40">🤖</text>
+    <text x="990" y="1855" fill="white" opacity="0.55">Alex</text>
+  </g>
+</svg>

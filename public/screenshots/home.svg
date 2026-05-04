@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#07060c"/>
+      <stop offset="100%" style="stop-color:#1a0833"/>
+    </linearGradient>
+    <radialGradient id="blob1" cx="20%" cy="15%" r="40%">
+      <stop offset="0%" style="stop-color:hsl(270,90%,55%,0.35)"/>
+      <stop offset="100%" style="stop-color:transparent"/>
+    </radialGradient>
+    <radialGradient id="blob2" cx="85%" cy="80%" r="35%">
+      <stop offset="0%" style="stop-color:hsl(290,85%,60%,0.25)"/>
+      <stop offset="100%" style="stop-color:transparent"/>
+    </radialGradient>
+  </defs>
+  <rect width="1080" height="1920" fill="url(#bg)"/>
+  <rect width="1080" height="1920" fill="url(#blob1)"/>
+  <rect width="1080" height="1920" fill="url(#blob2)"/>
+
+  <!-- Top bar -->
+  <text x="60" y="110" font-family="Arial, sans-serif" font-size="44" font-weight="700" fill="white">⚡ <tspan fill="hsl(270,90%,75%)">AI</tspan> Challenge</text>
+  <rect x="640" y="65" width="220" height="60" rx="30" fill="hsl(270,90%,70%,0.12)" stroke="hsl(270,90%,70%,0.4)"/>
+  <text x="750" y="106" font-family="Arial, sans-serif" font-size="26" fill="white" text-anchor="middle">🔥 5 days · 🎯 87%</text>
+  <circle cx="910" cy="95" r="32" fill="hsl(270,80%,55%,0.25)" stroke="hsl(270,90%,70%,0.5)"/>
+  <text x="910" y="108" font-size="32" text-anchor="middle">👤</text>
+  <circle cx="990" cy="95" r="32" fill="hsl(270,80%,55%,0.15)" stroke="hsl(270,90%,70%,0.3)"/>
+  <text x="990" y="108" font-size="28" text-anchor="middle">🌙</text>
+
+  <!-- Tip of the Day -->
+  <rect x="60" y="200" width="960" height="240" rx="28" fill="hsl(270,90%,70%,0.08)" stroke="hsl(270,90%,70%,0.25)" stroke-width="1.5"/>
+  <text x="100" y="265" font-family="Arial, sans-serif" font-size="26" fill="hsl(270,90%,75%)" font-weight="600">💡 AI Tip of the Day</text>
+  <text x="100" y="335" font-family="Georgia, serif" font-size="40" font-style="italic" fill="white" font-weight="500">The term "Artificial Intelligence" was</text>
+  <text x="100" y="385" font-family="Georgia, serif" font-size="40" font-style="italic" fill="white" font-weight="500">coined by John McCarthy in 1956.</text>
+  <text x="100" y="425" font-family="Arial, sans-serif" font-size="22" fill="white" opacity="0.5">tap for next →</text>
+
+  <!-- Goals row -->
+  <text x="60" y="510" font-family="Arial, sans-serif" font-size="22" fill="white" opacity="0.6">Today:</text>
+  <text x="160" y="510" font-family="Arial, sans-serif" font-size="24" fill="white">⬜ Play  ·  ⬜ Read  ·  ⬜ Learn</text>
+
+  <!-- Card grid: Daily Quiz (full width) -->
+  <rect x="60" y="560" width="960" height="200" rx="28" fill="hsl(270,90%,70%,0.15)" stroke="hsl(270,90%,70%,0.4)" stroke-width="2"/>
+  <text x="120" y="660" font-size="80">🎮</text>
+  <text x="240" y="640" font-family="Arial, sans-serif" font-size="44" fill="white" font-weight="700">Daily Quiz</text>
+  <text x="240" y="690" font-family="Arial, sans-serif" font-size="26" fill="white" opacity="0.7">Test your knowledge</text>
+  <text x="900" y="675" font-family="Arial, sans-serif" font-size="32" fill="hsl(270,90%,80%)" font-weight="600" text-anchor="middle">Play →</text>
+
+  <!-- Lessons + News (2x grid) -->
+  <rect x="60" y="800" width="465" height="280" rx="28" fill="hsl(200,100%,60%,0.1)" stroke="hsl(200,100%,60%,0.3)" stroke-width="1.5"/>
+  <text x="100" y="900" font-size="64">📚</text>
+  <text x="100" y="970" font-family="Arial, sans-serif" font-size="38" fill="white" font-weight="700">Lessons</text>
+  <text x="100" y="1015" font-family="Arial, sans-serif" font-size="22" fill="white" opacity="0.7">12 of 25 complete</text>
+  <circle cx="450" cy="940" r="42" fill="none" stroke="hsl(200,100%,60%,0.25)" stroke-width="6"/>
+  <circle cx="450" cy="940" r="42" fill="none" stroke="hsl(200,100%,70%)" stroke-width="6" stroke-dasharray="120 264" transform="rotate(-90 450 940)"/>
+  <text x="450" y="952" font-family="Arial, sans-serif" font-size="22" fill="white" font-weight="600" text-anchor="middle">48%</text>
+
+  <rect x="555" y="800" width="465" height="280" rx="28" fill="hsl(142,68%,50%,0.1)" stroke="hsl(142,68%,50%,0.3)" stroke-width="1.5"/>
+  <text x="595" y="900" font-size="64">📰</text>
+  <text x="595" y="970" font-family="Arial, sans-serif" font-size="38" fill="white" font-weight="700">AI News</text>
+  <text x="595" y="1015" font-family="Arial, sans-serif" font-size="22" fill="white" opacity="0.7">3 fresh stories</text>
+  <circle cx="985" cy="830" r="10" fill="hsl(0,90%,65%)"/>
+
+  <!-- Ask Alex -->
+  <rect x="60" y="1120" width="960" height="200" rx="28" fill="hsl(170,75%,55%,0.12)" stroke="hsl(170,75%,55%,0.35)" stroke-width="2"/>
+  <circle cx="180" cy="1220" r="68" fill="hsl(170,75%,55%,0.2)" stroke="hsl(170,75%,55%,0.5)" stroke-width="2"/>
+  <text x="180" y="1240" font-size="76" text-anchor="middle">🤖</text>
+  <text x="290" y="1200" font-family="Arial, sans-serif" font-size="44" fill="white" font-weight="700">Ask Alex</text>
+  <text x="290" y="1250" font-family="Arial, sans-serif" font-size="24" fill="white" opacity="0.7">Your AI tutor · instant answers</text>
+  <text x="900" y="1235" font-family="Arial, sans-serif" font-size="32" fill="hsl(170,75%,75%)" font-weight="600" text-anchor="middle">Chat →</text>
+
+  <!-- Search bar -->
+  <rect x="60" y="1380" width="960" height="100" rx="50" fill="white" opacity="0.06" stroke="white" stroke-opacity="0.2"/>
+  <text x="110" y="1442" font-size="34" opacity="0.6">🔍</text>
+  <text x="170" y="1438" font-family="Arial, sans-serif" font-size="28" fill="white" opacity="0.45">Search lessons, topics, questions…</text>
+
+  <!-- Bottom nav -->
+  <rect x="0" y="1740" width="1080" height="180" fill="rgba(7,6,12,0.95)" stroke="white" stroke-opacity="0.08"/>
+  <g font-family="Arial, sans-serif" font-size="22" text-anchor="middle">
+    <text x="90"  y="1810" font-size="40">🏠</text>
+    <text x="90"  y="1855" fill="hsl(270,90%,80%)" font-weight="600">Home</text>
+    <text x="270" y="1810" font-size="40">📚</text>
+    <text x="270" y="1855" fill="white" opacity="0.55">Learn</text>
+    <text x="450" y="1810" font-size="40">📰</text>
+    <text x="450" y="1855" fill="white" opacity="0.55">News</text>
+    <text x="630" y="1810" font-size="40">👤</text>
+    <text x="630" y="1855" fill="white" opacity="0.55">Profile</text>
+    <text x="810" y="1810" font-size="40">🏆</text>
+    <text x="810" y="1855" fill="white" opacity="0.55">Rank</text>
+    <text x="990" y="1810" font-size="40">🤖</text>
+    <text x="990" y="1855" fill="white" opacity="0.55">Alex</text>
+  </g>
+</svg>
