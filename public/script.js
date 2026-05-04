@@ -1250,6 +1250,15 @@ function showResults() {
   $('save-score-btn').style.display = isPractice ? 'none' : '';
   $('share-score-btn').style.display = isPractice ? 'none' : '';
 
+  // Certificate eligibility — 90%+ accuracy on a non-practice round
+  const certBtn = $('cert-btn');
+  if (certBtn) {
+    const eligible = !isPractice
+      && window.AIC_Certificate
+      && window.AIC_Certificate.qualifies({ correctCount, total, isPractice });
+    certBtn.style.display = eligible ? '' : 'none';
+  }
+
   // Ask Alex — pre-fill with context about wrong answers
   const alexBtn = $('ask-alex-results-btn');
   if (alexBtn) {
@@ -2438,6 +2447,81 @@ async function shareFriendChallenge() {
 
 // Run on load
 window.addEventListener('load', initFriendChallenge);
+
+// ══════════════════════════════════════════════════════════════
+// CERTIFICATE — preview, download, share
+// ══════════════════════════════════════════════════════════════
+
+function _drawCertIntoCanvas(targetCanvas, name) {
+  if (!window.AIC_Certificate) return;
+  const off = window.AIC_Certificate.render({
+    playerName:   name && name.trim() ? name.trim() : 'AI Challenger',
+    level:        state.selectedLevel,
+    difficulty:   state.selectedDifficulty,
+    score:        state.score,
+    correctCount: state.correctCount,
+    total:        state.questions.length || 10,
+    date:         new Date()
+  });
+  targetCanvas.width  = off.width;
+  targetCanvas.height = off.height;
+  targetCanvas.getContext('2d').drawImage(off, 0, 0);
+  return off;
+}
+
+function openCertificateModal() {
+  const modal  = document.getElementById('cert-modal');
+  const canvas = document.getElementById('cert-canvas');
+  const input  = document.getElementById('cert-name-input');
+  if (!modal || !canvas || !input) return;
+
+  const savedName = (localStorage.getItem('aiChallenge_playerName') || '').trim();
+  input.value = savedName;
+
+  let renderedCanvas = _drawCertIntoCanvas(canvas, savedName || 'AI Challenger');
+
+  // Re-render on input change (debounced via input event)
+  let renderTimer = null;
+  const reRender = () => {
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(() => {
+      const n = input.value.trim();
+      if (n) localStorage.setItem('aiChallenge_playerName', n);
+      renderedCanvas = _drawCertIntoCanvas(canvas, n || 'AI Challenger');
+    }, 200);
+  };
+  input.oninput = reRender;
+
+  // Wire actions (replace nodes to clear old listeners)
+  const downloadBtn = document.getElementById('cert-download-btn');
+  const shareBtn    = document.getElementById('cert-share-btn');
+  const closeBtn    = document.getElementById('cert-modal-close');
+  [downloadBtn, shareBtn, closeBtn].forEach(b => {
+    if (!b) return;
+    const c = b.cloneNode(true);
+    b.parentNode.replaceChild(c, b);
+  });
+
+  document.getElementById('cert-download-btn').addEventListener('click', () => {
+    if (renderedCanvas) window.AIC_Certificate.download(renderedCanvas, 'ai-challenge-certificate.png');
+  });
+  document.getElementById('cert-share-btn').addEventListener('click', async () => {
+    if (!renderedCanvas) return;
+    await window.AIC_Certificate.shareCanvas(renderedCanvas, `I scored ${state.correctCount}/${state.questions.length || 10} on AI Challenge!`);
+  });
+  document.getElementById('cert-modal-close').addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+
+  modal.style.display = 'flex';
+}
+
+document.addEventListener('click', e => {
+  const btn = e.target.closest('#cert-btn');
+  if (!btn) return;
+  e.preventDefault();
+  openCertificateModal();
+});
 
 // ══════════════════════════════════════════════════════════════
 // DAILY LEARNING HUB — streak display on the home screen

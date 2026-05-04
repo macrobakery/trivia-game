@@ -599,6 +599,7 @@
       <!-- Action buttons -->
       <div class="results-actions">
         <button class="btn-primary" id="save-score-btn">💾 Save Score</button>
+        <button class="btn-ghost"   id="cert-btn" style="display:none">🏆 Get Certificate</button>
         <button class="btn-ghost"   id="share-score-btn">📤 Share Score</button>
         <button class="btn-ghost"   id="view-lb-res-btn">🏆 Leaderboard</button>
         <button class="btn-ghost"   id="play-again-btn">↻ Play Again</button>
@@ -877,7 +878,35 @@
     <a href="/terms.html">Terms</a>
   </footer>
 
+  <!-- ════════════════════════════════════════
+       MODAL · CERTIFICATE PREVIEW
+  ════════════════════════════════════════ -->
+  <div id="cert-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Certificate preview">
+    <div class="modal-box cert-modal-box">
+      <div class="modal-header-row">
+        <h3>🏆 Your Certificate</h3>
+        <button class="btn-ghost-sm" id="cert-modal-close" aria-label="Close">✕</button>
+      </div>
+      <p class="cert-modal-sub">90%+ accuracy unlocks a sharable certificate. Add your name and we'll generate it.</p>
+
+      <label class="field" style="margin-bottom:12px">
+        <span class="field-lbl">Your name (printed on certificate)</span>
+        <input type="text" id="cert-name-input" placeholder="Your name…" maxlength="40" autocomplete="off" />
+      </label>
+
+      <div class="cert-preview-wrap">
+        <canvas id="cert-canvas" class="cert-canvas" aria-label="Certificate preview"></canvas>
+      </div>
+
+      <div class="cert-actions">
+        <button class="btn-primary" id="cert-download-btn">⬇ Download PNG</button>
+        <button class="btn-ghost"   id="cert-share-btn">📤 Share</button>
+      </div>
+    </div>
+  </div>
+
   <script src="/consent.js" defer></script>
+  <script src="/certificate.js" defer></script>
   <script src="script.js"></script>
   <script src="tour.js"></script>
 </body>
