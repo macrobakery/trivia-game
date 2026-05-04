@@ -452,21 +452,61 @@ function buildShareCard() {
   ].join('\n');
 }
 
+async function _shareProfile(btn, card) {
+  const restore = () => { setTimeout(() => { btn.innerHTML = '📤 Share My Progress'; }, 2200); };
+
+  // 1. Native share (mobile + some desktop browsers). Treat AbortError /
+  //    NotAllowedError as a user cancel and bail silently — anything else
+  //    means the API isn't really usable, so fall through to clipboard.
+  if (typeof navigator.share === 'function') {
+    try {
+      await navigator.share({ title: 'My AI Challenge Progress', text: card });
+      btn.textContent = '✅ Shared!';
+      restore();
+      return;
+    } catch (err) {
+      const name = err && err.name;
+      if (name === 'AbortError' || name === 'NotAllowedError') return; // user cancel
+      // any other error → fall through to clipboard
+    }
+  }
+
+  // 2. Clipboard API
+  try {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(card);
+      btn.textContent = '✅ Copied to clipboard!';
+      restore();
+      return;
+    }
+  } catch (_) { /* fall through */ }
+
+  // 3. Hidden textarea + execCommand for older browsers
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = card;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity  = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand && document.execCommand('copy');
+    document.body.removeChild(ta);
+    if (ok) {
+      btn.textContent = '✅ Copied!';
+      restore();
+      return;
+    }
+  } catch (_) { /* fall through */ }
+
+  // 4. Final fallback — show in prompt so user can copy manually
+  window.prompt('Copy your progress card:', card);
+}
+
 document.addEventListener('click', e => {
   const btn = e.target.closest('#share-profile-btn');
   if (!btn) return;
-  const card = buildShareCard();
-  if (navigator.share) {
-    navigator.share({ title: 'My AI Challenge Progress', text: card }).catch(() => {});
-  } else {
-    navigator.clipboard.writeText(card).then(() => {
-      btn.textContent = '✅ Copied!';
-      setTimeout(() => { btn.innerHTML = '📤 Share My Progress'; }, 2200);
-    }).catch(() => {
-      // Final fallback: prompt
-      window.prompt('Copy your progress card:', card);
-    });
-  }
+  _shareProfile(btn, buildShareCard());
 });
 
 // ── Game History ───────────────────────────────────────────────
