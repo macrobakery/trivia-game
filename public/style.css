@@ -2059,6 +2059,35 @@ ul     { list-style: none; }
   flex-shrink: 0;
 }
 
+/* ── Smart push opt-in banner (results screen) ─────────────── */
+.push-optin-banner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  background: linear-gradient(
+    135deg,
+    hsl(45 90% 55% / 0.14),
+    hsl(35 85% 55% / 0.08)
+  );
+  border: 1px solid hsl(45 90% 55% / 0.4);
+  border-radius: var(--radius);
+  margin: 12px 0;
+  animation: slideUp 0.3s ease;
+}
+.push-optin-banner .pb-icon  { font-size: 1.4rem; }
+.push-optin-banner .pb-text  { flex: 1 1 220px; min-width: 0; }
+.push-optin-banner .pb-title { font-size: 0.92rem; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+.push-optin-banner .pb-sub   { font-size: 0.78rem; color: var(--ink-faint); line-height: 1.4; }
+.push-optin-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 /* ── Certificate modal ───────────────────────────────────────── */
 .cert-modal-box { max-width: 720px; width: calc(100vw - 24px); }
 .cert-modal-sub {

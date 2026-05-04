@@ -542,6 +542,19 @@
         </div>
       </div>
 
+      <!-- Smart push opt-in (shown after 2nd daily challenge if not yet subscribed) -->
+      <div class="push-optin-banner" id="push-optin-banner" style="display:none" role="alert">
+        <span class="pb-icon">🔔</span>
+        <div class="pb-text">
+          <div class="pb-title">Want a daily reminder?</div>
+          <div class="pb-sub">We'll ping you at 9pm to keep your streak going. No spam.</div>
+        </div>
+        <div class="push-optin-actions">
+          <button class="btn-primary"   id="push-optin-enable">Enable</button>
+          <button class="btn-ghost-sm"  id="push-optin-dismiss">Not now</button>
+        </div>
+      </div>
+
       <!-- Answer timeline: dots per question -->
       <div class="answer-timeline" id="answer-timeline" aria-label="Per-question results"></div>
 

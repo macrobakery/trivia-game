@@ -1259,6 +1259,9 @@ function showResults() {
     certBtn.style.display = eligible ? '' : 'none';
   }
 
+  // Smart push opt-in — shows banner after 2nd daily challenge if not subscribed
+  if (typeof maybeShowPushOptin === 'function') maybeShowPushOptin();
+
   // Ask Alex — pre-fill with context about wrong answers
   const alexBtn = $('ask-alex-results-btn');
   if (alexBtn) {
@@ -2180,6 +2183,12 @@ function showResults() {
     state.isDailyChallenge   = false;
     state.lastRoundWasDaily  = true;
 
+    // Increment lifetime daily-challenge counter (used by smart push opt-in)
+    try {
+      const n = parseInt(localStorage.getItem('aiChallenge_dailyCount') || '0', 10) + 1;
+      localStorage.setItem('aiChallenge_dailyCount', String(n));
+    } catch {}
+
     // If this round was opened from a friend's challenge link, show the comparison.
     const fc = getFriendChallenge();
     if (fc && fc.beatScore > 0 && fc.from) {
@@ -2522,6 +2531,96 @@ document.addEventListener('click', e => {
   e.preventDefault();
   openCertificateModal();
 });
+
+// ══════════════════════════════════════════════════════════════
+// SMART PUSH OPT-IN — shown on results screen after the 2nd daily,
+// only if not subscribed and not dismissed in the last 7 days.
+// ══════════════════════════════════════════════════════════════
+
+const PUSH_DISMISS_KEY = 'aiChallenge_pushPromptDismissedAt';
+
+function _urlBase64ToUint8Array(base64) {
+  const padding  = '='.repeat((4 - base64.length % 4) % 4);
+  const b64      = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw      = window.atob(b64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+async function _tryEnablePush() {
+  try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
+    if (Notification.permission === 'denied') return false;
+    const reg = await navigator.serviceWorker.ready;
+    const existing = await reg.pushManager.getSubscription();
+    if (existing) return true;
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') return false;
+    const keyData = await fetch('/api/push/vapid-public-key').then(r => r.json());
+    if (!keyData || !keyData.key) return false;
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: _urlBase64ToUint8Array(keyData.key)
+    });
+    const subJSON = sub.toJSON();
+    await fetch('/api/push/subscribe', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ endpoint: subJSON.endpoint, keys: subJSON.keys })
+    });
+    return true;
+  } catch (_) { return false; }
+}
+
+async function maybeShowPushOptin() {
+  const banner = document.getElementById('push-optin-banner');
+  if (!banner) return;
+  banner.style.display = 'none'; // start hidden every render
+
+  // Skip if SW/Notifications not supported, or already denied
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  if (typeof Notification === 'undefined' || Notification.permission === 'denied') return;
+  if (Notification.permission === 'granted') return; // already enabled — nothing to ask
+
+  // Skip if user already subscribed
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) return;
+  } catch (_) { /* ignore */ }
+
+  // Trigger only after the 2nd or later daily completion
+  const dailyCount = parseInt(localStorage.getItem('aiChallenge_dailyCount') || '0', 10);
+  if (dailyCount < 2) return;
+
+  // Skip if dismissed within the last 7 days
+  const dismissedAt = parseInt(localStorage.getItem(PUSH_DISMISS_KEY) || '0', 10);
+  const sevenDays   = 7 * 24 * 60 * 60 * 1000;
+  if (dismissedAt && Date.now() - dismissedAt < sevenDays) return;
+
+  // Show banner — replace nodes to clear old listeners
+  const enableBtn  = document.getElementById('push-optin-enable');
+  const dismissBtn = document.getElementById('push-optin-dismiss');
+  [enableBtn, dismissBtn].forEach(b => {
+    if (!b) return;
+    const c = b.cloneNode(true);
+    b.parentNode.replaceChild(c, b);
+  });
+
+  banner.style.display = 'flex';
+
+  document.getElementById('push-optin-enable').addEventListener('click', async () => {
+    const ok = await _tryEnablePush();
+    banner.style.display = 'none';
+    if (!ok) {
+      // Treat a failure as a dismiss so we don't keep nagging
+      try { localStorage.setItem(PUSH_DISMISS_KEY, String(Date.now())); } catch {}
+    }
+  });
+  document.getElementById('push-optin-dismiss').addEventListener('click', () => {
+    banner.style.display = 'none';
+    try { localStorage.setItem(PUSH_DISMISS_KEY, String(Date.now())); } catch {}
+  });
+}
 
 // ══════════════════════════════════════════════════════════════
 // DAILY LEARNING HUB — streak display on the home screen
