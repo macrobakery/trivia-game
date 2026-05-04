@@ -67,6 +67,71 @@ const MILESTONES = [
 // ══════════════════════════════════════════════════════════════
 
 const STREAK_KEY = 'aiChallenge_streak';
+const SHIELD_KEY = 'aiChallenge_shield';
+
+// ── Streak Shields ──────────────────────────────────────────
+// One shield is awarded the first time a user reaches each milestone
+// (7, 14, 30, 50, 100 days). When a streak would otherwise reset due
+// to a missed day, one shield is consumed and the streak continues.
+const SHIELD_MILESTONES = [7, 14, 30, 50, 100];
+
+function getShield() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SHIELD_KEY) || '{}');
+    return {
+      count:   typeof raw.count === 'number' ? raw.count : 0,
+      awarded: Array.isArray(raw.awarded) ? raw.awarded : []
+    };
+  } catch { return { count: 0, awarded: [] }; }
+}
+function saveShield(s) {
+  try { localStorage.setItem(SHIELD_KEY, JSON.stringify(s)); } catch {}
+}
+function consumeShield() {
+  const s = getShield();
+  if (s.count <= 0) return false;
+  s.count -= 1;
+  saveShield(s);
+  return true;
+}
+function maybeAwardShield(streakCount) {
+  const s = getShield();
+  for (const m of SHIELD_MILESTONES) {
+    if (streakCount >= m && !s.awarded.includes(m)) {
+      s.awarded.push(m);
+      s.count += 1;
+      saveShield(s);
+      return m;
+    }
+  }
+  return null;
+}
+
+// Shows a one-off toast for shield earn / use, reusing the milestone-toast
+// element on /learn.html. Falls back to a console log if the element is
+// not present (e.g. user is on a different page).
+function showShieldToast(kind, milestone) {
+  const el = document.getElementById('milestone-toast');
+  if (!el) return;
+  let title, sub;
+  if (kind === 'used') {
+    title = '🛡️ Streak Shield used!';
+    sub   = 'Your streak is safe. Keep going.';
+  } else if (kind === 'earned') {
+    title = `🛡️ Streak Shield earned (${milestone}-day milestone)`;
+    sub   = 'It\'ll save your streak if you miss a day.';
+  } else {
+    return;
+  }
+  el.innerHTML =
+    '<span class="milestone-toast-emoji">🛡️</span>' +
+    '<div class="milestone-toast-text">' +
+      '<div class="milestone-toast-title">' + title + '</div>' +
+      '<div class="milestone-toast-sub">' + sub + '</div>' +
+    '</div>';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 4000);
+}
 
 function getStreakData() {
   try {
@@ -94,9 +159,16 @@ function updateStreak() {
     return data;
   }
 
+  let shieldUsed   = false;
+  let shieldEarned = null;
+
   if (data.lastVisit === yesterday) {
     // Consecutive day — increment
     data.count += 1;
+  } else if (data.lastVisit && data.count > 0 && consumeShield()) {
+    // Gap detected, but a shield is available — preserve and grow the streak.
+    data.count += 1;
+    shieldUsed = true;
   } else {
     // Gap or first visit — reset to 1
     data.count = 1;
@@ -105,6 +177,13 @@ function updateStreak() {
   data.totalDays     = (data.totalDays || 0) + 1;
   data.longestStreak = Math.max(data.longestStreak || 0, data.count);
   data.lastVisit     = today;
+
+  // Award a new shield if the streak just hit a fresh milestone
+  shieldEarned = maybeAwardShield(data.count);
+
+  // Defer toast so the page has time to render
+  if (shieldUsed)   setTimeout(() => showShieldToast('used'), 800);
+  if (shieldEarned) setTimeout(() => showShieldToast('earned', shieldEarned), 1500);
 
   try {
     localStorage.setItem(STREAK_KEY, JSON.stringify(data));

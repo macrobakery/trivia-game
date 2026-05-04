@@ -3602,8 +3602,16 @@ function initHomeStatsStrip() {
       lessonsDone = Object.values(lp).filter(Boolean).length;
     } catch {}
 
+    // Streak shield count (earned at 7/14/30/50/100-day milestones)
+    let shieldCnt = 0;
+    try {
+      const sh = JSON.parse(localStorage.getItem('aiChallenge_shield') || '{}');
+      shieldCnt = typeof sh.count === 'number' ? sh.count : 0;
+    } catch {}
+
     // Always show — new users see friendly defaults
-    $('hs-streak').textContent   = `🔥 ${streakCnt} day${streakCnt !== 1 ? 's' : ''}`;
+    const shieldSuffix = shieldCnt > 0 ? `  🛡️${shieldCnt > 1 ? '×' + shieldCnt : ''}` : '';
+    $('hs-streak').textContent   = `🔥 ${streakCnt} day${streakCnt !== 1 ? 's' : ''}${shieldSuffix}`;
     $('hs-accuracy').textContent = accuracy ? `🎯 ${accuracy}` : (lessonsDone > 0 ? `📚 ${lessonsDone}/25` : '🎯 Start playing!');
     $('hs-games').textContent    = games > 0 ? `${games} game${games !== 1 ? 's' : ''}` : 'Your profile →';
 
