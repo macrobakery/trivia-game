@@ -2536,8 +2536,8 @@ button, a, input, select {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   padding: 0;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -2858,6 +2858,10 @@ button, a, input, select {
 .app-footer a {
   color: var(--ink-faint);
   text-decoration: none;
+  padding: 10px 6px;
+  display: inline-block;
+  min-height: 40px;
+  line-height: 20px;
   transition: color var(--t);
 }
 .app-footer a:hover { color: var(--accent); }
@@ -4289,12 +4293,19 @@ button, a, input, select {
   gap: 10px;
 }
 .hn-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
   font-size: 1.1rem;
   text-decoration: none;
   opacity: 0.75;
-  transition: opacity var(--t);
+  border-radius: var(--radius-pill);
+  transition: opacity var(--t), background var(--t);
 }
-.hn-avatar:hover { opacity: 1; }
+.hn-avatar:hover { opacity: 1; background: var(--surface); }
 
 /* ── Hero area ── */
 .hn-hero {
