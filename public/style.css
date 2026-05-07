@@ -4891,3 +4891,46 @@ h1.hn-hero-headline em {
     font-size: 16px !important;
   }
 }
+
+/* ══════════════════════════════════════════════
+   MOBILE TAP-TARGET SWEEP
+   Secondary buttons (.btn-ghost-sm), tabs, filter
+   chips, and modal-close ✕ buttons were all rendering
+   below the 36px thumb-friendly minimum on mobile.
+   This block raises them without changing desktop sizing.
+   Modal-close buttons get an explicit 40×40 square at
+   every viewport since they're pure-icon controls.
+   ══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .btn-ghost-sm {
+    min-height: 36px;
+    padding: 8px 12px;
+  }
+  .lb-tab {
+    min-height: 40px;
+  }
+  .lb-filter-chip,
+  .news-filter-btn {
+    min-height: 36px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .lb-back,
+  .prof-back,
+  .prof-section-link,
+  .prof-lessons-cta {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+  }
+}
+
+/* Modal close ✕ buttons — tap-friendly square at every viewport */
+.btn-ghost-sm[id$="-modal-close"] {
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
+  justify-content: center;
+}
