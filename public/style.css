@@ -4857,3 +4857,26 @@ h1.hn-hero-headline em {
   .hn-card-quiz  { min-height: 80px; padding: 14px 16px; }
   .hn-card-alex  { min-height: 60px; }
 }
+
+/* ══════════════════════════════════════════════
+   MOBILE INPUT ZOOM PREVENTION
+   iOS Safari zooms in when an input is focused if its
+   computed font-size is below 16px. Force 16px on small
+   screens for every text input / textarea / select to
+   keep tap-to-type from yanking the layout.
+   Visual size is preserved via padding tweaks where needed.
+   ══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="number"],
+  input[type="password"],
+  input:not([type]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
