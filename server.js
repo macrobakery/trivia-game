@@ -92,6 +92,29 @@ const learnLimiter = rateLimit({
 });
 app.use('/api/', apiLimiter);
 
+// ──────────────────────────────────────────────────────────────
+// SHARED HELPERS — escape strings for safe injection into HTML
+// or SVG. Used by /u/:name, /og/:name, /og/round.svg, /og/tip.svg,
+// /share/round, and /embed/u/:name. Hoisted to module scope so
+// they aren't re-declared per request.
+// ──────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+function escSvg(s) {
+  // SVG attributes need ' escaped too since we use `attr="..."` not single-quotes
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
 // ── Lazy-init middleware: ensures tables exist before any request ──
 let _initPromise = null;
 app.use(async (req, res, next) => {
@@ -755,8 +778,6 @@ app.get('/u/:name', async (req, res) => {
     }
   } catch (_) { /* best effort — page still renders */ }
 
-  const escHtml = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-
   // Build title/desc from the RAW name; escape exactly once at injection time
   const desc = gamesPlayed
     ? `${name} has scored ${topScore.toLocaleString()} on AI Challenge across ${gamesPlayed} round${gamesPlayed === 1 ? '' : 's'} (${accuracy}% accuracy). Can you beat them?`
@@ -817,8 +838,7 @@ app.get('/embed/u/:name', async (req, res) => {
     }
   } catch (_) { /* render with zeros */ }
 
-  const escHtml2 = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  const safeName = escHtml2(name);
+  const safeName = escHtml(name);
   const initials = name.trim().split(/\s+/).slice(0, 2).map(s => (s[0] || '').toUpperCase()).join('') || '·';
   const fmt      = (n) => Number(n || 0).toLocaleString('en-US');
   const rankPill = (rank && totalPlayers)
@@ -927,8 +947,8 @@ app.get('/embed/u/:name', async (req, res) => {
   }
 </style>
 </head><body>
-  <a class="emb" href="${escHtml2(profileUrl)}" target="_blank" rel="noopener">
-    <div class="emb-avatar">${escHtml2(initials)}</div>
+  <a class="emb" href="${escHtml(profileUrl)}" target="_blank" rel="noopener">
+    <div class="emb-avatar">${escHtml(initials)}</div>
     <div class="emb-info">
       <div class="emb-brand">⚡ AI Challenge</div>
       <div class="emb-name">${safeName}</div>
@@ -962,13 +982,6 @@ app.get('/embed/u/:name', async (req, res) => {
 app.get('/og/tip.svg', (req, res) => {
   const raw = String(req.query.text || '').slice(0, 300).trim();
   if (!raw) return res.redirect('/og-image.svg');
-
-  const escSvg = (s) => String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
 
   // Wrap the tip text into 3-4 lines of ~52 chars each. Greedy word-wrap.
   const wrapText = (text, maxChars) => {
@@ -1061,10 +1074,6 @@ app.get('/og/round.svg', (req, res) => {
   const name     = String(req.query.name || '').slice(0, 30).trim();
   const level    = String(req.query.level || 'Custom').slice(0, 40).trim() || 'Custom';
   const diff     = String(req.query.diff || 'Beginner').slice(0, 20).trim() || 'Beginner';
-
-  const escSvg = (s) => String(s)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 
   // Pick a badge by correct count — mirrors the client-side BADGES table
   let badgeIcon, badgeName;
@@ -1204,7 +1213,6 @@ app.get('/share/round', (req, res) => {
   const diff     = String(req.query.diff || 'Beginner').slice(0, 20).trim() || 'Beginner';
   const streak   = Math.min(Math.max(parseInt(req.query.streak, 10) || 0, 0), 20);
 
-  const escHtml = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const fmt = (n) => Number(n || 0).toLocaleString('en-US');
 
   const who   = name ? name : 'Someone';
@@ -1315,12 +1323,6 @@ app.get('/og/:name', async (req, res) => {
   } catch (_) { /* swallow — render with zeros */ }
 
   // SVG entity-escape for text content (also handles & in names)
-  const escSvg = (s) => String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
 
   const fmt = (n) => Number(n || 0).toLocaleString('en-US');
 
