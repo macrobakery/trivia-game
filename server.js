@@ -79,8 +79,11 @@ const explainLimiter = rateLimit({
 });
 const scoreLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 20, // max 20 score saves per hour per IP
-  message: { error: 'Too many score submissions. Try again later.' }
+  max: 10, // max 10 score saves per hour per IP — a real player tops out around 5-10 rounds
+  message: { error: 'Too many score submissions from this IP. Try again later.' },
+  // Bypass the limiter in tests so the suite can seed many scores. Prod
+  // and dev hit the limit normally.
+  skip: () => process.env.NODE_ENV === 'test'
 });
 const learnLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -562,7 +565,12 @@ function validatePlayerName(raw) {
   return null; // valid
 }
 
-// POST /api/scores — save a player score (rate-limited + name-validated)
+// Per-name rate cap — survives proxy/IP rotation. Skipped during tests
+// (NODE_ENV=test) so the suite can seed multiple scores under a name.
+const PER_NAME_MAX_PER_HOUR = 8;
+
+// POST /api/scores — save a player score (IP-rate-limited + name-validated
+// + per-name-rate-limited)
 app.post('/api/scores', scoreLimiter, async (req, res) => {
   const { player_name, score, correct_answers, accuracy, level, difficulty } = req.body;
   if (!player_name || score === undefined || correct_answers === undefined) {
@@ -586,6 +594,23 @@ app.post('/api/scores', scoreLimiter, async (req, res) => {
   }
   if (a !== null && (!Number.isFinite(a) || a < 0 || a > 100)) {
     return res.status(400).json({ error: 'Invalid accuracy.' });
+  }
+
+  // Per-name rate cap — block someone churning through proxies under one name
+  if (process.env.NODE_ENV !== 'test') {
+    try {
+      const recent = await dbGet(
+        `SELECT COUNT(*) AS n FROM scores
+         WHERE LOWER(player_name) = LOWER(?)
+           AND created_at >= datetime('now', '-1 hour')`,
+        [player_name.trim()]
+      );
+      if (recent && recent.n >= PER_NAME_MAX_PER_HOUR) {
+        return res.status(429).json({
+          error: `Too many submissions under "${player_name}" in the last hour. Try again later.`
+        });
+      }
+    } catch (_) { /* if the count fails, don't block the legit submission */ }
   }
 
   const id = await dbRun(
