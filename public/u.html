@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{TITLE}}</title>
+  <meta name="description" content="{{DESC}}" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="{{URL}}" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Geist:wght@300..700&family=JetBrains+Mono:wght@400..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <meta name="theme-color" content="#07060c" id="meta-theme-color" />
+
+  <!-- Open Graph + Twitter — server-substituted for share cards -->
+  <meta property="og:type"        content="profile" />
+  <meta property="og:site_name"   content="AI Challenge" />
+  <meta property="og:title"       content="{{TITLE}}" />
+  <meta property="og:description" content="{{DESC}}" />
+  <meta property="og:url"         content="{{URL}}" />
+  <meta property="og:image"       content="https://ai-app-builder-challenge.vercel.app/og-image.svg" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="{{TITLE}}" />
+  <meta name="twitter:description" content="{{DESC}}" />
+  <meta name="twitter:image"       content="https://ai-app-builder-challenge.vercel.app/og-image.svg" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "name": "{{NAME}}",
+    "description": "{{DESC}}",
+    "url": "{{URL}}"
+  }
+  </script>
+
+  <style>
+    /* Page-scoped tweaks; relies on global tokens from style.css */
+    .pp-wrap {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 24px 18px 100px;
+      position: relative;
+      z-index: 2;
+    }
+    .pp-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--ink-faint);
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 8px 4px;
+      min-height: 40px;
+    }
+    .pp-back:hover { color: var(--ink); }
+
+    .pp-card {
+      margin-top: 14px;
+      padding: 28px 22px 22px;
+      background: linear-gradient(180deg, hsl(270 90% 70% / 0.12), hsl(200 100% 60% / 0.04));
+      border: 1px solid hsl(270 90% 70% / 0.35);
+      border-radius: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+    .pp-avatar {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), hsl(200 100% 60%));
+      color: var(--accent-text);
+      font-family: 'Fraunces', serif;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .pp-name {
+      font-family: 'Fraunces', serif;
+      font-size: 1.7rem; font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 4px;
+      word-break: break-word;
+    }
+    .pp-handle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--ink-faint);
+      margin-bottom: 22px;
+    }
+
+    .pp-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+    .pp-stat {
+      padding: 14px 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      text-align: center;
+    }
+    .pp-stat-value {
+      display: block;
+      font-family: 'Fraunces', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+    .pp-stat-label {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.6rem;
+      color: var(--ink-faint);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .pp-rank {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: hsl(40 95% 58% / 0.15);
+      border: 1px solid hsl(40 95% 58% / 0.4);
+      color: var(--gold);
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      font-weight: 700;
+      margin-bottom: 22px;
+    }
+
+    .pp-section-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.66rem;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+      margin: 22px 0 10px;
+    }
+
+    .pp-recent {
+      display: flex; flex-direction: column;
+      gap: 8px;
+    }
+    .pp-recent-row {
+      display: flex; align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .pp-recent-score {
+      font-family: 'Fraunces', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--ink);
+      min-width: 56px;
+    }
+    .pp-recent-info { flex: 1; min-width: 0; }
+    .pp-recent-level {
+      font-size: 0.84rem;
+      color: var(--ink);
+      line-height: 1.3;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .pp-recent-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--ink-faint);
+      margin-top: 2px;
+    }
+
+    .pp-cta-row {
+      display: flex; gap: 10px;
+      margin-top: 26px;
+    }
+    .pp-cta {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 13px 18px;
+      min-height: 48px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      font-family: inherit;
+      border-radius: var(--radius-pill);
+      text-decoration: none;
+      transition: all 0.18s ease;
+    }
+    .pp-cta-primary {
+      background: var(--accent);
+      color: var(--accent-text);
+      border: 1px solid var(--accent);
+    }
+    .pp-cta-primary:hover {
+      filter: brightness(1.12);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px var(--accent-glow);
+    }
+    .pp-cta-secondary {
+      background: var(--surface);
+      color: var(--ink);
+      border: 1px solid var(--border);
+    }
+    .pp-cta-secondary:hover { border-color: var(--border-hi); }
+
+    .pp-empty {
+      text-align: center;
+      padding: 28px 14px;
+      color: var(--ink-faint);
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+    .pp-empty strong {
+      color: var(--ink);
+      font-family: 'Fraunces', serif;
+      font-size: 1rem;
+      display: block;
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <script>
+    (function(){
+      const t = localStorage.getItem('aiChallenge_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+      const m = document.getElementById('meta-theme-color');
+      if (m) m.setAttribute('content', t === 'dark' ? '#07060c' : '#f0eff8');
+    })();
+  </script>
+
+  <!-- Animated nebula background -->
+  <div class="bg" aria-hidden="true">
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+    <div class="bg-blob bg-blob-3"></div>
+    <div class="bg-grain"></div>
+  </div>
+
+  <div class="pp-wrap">
+    <a href="/" class="pp-back" aria-label="Back to home">← Back</a>
+
+    <div class="pp-card">
+      <div class="pp-avatar" id="pp-avatar">{{NAME}}</div>
+      <h1 class="pp-name">{{NAME}}</h1>
+      <div class="pp-handle">AI Challenge profile</div>
+
+      <div id="pp-rank-pill" class="pp-rank" style="display:none">
+        <span>🏆</span><span id="pp-rank-text">Rank —</span>
+      </div>
+
+      <div class="pp-stats">
+        <div class="pp-stat">
+          <span class="pp-stat-value" id="pp-top-score">{{TOP_SCORE}}</span>
+          <span class="pp-stat-label">Top score</span>
+        </div>
+        <div class="pp-stat">
+          <span class="pp-stat-value" id="pp-games">{{GAMES}}</span>
+          <span class="pp-stat-label">Games</span>
+        </div>
+        <div class="pp-stat">
+          <span class="pp-stat-value" id="pp-accuracy">{{ACCURACY}}%</span>
+          <span class="pp-stat-label">Accuracy</span>
+        </div>
+      </div>
+
+      <div class="pp-cta-row">
+        <a href="/" class="pp-cta pp-cta-primary">⚔️ Beat this score →</a>
+        <button type="button" class="pp-cta pp-cta-secondary" id="pp-share-btn" aria-label="Share this profile">📤 Share</button>
+      </div>
+    </div>
+
+    <h2 class="pp-section-title">Recent rounds</h2>
+    <div class="pp-recent" id="pp-recent">
+      <div class="pp-empty" id="pp-empty">
+        <strong>No rounds yet.</strong>
+        Once {{NAME}} plays a round, it'll show here.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      // The server templated the headline numbers, but we re-fetch to render
+      // the recent-rounds list and the global rank. If the API call fails the
+      // server-side numbers above already got the user 80% of the page.
+      const params = new URLSearchParams(location.search);
+      // Name comes from URL path: /u/<name>
+      const pathSeg = location.pathname.replace(/^\/u\//, '');
+      const name    = decodeURIComponent(pathSeg).trim();
+      if (!name) { location.href = '/'; return; }
+
+      const avatarEl = document.getElementById('pp-avatar');
+      if (avatarEl) {
+        // Replace whole-name avatar with initials (max 2)
+        const initials = name.trim().split(/\s+/).slice(0, 2).map(s => s[0] || '').join('').toUpperCase() || '·';
+        avatarEl.textContent = initials;
+      }
+
+      const fmt = (n) => Number(n || 0).toLocaleString();
+
+      fetch('/api/profile?name=' + encodeURIComponent(name))
+        .then(r => r.ok ? r.json() : Promise.reject(r.status))
+        .then(data => {
+          const stats   = data.stats   || {};
+          const scores  = Array.isArray(data.scores) ? data.scores : [];
+
+          // Hydrate stat cards (overrides server-side templated numbers if there's drift)
+          const tEl = document.getElementById('pp-top-score');
+          const gEl = document.getElementById('pp-games');
+          const aEl = document.getElementById('pp-accuracy');
+          if (tEl) tEl.textContent = fmt(stats.top_score || 0);
+          if (gEl) gEl.textContent = fmt(stats.games || 0);
+          if (aEl) aEl.textContent = (stats.avg_accuracy || 0) + '%';
+
+          // Rank pill (only if player has at least one score)
+          if (stats.rank && stats.total_players) {
+            const pill = document.getElementById('pp-rank-pill');
+            const txt  = document.getElementById('pp-rank-text');
+            if (pill && txt) {
+              pill.style.display = '';
+              txt.textContent = 'Rank #' + stats.rank + ' of ' + fmt(stats.total_players) + ' players';
+            }
+          }
+
+          // Recent rounds list
+          const recent = document.getElementById('pp-recent');
+          if (recent && scores.length) {
+            recent.innerHTML = scores.slice(0, 8).map(s => {
+              const when = s.created_at ? new Date(s.created_at.replace(' ', 'T') + 'Z') : null;
+              const whenLabel = when ? when.toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) : '';
+              const safeLevel = String(s.level || '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'})[c]);
+              const safeDiff  = String(s.difficulty || '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'})[c]);
+              return '<div class="pp-recent-row">'
+                + '<span class="pp-recent-score">' + fmt(s.score) + '</span>'
+                + '<div class="pp-recent-info">'
+                +   '<div class="pp-recent-level">' + safeLevel + '</div>'
+                +   '<div class="pp-recent-meta">' + safeDiff + ' · ' + s.correct_answers + '/10 · ' + s.accuracy + '%' + (whenLabel ? ' · ' + whenLabel : '') + '</div>'
+                + '</div>'
+                + '</div>';
+            }).join('');
+          }
+        })
+        .catch(() => { /* server-side numbers carry the page */ });
+
+      // Share button
+      const shareBtn = document.getElementById('pp-share-btn');
+      if (shareBtn) {
+        shareBtn.addEventListener('click', async () => {
+          const url   = location.href;
+          const title = name + ' on AI Challenge';
+          const text  = 'Check out ' + name + "'s AI Challenge profile";
+          if (navigator.share) {
+            try { await navigator.share({ title, text, url }); return; } catch (_) { /* fall through */ }
+          }
+          try {
+            await navigator.clipboard.writeText(url);
+            const orig = shareBtn.textContent;
+            shareBtn.textContent = '✓ Link copied';
+            setTimeout(() => { shareBtn.textContent = orig; }, 1800);
+          } catch (_) { /* clipboard blocked — silently no-op */ }
+        });
+      }
+    })();
+  </script>
+
+</body>
+</html>

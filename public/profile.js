@@ -437,6 +437,11 @@ function buildShareCard() {
   const pts = (total.totalScore || 0);
   const ptsStr = pts >= 1000 ? (pts / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : pts.toLocaleString();
 
+  // Public-profile deep-link — preserves identity even if name has spaces/punctuation
+  const profileUrl = name && name !== 'Anonymous'
+    ? `https://ai-app-builder-challenge.vercel.app/u/${encodeURIComponent(name)}`
+    : 'https://ai-app-builder-challenge.vercel.app';
+
   return [
     `🤖 AI Challenge — My Progress`,
     ``,
@@ -447,7 +452,7 @@ function buildShareCard() {
     `⭐ Points: ${ptsStr}`,
     `🏅 Achievements: ${unlocked.length}/16`,
     ``,
-    `Can you beat me? 👉 ai-app-builder-challenge.vercel.app`,
+    `Can you beat me? 👉 ${profileUrl}`,
     `#AIChallenge #LearnAI`
   ].join('\n');
 }

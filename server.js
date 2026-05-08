@@ -7,6 +7,7 @@ require('dotenv').config(); // load .env file if present
 
 const express      = require('express');
 const path         = require('path');
+const fs           = require('fs');
 const { createClient } = require('@libsql/client');
 const rateLimit    = require('express-rate-limit');
 
@@ -597,7 +598,104 @@ app.get('/api/profile', async (req, res) => {
        ORDER BY created_at DESC LIMIT 20`,
     [name]
   );
-  res.json({ scores });
+
+  // Aggregate stats — derived from ALL of the player's scores, not just the latest 20
+  const agg = await dbGet(
+    `SELECT
+       COUNT(*)            AS games,
+       MAX(score)          AS top_score,
+       AVG(accuracy)       AS avg_accuracy,
+       MAX(correct_answers) AS best_correct,
+       MIN(created_at)     AS first_played,
+       MAX(created_at)     AS last_played
+     FROM scores WHERE LOWER(player_name) = LOWER(?)`,
+    [name]
+  );
+  // Player's best level (one with the highest single score)
+  const topLevelRow = await dbGet(
+    `SELECT level, difficulty, score
+       FROM scores WHERE LOWER(player_name) = LOWER(?)
+       ORDER BY score DESC LIMIT 1`,
+    [name]
+  );
+  // Global rank for this player's all-time top score
+  let rank = null, totalPlayers = null;
+  if (agg && agg.top_score != null) {
+    const rRow = await dbGet('SELECT COUNT(*) + 1 AS rank FROM scores WHERE score > ?', [agg.top_score]);
+    const tRow = await dbGet('SELECT COUNT(DISTINCT LOWER(player_name)) AS total FROM scores');
+    rank         = rRow ? rRow.rank : null;
+    totalPlayers = tRow ? tRow.total : null;
+  }
+
+  res.json({
+    scores,
+    stats: {
+      games:        agg ? (agg.games || 0) : 0,
+      top_score:    agg && agg.top_score != null ? agg.top_score : 0,
+      avg_accuracy: agg && agg.avg_accuracy != null ? Math.round(agg.avg_accuracy) : 0,
+      best_correct: agg && agg.best_correct != null ? agg.best_correct : 0,
+      first_played: agg ? agg.first_played : null,
+      last_played:  agg ? agg.last_played  : null,
+      top_level:    topLevelRow ? topLevelRow.level      : null,
+      top_diff:     topLevelRow ? topLevelRow.difficulty : null,
+      rank,
+      total_players: totalPlayers
+    }
+  });
+});
+
+// ============================================================
+// PUBLIC PROFILE PAGE — /u/:name
+// Renders public/u.html with server-side substituted meta tags
+// so social shares carry the player's stats. The page hydrates
+// itself client-side via /api/profile?name=...
+// ============================================================
+app.get('/u/:name', async (req, res) => {
+  const rawName = String(req.params.name || '').slice(0, 60);
+  const name    = decodeURIComponent(rawName).trim();
+  if (!name) return res.redirect('/');
+
+  // Compute headline numbers for the share card
+  let topScore = 0, gamesPlayed = 0, accuracy = 0;
+  try {
+    const agg = await dbGet(
+      `SELECT COUNT(*) AS games, MAX(score) AS top_score, AVG(accuracy) AS acc
+         FROM scores WHERE LOWER(player_name) = LOWER(?)`,
+      [name]
+    );
+    if (agg) {
+      topScore    = agg.top_score != null ? agg.top_score : 0;
+      gamesPlayed = agg.games || 0;
+      accuracy    = agg.acc != null ? Math.round(agg.acc) : 0;
+    }
+  } catch (_) { /* best effort — page still renders */ }
+
+  const escHtml = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  // Build title/desc from the RAW name; escape exactly once at injection time
+  const desc = gamesPlayed
+    ? `${name} has scored ${topScore.toLocaleString()} on AI Challenge across ${gamesPlayed} round${gamesPlayed === 1 ? '' : 's'} (${accuracy}% accuracy). Can you beat them?`
+    : `${name} hasn't played yet — but you can. Daily AI quizzes, news, and an AI tutor.`;
+  const title = `${name} — AI Challenge`;
+  const url   = `https://ai-app-builder-challenge.vercel.app/u/${encodeURIComponent(name)}`;
+
+  let html;
+  try {
+    html = fs.readFileSync(path.join(__dirname, 'public', 'u.html'), 'utf8');
+  } catch (err) {
+    return res.status(500).send('Profile page template missing.');
+  }
+
+  html = html
+    .replace(/\{\{TITLE\}\}/g,    escHtml(title))
+    .replace(/\{\{DESC\}\}/g,     escHtml(desc))
+    .replace(/\{\{NAME\}\}/g,     escHtml(name))
+    .replace(/\{\{URL\}\}/g,      escHtml(url))
+    .replace(/\{\{TOP_SCORE\}\}/g, String(topScore))
+    .replace(/\{\{GAMES\}\}/g,    String(gamesPlayed))
+    .replace(/\{\{ACCURACY\}\}/g, String(accuracy));
+
+  res.send(html);
 });
 
 // GET /api/leaderboard/rank?score=N — player's rank for a given score
