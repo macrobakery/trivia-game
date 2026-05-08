@@ -1980,6 +1980,22 @@ document.addEventListener('DOMContentLoaded', () => {
         </button>`;
     }).join('');
 
+    // Track successful searches too — pairs with lesson_search_miss so the
+    // admin sees both what users find AND what they don't. Debounced by the
+    // parent input handler (90ms). Only fire for substantive queries.
+    try {
+      if (q && q.length >= 3) {
+        fetch('/api/analytics/event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'lesson_search_hit',
+            props: { q: q.slice(0, 80), result_count: ranked.length }
+          })
+        }).catch(() => {});
+      }
+    } catch (_) {}
+
     resultsW.style.display = '';
     resultsW.querySelectorAll('.lsr-row').forEach(row => {
       row.addEventListener('click', () => {

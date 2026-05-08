@@ -1448,6 +1448,49 @@ app.get('/api/analytics/search-misses', adminAuth, async (req, res) => {
   res.json({ days, total_misses: rows.length, unique: top.length, top });
 });
 
+// GET /api/analytics/search-hits — admin: top successful lesson-search queries
+// Pair to /search-misses. Tells the admin what users ARE finding, so they can
+// see which curated lessons are pulling traffic and consider doubling down.
+app.get('/api/analytics/search-hits', adminAuth, async (req, res) => {
+  const days = Math.min(Math.max(parseInt(req.query.days, 10) || 30, 1), 365);
+  let rows = [];
+  try {
+    rows = await dbAll(
+      `SELECT props, created_at FROM analytics_events
+       WHERE event = 'lesson_search_hit'
+         AND created_at >= datetime('now', '-' || ? || ' days')
+       ORDER BY created_at DESC LIMIT 1000`,
+      [days]
+    );
+  } catch (_) { /* table may not exist yet */ }
+
+  const counts = new Map();
+  for (const r of rows) {
+    let q = '', resultCount = 0;
+    try {
+      const parsed = r.props ? JSON.parse(r.props) : {};
+      q = String(parsed.q || '').trim();
+      resultCount = Number(parsed.result_count || 0);
+    } catch (_) { continue; }
+    if (!q || q.length < 2) continue;
+    const norm = q.toLowerCase().replace(/\s+/g, ' ');
+    const existing = counts.get(norm);
+    if (existing) {
+      existing.count += 1;
+      if (r.created_at > existing.lastSeen) existing.lastSeen = r.created_at;
+      if (resultCount > existing.maxResults) existing.maxResults = resultCount;
+    } else {
+      counts.set(norm, { q, count: 1, lastSeen: r.created_at, maxResults: resultCount });
+    }
+  }
+
+  const top = [...counts.values()]
+    .sort((a, b) => b.count - a.count || b.lastSeen.localeCompare(a.lastSeen))
+    .slice(0, 50);
+
+  res.json({ days, total_hits: rows.length, unique: top.length, top });
+});
+
 // ── Daily challenge in-memory cache (invalidates at date change) ──
 let _dcCache     = null;
 let _dcCacheDate = null;

@@ -507,8 +507,9 @@ async function loadAnalytics() {
     console.error(err);
   }
 
-  // Load the search-misses report below the analytics grid
+  // Load both search reports below the analytics grid
   loadSearchMisses();
+  loadSearchHits();
 }
 
 // ════════════════════════════════════════════════════════════
@@ -605,6 +606,74 @@ async function loadSearchMisses() {
     });
   } catch (err) {
     list.innerHTML = '<div class="loading-msg">Error loading search misses.</div>';
+    console.error(err);
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+// SEARCH HITS — what users find (counterpart to misses)
+// ════════════════════════════════════════════════════════════
+async function loadSearchHits() {
+  const list = $('search-hits-list');
+  if (!list) return;
+  list.innerHTML = '<div class="loading-msg">Loading search hits…</div>';
+  try {
+    const data = await fetch('/api/analytics/search-hits?days=30').then(r => r.json());
+    const top  = Array.isArray(data.top) ? data.top : [];
+
+    if (!top.length) {
+      list.innerHTML = `
+        <div class="loading-msg">
+          No successful searches recorded yet.<br/>
+          Once users start searching the lesson finder, the top hits will surface here.
+        </div>`;
+      return;
+    }
+
+    const fmt = (s) => {
+      try { return new Date(s.replace(' ', 'T') + 'Z').toLocaleDateString(); }
+      catch { return ''; }
+    };
+
+    list.innerHTML = `
+      <div class="search-misses-summary">
+        <span><strong>${data.total_hits}</strong> total hits · <strong>${data.unique}</strong> unique queries · last ${data.days} days</span>
+      </div>
+      <table class="lb-admin-table search-misses-table">
+        <thead>
+          <tr>
+            <th>Query</th>
+            <th class="num">Times</th>
+            <th class="num">Top results</th>
+            <th>Last seen</th>
+            <th class="actions">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${top.map(row => `
+            <tr>
+              <td class="sm-query">${escHtml(row.q)}</td>
+              <td class="num">${row.count}</td>
+              <td class="num">${row.maxResults || '—'}</td>
+              <td class="sm-last">${fmt(row.lastSeen)}</td>
+              <td class="actions">
+                <button class="btn-sm btn-ghost-sm sm-preview" data-topic="${escHtml(row.q).replace(/"/g, '&quot;')}">
+                  Try search
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+
+    list.querySelectorAll('.sm-preview').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = btn.dataset.topic;
+        if (t) window.open('/lessons.html?q=' + encodeURIComponent(t), '_blank');
+      });
+    });
+  } catch (err) {
+    list.innerHTML = '<div class="loading-msg">Error loading search hits.</div>';
     console.error(err);
   }
 }
