@@ -135,6 +135,29 @@ test('GET /u/:name renders templated meta tags from real stats', async () => {
   assert.ok(data.includes('og:description'));
 });
 
+test('GET /og/:name returns an SVG with the player stats', async () => {
+  await api('POST', '/api/scores', {
+    player_name: 'OgTest', score: 600, correct_answers: 6, accuracy: 60,
+    level: 'AI Foundations', difficulty: 'Beginner'
+  });
+  const { status, data, headers } = await api('GET', '/og/OgTest');
+  assert.equal(status, 200);
+  assert.match(headers.get('content-type') || '', /image\/svg\+xml/);
+  assert.match(headers.get('cache-control') || '', /max-age=300/);
+  assert.equal(typeof data, 'string');
+  assert.ok(data.startsWith('<?xml') || data.startsWith('<svg'), 'response is SVG');
+  assert.ok(data.includes('OgTest'), 'svg includes the player name');
+  assert.ok(data.includes('600'), 'svg includes the player top score');
+});
+
+test('GET /og/:name handles names with special characters safely', async () => {
+  const { status, data } = await api('GET', '/og/' + encodeURIComponent('<x>&you'));
+  assert.equal(status, 200);
+  assert.ok(data.includes('&lt;x&gt;'), 'svg escapes < and >');
+  assert.ok(data.includes('&amp;you'), 'svg escapes &');
+  assert.ok(!data.match(/<text[^>]*>[^<]*<x>/), 'raw <x> must not appear inside <text>');
+});
+
 test('GET /u/:name escapes HTML in the name (no double encoding)', async () => {
   // Send the literal characters via URL encoding
   const { status, data } = await api('GET', '/u/' + encodeURIComponent('<script>alert(1)</script>'));

@@ -676,8 +676,9 @@ app.get('/u/:name', async (req, res) => {
   const desc = gamesPlayed
     ? `${name} has scored ${topScore.toLocaleString()} on AI Challenge across ${gamesPlayed} round${gamesPlayed === 1 ? '' : 's'} (${accuracy}% accuracy). Can you beat them?`
     : `${name} hasn't played yet — but you can. Daily AI quizzes, news, and an AI tutor.`;
-  const title = `${name} — AI Challenge`;
-  const url   = `https://ai-app-builder-challenge.vercel.app/u/${encodeURIComponent(name)}`;
+  const title   = `${name} — AI Challenge`;
+  const url     = `https://ai-app-builder-challenge.vercel.app/u/${encodeURIComponent(name)}`;
+  const ogImage = `https://ai-app-builder-challenge.vercel.app/og/${encodeURIComponent(name)}.svg`;
 
   let html;
   try {
@@ -691,11 +692,142 @@ app.get('/u/:name', async (req, res) => {
     .replace(/\{\{DESC\}\}/g,     escHtml(desc))
     .replace(/\{\{NAME\}\}/g,     escHtml(name))
     .replace(/\{\{URL\}\}/g,      escHtml(url))
+    .replace(/\{\{OG_IMAGE\}\}/g, escHtml(ogImage))
     .replace(/\{\{TOP_SCORE\}\}/g, String(topScore))
     .replace(/\{\{GAMES\}\}/g,    String(gamesPlayed))
     .replace(/\{\{ACCURACY\}\}/g, String(accuracy));
 
   res.send(html);
+});
+
+// ============================================================
+// OG SHARE CARD — /og/:name renders a 1200×630 SVG with the
+// player's stats, suitable for og:image / twitter:image. Pure
+// SVG, no Canvas dep — fast and edge-cacheable. Discord, Slack,
+// Telegram, WhatsApp, Twitter render SVG OG images natively;
+// LinkedIn falls back to the static site OG (still personalised
+// title/desc).
+// ============================================================
+app.get('/og/:name', async (req, res) => {
+  const rawName = String(req.params.name || '').replace(/\.svg$/, '').slice(0, 80);
+  const name    = decodeURIComponent(rawName).trim();
+  if (!name) return res.redirect('/og-image.svg');
+
+  // Pull headline stats (best-effort — render still works on failure)
+  let topScore = 0, gamesPlayed = 0, accuracy = 0, rank = null;
+  try {
+    const agg = await dbGet(
+      `SELECT COUNT(*) AS games, MAX(score) AS top_score, AVG(accuracy) AS acc
+         FROM scores WHERE LOWER(player_name) = LOWER(?)`,
+      [name]
+    );
+    if (agg) {
+      topScore    = agg.top_score != null ? agg.top_score : 0;
+      gamesPlayed = agg.games || 0;
+      accuracy    = agg.acc != null ? Math.round(agg.acc) : 0;
+    }
+    if (topScore > 0) {
+      const r = await dbGet('SELECT COUNT(*) + 1 AS rank FROM scores WHERE score > ?', [topScore]);
+      rank = r ? r.rank : null;
+    }
+  } catch (_) { /* swallow — render with zeros */ }
+
+  // SVG entity-escape for text content (also handles & in names)
+  const escSvg = (s) => String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+
+  const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+
+  // Truncate names that would blow out the layout
+  let displayName = name;
+  if (displayName.length > 22) displayName = displayName.slice(0, 21) + '…';
+  const initials = name.trim().split(/\s+/).slice(0, 2).map(s => (s[0] || '').toUpperCase()).join('') || '·';
+
+  const subline = gamesPlayed
+    ? `${fmt(gamesPlayed)} round${gamesPlayed === 1 ? '' : 's'} · ${accuracy}% accuracy${rank ? ` · Global rank #${fmt(rank)}` : ''}`
+    : 'New to AI Challenge — first round soon!';
+
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"  stop-color="#0a0613"/>
+      <stop offset="100%" stop-color="#1a0a2e"/>
+    </linearGradient>
+    <radialGradient id="blob1" cx="20%" cy="30%" r="40%">
+      <stop offset="0%"  stop-color="hsl(270 90% 70%)" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="hsl(270 90% 70%)" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blob2" cx="85%" cy="80%" r="45%">
+      <stop offset="0%"  stop-color="hsl(200 100% 60%)" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="hsl(200 100% 60%)" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="avatarG" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"  stop-color="hsl(270 90% 70%)"/>
+      <stop offset="100%" stop-color="hsl(200 100% 60%)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#blob1)"/>
+  <rect width="1200" height="630" fill="url(#blob2)"/>
+
+  <!-- Top bar: brand wordmark -->
+  <g transform="translate(70, 70)">
+    <text font-size="32" font-weight="700" fill="#f5f3fa">⚡ AI Challenge</text>
+    <text x="0" y="34" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="16" fill="#9590b0" letter-spacing="1">DAILY AI QUIZ · NEWS · TUTOR</text>
+  </g>
+
+  <!-- Avatar circle with initials -->
+  <g transform="translate(70, 220)">
+    <circle cx="60" cy="60" r="58" fill="url(#avatarG)" stroke="#f5f3fa" stroke-opacity="0.12" stroke-width="2"/>
+    <text x="60" y="78" font-size="48" font-weight="700" text-anchor="middle" fill="#0a0013" font-style="italic">${escSvg(initials)}</text>
+  </g>
+
+  <!-- Name + subline -->
+  <g transform="translate(220, 240)">
+    <text font-size="68" font-weight="700" fill="#f5f3fa" font-style="italic">${escSvg(displayName)}</text>
+    <text y="46" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="22" fill="#a8a3c4" letter-spacing="0.5">${escSvg(subline)}</text>
+  </g>
+
+  <!-- Stat trio -->
+  <g transform="translate(70, 400)">
+    <!-- Top Score -->
+    <g>
+      <rect width="340" height="170" rx="22" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+      <text x="30" y="48" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="18" fill="#a8a3c4" letter-spacing="2">TOP SCORE</text>
+      <text x="30" y="120" font-size="76" font-weight="700" fill="#f5f3fa" font-style="italic">${fmt(topScore)}</text>
+    </g>
+    <!-- Games -->
+    <g transform="translate(360, 0)">
+      <rect width="340" height="170" rx="22" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+      <text x="30" y="48" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="18" fill="#a8a3c4" letter-spacing="2">GAMES PLAYED</text>
+      <text x="30" y="120" font-size="76" font-weight="700" fill="#f5f3fa" font-style="italic">${fmt(gamesPlayed)}</text>
+    </g>
+    <!-- Accuracy -->
+    <g transform="translate(720, 0)">
+      <rect width="340" height="170" rx="22" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+      <text x="30" y="48" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="18" fill="#a8a3c4" letter-spacing="2">ACCURACY</text>
+      <text x="30" y="120" font-size="76" font-weight="700" fill="#f5f3fa" font-style="italic">${accuracy}%</text>
+    </g>
+  </g>
+
+  <!-- Footer challenge tag -->
+  <g transform="translate(70, 595)">
+    <text font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="20" fill="#a8a3c4" letter-spacing="0.5">⚔️  Can you beat them?  ai-app-builder-challenge.vercel.app</text>
+  </g>
+</svg>`;
+
+  res.set('Content-Type', 'image/svg+xml; charset=utf-8');
+  // 5 min in browser, 10 min on Vercel edge — short enough to feel fresh,
+  // long enough to absorb a viral spike without DB pressure.
+  res.set('Cache-Control', 'public, max-age=300, s-maxage=600, stale-while-revalidate=86400');
+  res.send(svg);
 });
 
 // GET /api/leaderboard/rank?score=N — player's rank for a given score
