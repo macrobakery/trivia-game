@@ -844,7 +844,8 @@ function handleAnswer(selectedOption) {
     option_a: q.option_a, option_b: q.option_b,
     option_c: q.option_c, option_d: q.option_d,
     correctOption: correct, selectedOption, isCorrect: isRight,
-    explanation: q.explanation
+    explanation: q.explanation,
+    level: q.level || null
   });
 
   highlightOptions(selectedOption, correct);
@@ -906,7 +907,8 @@ function handleTimeout() {
     option_a: q.option_a, option_b: q.option_b,
     option_c: q.option_c, option_d: q.option_d,
     correctOption: correct, selectedOption: null, isCorrect: false,
-    explanation: q.explanation
+    explanation: q.explanation,
+    level: q.level || null
   });
 
   $(`opt-${correct.toLowerCase()}`).classList.add('correct');
@@ -1304,6 +1306,48 @@ function showResults() {
 
   // Lesson recommendation — show when accuracy < 80% (could improve with study)
   showLessonRecommendation(correctCount, total, selectedLevel, isPractice);
+
+  // Deep-dive suggestion — when ≥2 wrong, offer a Custom AI Quiz on the
+  // sub-topic that hurt most (or the round's level as a fallback)
+  showDeepDiveSuggestion(state.answerHistory || [], selectedLevel, wrongCount);
+}
+
+// ── Deep-dive Custom AI Quiz suggestion ───────────────────────
+// Picks the most-missed level/topic from the round's answerHistory and
+// links to /?genquiz=<topic> which auto-opens the Custom AI Quiz modal.
+function showDeepDiveSuggestion(answerHistory, fallbackLevel, wrongCount) {
+  const el       = document.getElementById('deepdive-rec');
+  const titleEl  = document.getElementById('deepdive-rec-title');
+  const subEl    = document.getElementById('deepdive-rec-sub');
+  if (!el) return;
+  el.style.display = 'none';
+
+  // Don't surface the deep-dive on a near-perfect round — the player
+  // doesn't need it, and the lesson-rec banner is already gated similarly.
+  if (!Array.isArray(answerHistory) || wrongCount < 2) return;
+
+  // Tally levels of the wrong answers; ties fall back to the round level
+  const wrongLevels = {};
+  for (const a of answerHistory) {
+    if (a && a.isCorrect === false && a.level) {
+      wrongLevels[a.level] = (wrongLevels[a.level] || 0) + 1;
+    }
+  }
+  let topic = fallbackLevel;
+  let topCount = 0;
+  for (const [lvl, n] of Object.entries(wrongLevels)) {
+    if (n > topCount) { topCount = n; topic = lvl; }
+  }
+  if (!topic) return;
+
+  // Strip "Custom: " prefix if this was already a custom-generated round
+  const cleanTopic = topic.replace(/^Custom:\s*/, '').trim();
+  if (!cleanTopic) return;
+
+  if (titleEl) titleEl.textContent = `Want a deeper dive on ${cleanTopic}?`;
+  if (subEl)   subEl.textContent   = `5 fresh AI-generated questions on the topic that tripped you up the most.`;
+  el.href = `/?genquiz=${encodeURIComponent(cleanTopic)}`;
+  el.style.display = 'flex';
 }
 
 // Ordered level progression — used to suggest the next topic after mastery

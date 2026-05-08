@@ -2087,6 +2087,28 @@ ul     { list-style: none; }
   color: var(--cyan);
 }
 
+/* Deep-dive variant — accent purple to distinguish from the cyan study CTA */
+.deepdive-rec {
+  background: hsl(270 90% 70% / 0.08);
+  border-color: hsl(270 90% 70% / 0.4);
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.deepdive-rec:hover {
+  background: hsl(270 90% 70% / 0.14);
+  border-color: hsl(270 90% 70% / 0.6);
+}
+.deepdive-rec .lesson-rec-btn {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.deepdive-rec .lesson-rec-btn:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 /* ── Streak celebration keyframes ── */
 @keyframes scaleIn {
   from { transform: scale(0.7); opacity: 0; }
