@@ -1171,6 +1171,101 @@ Return ONLY a valid JSON array, no other text:
   }
 });
 
+// ============================================================
+// PUBLIC QUIZ GENERATOR — Alex-style "make me 5 questions on X"
+// Tighter rate limit than the admin endpoint, returns the quiz
+// ephemerally (does NOT insert into the question bank).
+// ============================================================
+
+const publicQuizLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 6,                   // 6 generated quizzes per hour per IP
+  message: { error: 'Custom quiz limit reached — try again in an hour.' }
+});
+
+app.post('/api/quiz/generate', publicQuizLimiter, async (req, res) => {
+  const { topic, difficulty = 'Beginner', count = 5 } = req.body || {};
+
+  // Topic: free-text but length-capped to keep prompts honest
+  const cleanTopic = String(topic || '').trim().slice(0, 80);
+  if (!cleanTopic || cleanTopic.length < 3) {
+    return res.status(400).json({ error: 'Topic is required (3–80 characters).' });
+  }
+  const validDiffs = ['Beginner','Intermediate','Advanced'];
+  const diff = validDiffs.includes(difficulty) ? difficulty : 'Beginner';
+  const n    = Math.min(Math.max(parseInt(count) || 5, 3), 7); // clamp 3–7
+
+  if (!anthropic) {
+    return res.status(503).json({ error: 'AI not configured on server.' });
+  }
+
+  const prompt = `Generate exactly ${n} multiple-choice trivia questions about "${cleanTopic}" at "${diff}" level for a learner of artificial intelligence.
+
+Requirements:
+- Each question tests a specific, factual concept relevant to the topic
+- Four answer options (A, B, C, D) — only one is correct
+- Vary which letter is correct (don't make A correct every time — distribute across A/B/C/D)
+- Options should be plausible but clearly distinguishable
+- Explanation: 1-2 sentences explaining why the correct answer is right
+- Hint: one short sentence that nudges thinking without giving the answer
+- If the topic is off-scope (not AI/ML/data/tech-related), still generate questions but stay neutral and educational
+- Language should match: Beginner=plain English, Intermediate=some technical terms, Advanced=assume ML knowledge
+
+Return ONLY a valid JSON array, no other text:
+[
+  {
+    "question_text": "...",
+    "option_a": "...",
+    "option_b": "...",
+    "option_c": "...",
+    "option_d": "...",
+    "correct_option": "A",
+    "explanation": "...",
+    "hint": "..."
+  }
+]`;
+
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-haiku-4-5',
+      max_tokens: 3500,
+      messages: [{ role: 'user', content: prompt }]
+    });
+    const raw  = message.content[0].text.trim();
+    const json = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+    const generated = JSON.parse(json);
+    if (!Array.isArray(generated)) throw new Error('Response was not an array');
+
+    // Shape questions to match the existing client expectations
+    const validLetters = ['A','B','C','D'];
+    const questions = generated
+      .filter(q => q && q.question_text && q.option_a && q.option_b && q.option_c && q.option_d)
+      .map((q, i) => ({
+        id: `gen-${Date.now()}-${i}`, // synthetic id, never persisted
+        question_text:  q.question_text,
+        option_a:       q.option_a,
+        option_b:       q.option_b,
+        option_c:       q.option_c,
+        option_d:       q.option_d,
+        correct_option: validLetters.includes(String(q.correct_option || '').toUpperCase()) ? String(q.correct_option).toUpperCase() : 'A',
+        explanation:    q.explanation || '',
+        hint:           q.hint || '',
+        level:          `Custom: ${cleanTopic}`,
+        difficulty:     diff,
+        source:         'generated'
+      }));
+
+    if (!questions.length) {
+      return res.status(502).json({ error: 'Generation produced no usable questions. Try a different topic.' });
+    }
+
+    res.json({ topic: cleanTopic, difficulty: diff, count: questions.length, questions });
+  } catch (err) {
+    console.error('Public quiz gen error:', err.message);
+    res.status(500).json({ error: 'Failed to generate quiz. ' + err.message });
+  }
+});
+
 // GET /api/questions/pending — pending AI-generated questions awaiting approval (admin)
 app.get('/api/questions/pending', adminAuth, async (req, res) => {
   res.json(await dbAll("SELECT * FROM questions WHERE status = 'pending' ORDER BY id DESC"));

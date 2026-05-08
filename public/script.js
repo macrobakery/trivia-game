@@ -3833,3 +3833,158 @@ function initHomeStatsStrip() {
     // strip is already visible by default (no display:none in HTML)
   } catch (_) {}
 }
+
+// ══════════════════════════════════════════════════════════════
+// CUSTOM AI QUIZ — generate 5 questions on any topic via Claude
+// Wired to the "✨ Custom AI Quiz" CTA in the quiz bottom-sheet.
+// Runs in practice mode (no timer pressure, no leaderboard write)
+// because these questions aren't from the curated bank.
+// ══════════════════════════════════════════════════════════════
+(function initGenQuiz() {
+  const openBtn  = document.getElementById('genquiz-open-btn');
+  const modal    = document.getElementById('genquiz-modal');
+  const closeBtn = document.getElementById('genquiz-close');
+  const goBtn    = document.getElementById('genquiz-go-btn');
+  const goText   = document.getElementById('genquiz-go-text');
+  const goSpin   = document.getElementById('genquiz-go-spinner');
+  const errEl    = document.getElementById('genquiz-error');
+  const topicEl  = document.getElementById('genquiz-topic');
+  if (!openBtn || !modal) return;
+
+  let chosenDiff = 'Beginner';
+
+  function openModal() {
+    if (typeof closeQuizPanel === 'function') closeQuizPanel();
+    modal.style.display = 'flex';
+    if (errEl) errEl.style.display = 'none';
+    setTimeout(() => topicEl?.focus(), 80);
+    if (typeof track === 'function') track('genquiz_open', {});
+  }
+  function closeModal() {
+    modal.style.display = 'none';
+  }
+
+  openBtn.addEventListener('click', openModal);
+  closeBtn?.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+  });
+
+  // Suggestion chips
+  document.querySelectorAll('.genquiz-suggest').forEach(btn => {
+    btn.addEventListener('click', () => {
+      topicEl.value = btn.dataset.topic;
+      topicEl.focus();
+    });
+  });
+
+  // Difficulty toggle
+  document.querySelectorAll('.genquiz-diff').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.genquiz-diff').forEach(b => {
+        b.classList.toggle('active', b === btn);
+        b.setAttribute('aria-checked', b === btn ? 'true' : 'false');
+      });
+      chosenDiff = btn.dataset.diff;
+    });
+  });
+
+  // Enter inside the topic field triggers Generate
+  topicEl?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); goBtn.click(); }
+  });
+
+  goBtn?.addEventListener('click', async () => {
+    const topic = (topicEl.value || '').trim();
+    if (errEl) errEl.style.display = 'none';
+    if (topic.length < 3) {
+      if (errEl) {
+        errEl.textContent = 'Type a topic (at least 3 characters).';
+        errEl.style.display = '';
+      }
+      topicEl?.focus();
+      return;
+    }
+
+    goBtn.disabled = true;
+    goText.textContent = 'Generating…';
+    goSpin.style.display = 'inline-block';
+
+    try {
+      const res = await fetch('/api/quiz/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, difficulty: chosenDiff, count: 5 })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        const msg = data && data.error ? data.error : `Generation failed (${res.status}).`;
+        throw new Error(msg);
+      }
+      if (!Array.isArray(data.questions) || data.questions.length < 3) {
+        throw new Error('Couldn\'t generate enough questions for that topic. Try a different phrasing.');
+      }
+
+      if (typeof track === 'function') track('genquiz_start', { topic, difficulty: chosenDiff, count: data.questions.length });
+
+      // Hand off to the existing game runtime in practice mode
+      startCustomGeneratedRound(data.topic, data.questions);
+      closeModal();
+    } catch (err) {
+      if (errEl) {
+        errEl.textContent = err.message || 'Something went wrong. Try again.';
+        errEl.style.display = '';
+      }
+    } finally {
+      goBtn.disabled = false;
+      goText.textContent = 'Generate & Play →';
+      goSpin.style.display = 'none';
+    }
+  });
+})();
+
+function startCustomGeneratedRound(topic, questions) {
+  // Reuse the existing state object that the game flow drives off of
+  state.questions          = questions;
+  state.selectedLevel      = `Custom: ${topic}`;
+  state.selectedDifficulty = 'Practice'; // no timer, no leaderboard write
+  state.currentIndex       = 0;
+  state.score              = 0;
+  state.correctCount       = 0;
+  state.wrongCount         = 0;
+  state.streak             = 0;
+  state.maxStreak          = 0;
+  state.answerHistory      = [];
+  state.scoreSaved         = true;       // suppress save-score CTA on result screen
+  state.powerUps           = { fiftyFifty: true, extraTime: true, hint: true };
+  state.roundStartTime     = Date.now();
+
+  // Reset answer dots
+  const dotsEl = document.getElementById('answer-dots');
+  if (dotsEl) dotsEl.innerHTML = '';
+
+  // Update HUD badges
+  document.getElementById('active-level-badge').textContent = state.selectedLevel;
+  document.getElementById('active-diff-badge').textContent  = 'Practice';
+  document.getElementById('score-display').textContent      = '0';
+  document.getElementById('correct-count').textContent      = '0';
+  document.getElementById('wrong-count').textContent        = '0';
+
+  // Power-up buttons reset
+  ['pu-fifty','pu-time','pu-hint'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.disabled = false; el.classList.remove('used'); }
+  });
+
+  // Practice-mode visuals: hide timer + +5sec button + streak pill
+  const puTime = document.getElementById('pu-time');
+  if (puTime) puTime.style.display = 'none';
+  document.getElementById('game-screen').classList.add('practice-mode');
+  const sd = document.getElementById('streak-display');
+  if (sd) sd.style.display = 'none';
+
+  showScreen('game');
+  loadQuestion();
+}

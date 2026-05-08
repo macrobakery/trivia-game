@@ -347,8 +347,52 @@
         <span class="hub-cta-arr">→</span>
       </button>
 
+      <!-- ── Custom AI quiz: generate questions on any topic ── -->
+      <div class="qp-divider"><span>or generate</span></div>
+      <button class="hub-cta-genquiz" id="genquiz-open-btn">
+        <span class="hub-cta-icon">✨</span>
+        <div class="hub-cta-genquiz-inner">
+          <span class="hub-cta-daily-label">Custom AI Quiz</span>
+          <span class="hub-cta-daily-sub">Pick any topic — Alex generates 5 questions on it</span>
+        </div>
+        <span class="hub-cta-arr">→</span>
+      </button>
+
     </div><!-- /quiz-panel -->
   </div><!-- /qp-overlay -->
+
+  <!-- ════════════════════════════════════════
+       CUSTOM AI QUIZ MODAL
+  ════════════════════════════════════════ -->
+  <div id="genquiz-modal" class="modal-overlay" style="display:none" role="dialog" aria-modal="true" aria-label="Generate a custom AI quiz">
+    <div class="modal-card genquiz-card">
+      <div class="modal-header">
+        <span class="modal-title">✨ Custom AI Quiz</span>
+        <button class="btn-ghost-sm" id="genquiz-close" aria-label="Close">✕</button>
+      </div>
+      <p class="genquiz-desc">Type any AI / ML / data topic — Alex will generate 5 questions on it. (6 quizzes per hour.)</p>
+      <label class="genquiz-label" for="genquiz-topic">Topic</label>
+      <input type="text" id="genquiz-topic" class="genquiz-topic-input" placeholder="e.g. RAG, embeddings, transformers, prompt injection" maxlength="80" autocomplete="off" />
+      <div class="genquiz-suggest-row">
+        <span class="genquiz-suggest-label">Try:</span>
+        <button class="genquiz-suggest" data-topic="Retrieval-Augmented Generation (RAG)">RAG</button>
+        <button class="genquiz-suggest" data-topic="Vector embeddings">Embeddings</button>
+        <button class="genquiz-suggest" data-topic="Prompt engineering">Prompt eng.</button>
+        <button class="genquiz-suggest" data-topic="Fine-tuning vs prompting">Fine-tuning</button>
+      </div>
+      <label class="genquiz-label" style="margin-top:14px">Difficulty</label>
+      <div class="genquiz-diff-row" role="radiogroup" aria-label="Difficulty">
+        <button class="genquiz-diff active" data-diff="Beginner" role="radio" aria-checked="true">Beginner</button>
+        <button class="genquiz-diff" data-diff="Intermediate" role="radio" aria-checked="false">Intermediate</button>
+        <button class="genquiz-diff" data-diff="Advanced" role="radio" aria-checked="false">Advanced</button>
+      </div>
+      <button class="btn-primary genquiz-go" id="genquiz-go-btn">
+        <span id="genquiz-go-text">Generate &amp; Play →</span>
+        <span id="genquiz-go-spinner" class="start-spinner" style="display:none">⟳</span>
+      </button>
+      <div id="genquiz-error" class="genquiz-error" style="display:none" role="alert"></div>
+    </div>
+  </div>
 
 
   <!-- ════════════════════════════════════════
