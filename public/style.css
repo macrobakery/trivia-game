@@ -2435,6 +2435,29 @@ kbd {
   margin-top: 1px;
 }
 
+/* Ask Alex deep-link inside a wrong-answer review card */
+.ri-ask-alex {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 9px 14px;
+  min-height: 36px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--accent);
+  background: hsl(270 90% 70% / 0.08);
+  border: 1px solid hsl(270 90% 70% / 0.3);
+  border-radius: var(--radius-pill);
+  transition: all var(--t);
+}
+.ri-ask-alex:hover {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+
 /* ══════════════════════════════════════════════
    TOUCH & MOBILE IMPROVEMENTS
 ══════════════════════════════════════════════ */

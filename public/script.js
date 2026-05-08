@@ -1460,6 +1460,23 @@ function renderReview(filter = 'wrong') {
                     : h.isCorrect ? '✓ Correct' : '✗ Wrong';
     const statusCls = h.isCorrect ? 'ri-status-correct' : 'ri-status-wrong';
 
+    // Build an "Ask Alex" deep-link only for wrong / timed-out questions
+    let askAlex = '';
+    if (!h.isCorrect) {
+      const correctText = h[`option_${(h.correctOption || '').toLowerCase()}`] || '';
+      const myPick = h.selectedOption
+        ? (h[`option_${h.selectedOption.toLowerCase()}`] || '')
+        : null;
+      const lines = [
+        `I got this quiz question wrong:`,
+        `"${h.question}"`,
+        myPick ? `I picked "${myPick}", but the right answer is "${correctText}".` : `The right answer is "${correctText}".`,
+        `Explain why in plain English with a real-world example.`
+      ];
+      const url = '/chat.html?q=' + encodeURIComponent(lines.join('\n'));
+      askAlex = `<a class="ri-ask-alex" href="${url}">🤖 Ask Alex about this →</a>`;
+    }
+
     return `<div class="review-item ${h.isCorrect ? 'ri-correct' : 'ri-wrong'}">
       <div class="review-item-header">
         <span class="ri-num">Q${originalIdx + 1}</span>
@@ -1471,6 +1488,7 @@ function renderReview(filter = 'wrong') {
         <span class="ri-exp-label">💡 Why:</span>
         <span>${escapeHtml(h.explanation)}</span>
       </div>
+      ${askAlex}
     </div>`;
   }).join('');
 }
