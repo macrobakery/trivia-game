@@ -522,15 +522,75 @@ app.post('/api/questions/:id/flag', async (req, res) => {
   res.json({ message: 'Question flagged. Thank you for the report.' });
 });
 
-// POST /api/scores — save a player score (rate-limited)
+// ── Player-name validation: blocks impersonation + slurs ────────
+// Hardcoded curated lists. The intent is to catch the obvious cases
+// without false-positiving common names ("Cassandra", "Hassan", etc),
+// so we use whole-word/exact-fragment matching, not naive substring.
+const RESERVED_NAMES = new Set([
+  'admin', 'administrator', 'moderator', 'mod', 'system', 'support',
+  'help', 'official', 'staff', 'team', 'root', 'owner', 'aichallenge',
+  'ai-challenge', 'aichallengebot', 'bot', 'null', 'undefined',
+  'anonymous', 'anon', 'guest'
+]);
+
+// Two-tier profanity check:
+//   • HARD list — pure obscenities that never appear in legitimate names.
+//     Match anywhere (catches concatenations like "fuckyou", "shitlord").
+//   • SOFT list — words that ARE valid name fragments (Hancock, Cassandra,
+//     Helena). Only blocked as standalone words via \b boundaries.
+const PROFANITY_HARD = /(fuck|fuk|shit|bitch|bastard|cunt|pussy|whore|slut|nigger|nigga|faggot|kike|wetback|sharmoot|sharmoota|gahba|qahba|hitler|nazi|isis|daesh)/i;
+const PROFANITY_SOFT = /\b(asshole|asshat|dick|cock|ass|fag|retard|spic|chink|kalb|kuss|zibi|zib|areer|porn|sex|xxx|nude)\b/i;
+
+function validatePlayerName(raw) {
+  if (typeof raw !== 'string') return 'Player name is required.';
+  const name = raw.trim();
+  if (name.length < 1)  return 'Player name is required.';
+  if (name.length > 30) return 'Player name must be 30 characters or fewer.';
+
+  // No HTML / control / null bytes — let punctuation through (apostrophes etc)
+  if (/[ -<>"\\]/.test(name)) {
+    return 'Player name contains invalid characters.';
+  }
+
+  const lower = name.toLowerCase().replace(/[\s_\-.]+/g, '');
+  if (RESERVED_NAMES.has(lower) || RESERVED_NAMES.has(name.toLowerCase())) {
+    return 'That name is reserved. Pick another.';
+  }
+  if (PROFANITY_HARD.test(name) || PROFANITY_SOFT.test(name)) {
+    return 'That name contains prohibited content. Pick another.';
+  }
+  return null; // valid
+}
+
+// POST /api/scores — save a player score (rate-limited + name-validated)
 app.post('/api/scores', scoreLimiter, async (req, res) => {
   const { player_name, score, correct_answers, accuracy, level, difficulty } = req.body;
   if (!player_name || score === undefined || correct_answers === undefined) {
     return res.status(400).json({ error: 'player_name, score, and correct_answers are required.' });
   }
+
+  // Validate player name (length, profanity, impersonation)
+  const nameErr = validatePlayerName(player_name);
+  if (nameErr) return res.status(400).json({ error: nameErr });
+
+  // Validate score range — anything outside this is either a bug or an attempt
+  // to game the leaderboard. Max possible per the scoring formula is ~1500.
+  const s = Number(score);
+  const c = Number(correct_answers);
+  const a = accuracy === undefined ? null : Number(accuracy);
+  if (!Number.isFinite(s) || s < 0 || s > 2000) {
+    return res.status(400).json({ error: 'Invalid score.' });
+  }
+  if (!Number.isFinite(c) || c < 0 || c > 10) {
+    return res.status(400).json({ error: 'Invalid correct_answers.' });
+  }
+  if (a !== null && (!Number.isFinite(a) || a < 0 || a > 100)) {
+    return res.status(400).json({ error: 'Invalid accuracy.' });
+  }
+
   const id = await dbRun(
     `INSERT INTO scores (player_name,score,correct_answers,accuracy,level,difficulty) VALUES (?,?,?,?,?,?)`,
-    [player_name, score, correct_answers, accuracy, level, difficulty]
+    [player_name.trim(), s, c, a, level, difficulty]
   );
   // Bust leaderboard caches when a new score is submitted
   _lbCache       = null;

@@ -88,6 +88,55 @@ test('POST /api/scores with missing fields returns 400', async () => {
   assert.ok(data.error);
 });
 
+test('POST /api/scores rejects reserved player names (admin/etc)', async () => {
+  const body = { player_name: 'admin', score: 100, correct_answers: 1, accuracy: 10, level: 'AI Foundations', difficulty: 'Beginner' };
+  const { status, data } = await api('POST', '/api/scores', body);
+  assert.equal(status, 400);
+  assert.match(data.error || '', /reserved/i);
+});
+
+test('POST /api/scores rejects profanity in player names', async () => {
+  const body = { player_name: 'fuckyou', score: 100, correct_answers: 1, accuracy: 10, level: 'AI Foundations', difficulty: 'Beginner' };
+  const { status, data } = await api('POST', '/api/scores', body);
+  assert.equal(status, 400);
+  assert.match(data.error || '', /prohibited/i);
+});
+
+test('POST /api/scores rejects HTML in player names', async () => {
+  const body = { player_name: '<script>alert(1)</script>', score: 100, correct_answers: 1, accuracy: 10, level: 'AI Foundations', difficulty: 'Beginner' };
+  const { status, data } = await api('POST', '/api/scores', body);
+  assert.equal(status, 400);
+  assert.match(data.error || '', /invalid characters/i);
+});
+
+test('POST /api/scores rejects out-of-range scores (> 2000)', async () => {
+  const body = { player_name: 'Cheater', score: 999999, correct_answers: 10, accuracy: 100, level: 'AI Foundations', difficulty: 'Beginner' };
+  const { status, data } = await api('POST', '/api/scores', body);
+  assert.equal(status, 400);
+  assert.match(data.error || '', /Invalid score/i);
+});
+
+test('POST /api/scores rejects out-of-range correct_answers (> 10)', async () => {
+  const body = { player_name: 'Cheater', score: 500, correct_answers: 99, accuracy: 100, level: 'AI Foundations', difficulty: 'Beginner' };
+  const { status, data } = await api('POST', '/api/scores', body);
+  assert.equal(status, 400);
+  assert.match(data.error || '', /correct_answers/i);
+});
+
+test('POST /api/scores accepts valid international names with spaces/punctuation', async () => {
+  const body = { player_name: "Aziz O'Neill", score: 480, correct_answers: 5, accuracy: 50, level: 'AI Foundations', difficulty: 'Beginner' };
+  const { status } = await api('POST', '/api/scores', body);
+  assert.equal(status, 201);
+});
+
+test('POST /api/scores does not flag legitimate names containing soft fragments (Hancock, Cassandra)', async () => {
+  for (const name of ['Hancock', 'Cassandra', 'Dickens']) {
+    const body = { player_name: name, score: 240, correct_answers: 2, accuracy: 20, level: 'AI Foundations', difficulty: 'Beginner' };
+    const { status } = await api('POST', '/api/scores', body);
+    assert.equal(status, 201, `legitimate name "${name}" should be allowed`);
+  }
+});
+
 // ── /api/profile ─────────────────────────────────────────────────────
 test('GET /api/profile returns scores + aggregated stats', async () => {
   // Seed two scores for one player
