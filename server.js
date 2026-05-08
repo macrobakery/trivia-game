@@ -701,6 +701,172 @@ app.get('/u/:name', async (req, res) => {
 });
 
 // ============================================================
+// EMBEDDABLE PROFILE WIDGET — /embed/u/:name
+// Returns a minimal-chrome card sized for iframe embedding in
+// X/LinkedIn/Notion bios, blog sidebars, etc. Sets X-Frame-Options
+// to ALLOWALL and a CSP frame-ancestors *. Inline-styled so it
+// works without additional asset loads.
+// ============================================================
+app.get('/embed/u/:name', async (req, res) => {
+  const rawName = String(req.params.name || '').slice(0, 60);
+  const name    = decodeURIComponent(rawName).trim();
+  if (!name) return res.redirect('/');
+
+  let topScore = 0, gamesPlayed = 0, accuracy = 0, rank = null, totalPlayers = null;
+  try {
+    const agg = await dbGet(
+      `SELECT COUNT(*) AS games, MAX(score) AS top_score, AVG(accuracy) AS acc
+         FROM scores WHERE LOWER(player_name) = LOWER(?)`,
+      [name]
+    );
+    if (agg) {
+      topScore    = agg.top_score != null ? agg.top_score : 0;
+      gamesPlayed = agg.games || 0;
+      accuracy    = agg.acc != null ? Math.round(agg.acc) : 0;
+    }
+    if (topScore > 0) {
+      const rRow = await dbGet('SELECT COUNT(*) + 1 AS rank FROM scores WHERE score > ?', [topScore]);
+      const tRow = await dbGet('SELECT COUNT(DISTINCT LOWER(player_name)) AS total FROM scores');
+      rank         = rRow ? rRow.rank : null;
+      totalPlayers = tRow ? tRow.total : null;
+    }
+  } catch (_) { /* render with zeros */ }
+
+  const escHtml2 = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const safeName = escHtml2(name);
+  const initials = name.trim().split(/\s+/).slice(0, 2).map(s => (s[0] || '').toUpperCase()).join('') || '·';
+  const fmt      = (n) => Number(n || 0).toLocaleString('en-US');
+  const rankPill = (rank && totalPlayers)
+    ? `<span class="emb-rank">🏆 #${fmt(rank)}/${fmt(totalPlayers)}</span>`
+    : '';
+  const profileUrl = `https://ai-app-builder-challenge.vercel.app/u/${encodeURIComponent(name)}?utm_source=embed`;
+
+  const html = `<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>${safeName} — AI Challenge</title>
+<style>
+  *,*::before,*::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: transparent;
+    color: #f5f3fa;
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: none; }
+  .emb {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    background: linear-gradient(135deg, #0a0613 0%, #1a0a2e 100%);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(10, 6, 19, 0.4);
+    position: relative;
+    overflow: hidden;
+    min-height: 90px;
+  }
+  .emb::before {
+    content: '';
+    position: absolute; top: -40%; right: -20%;
+    width: 60%; height: 140%;
+    background: radial-gradient(circle, hsl(270 90% 70% / 0.18) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .emb-avatar {
+    flex-shrink: 0;
+    width: 52px; height: 52px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, hsl(270 90% 70%), hsl(200 100% 60%));
+    color: #0a0013;
+    font-weight: 700;
+    font-size: 1.2rem;
+    font-family: Georgia, serif;
+    font-style: italic;
+    letter-spacing: -0.02em;
+    z-index: 1;
+  }
+  .emb-info {
+    flex: 1; min-width: 0;
+    z-index: 1;
+  }
+  .emb-brand {
+    font-size: 0.66rem;
+    color: hsl(270 80% 78%);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .emb-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f5f3fa;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 4px;
+  }
+  .emb-stats {
+    display: flex; flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.74rem;
+    color: rgba(255,255,255,0.7);
+    align-items: center;
+  }
+  .emb-stat strong { color: #f5f3fa; font-weight: 700; }
+  .emb-rank {
+    background: hsl(40 95% 58% / 0.18);
+    color: hsl(40 95% 78%);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.7rem;
+  }
+  .emb-cta {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    background: hsl(270 90% 70%);
+    color: #0a0013;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    z-index: 1;
+    transition: transform 0.16s ease, filter 0.16s ease;
+  }
+  .emb-cta:hover { transform: translateY(-1px); filter: brightness(1.1); }
+  @media (max-width: 480px) {
+    .emb-cta { display: none; }
+  }
+</style>
+</head><body>
+  <a class="emb" href="${escHtml2(profileUrl)}" target="_blank" rel="noopener">
+    <div class="emb-avatar">${escHtml2(initials)}</div>
+    <div class="emb-info">
+      <div class="emb-brand">⚡ AI Challenge</div>
+      <div class="emb-name">${safeName}</div>
+      <div class="emb-stats">
+        <span class="emb-stat"><strong>${fmt(topScore)}</strong> top</span>
+        <span class="emb-stat"><strong>${fmt(gamesPlayed)}</strong> games</span>
+        <span class="emb-stat"><strong>${accuracy}%</strong> accuracy</span>
+        ${rankPill}
+      </div>
+    </div>
+    <span class="emb-cta">⚔️ Beat me</span>
+  </a>
+</body></html>`;
+
+  // Allow embedding in any frame
+  res.removeHeader('X-Frame-Options');
+  res.set('Content-Security-Policy', "frame-ancestors *");
+  res.set('Cache-Control', 'public, max-age=300, s-maxage=600, stale-while-revalidate=86400');
+  res.set('Content-Type', 'text/html; charset=utf-8');
+  res.send(html);
+});
+
+// ============================================================
 // OG TIP CARD — /og/tip.svg?text=<encoded>
 // Renders any short text as a 1200×630 share card. Used by the
 // home tip block's "share" button so a tweet about today's tip

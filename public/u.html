@@ -227,6 +227,65 @@
       font-size: 0.86rem;
       line-height: 1.5;
     }
+
+    /* Embed code panel — collapsed by default */
+    .pp-embed-toggle {
+      display: inline-flex; align-items: center;
+      width: 100%;
+      justify-content: center;
+      margin-top: 12px;
+      padding: 10px 14px;
+      min-height: 40px;
+      background: transparent;
+      color: var(--ink-faint);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      cursor: pointer;
+      transition: color 0.16s ease, border-color 0.16s ease;
+    }
+    .pp-embed-toggle:hover { color: var(--ink); border-color: var(--border-hi); }
+    .pp-embed-panel {
+      margin-top: 10px;
+      padding: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .pp-embed-help {
+      margin: 0 0 8px;
+      font-size: 0.78rem;
+      color: var(--ink-faint);
+    }
+    .pp-embed-code {
+      width: 100%;
+      padding: 10px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--ink);
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      resize: none;
+      outline: none;
+    }
+    .pp-embed-code:focus { border-color: var(--accent); }
+    .pp-embed-copy {
+      margin-top: 8px;
+      padding: 8px 14px;
+      min-height: 36px;
+      background: var(--accent);
+      color: var(--accent-text);
+      border: none;
+      border-radius: var(--radius-pill);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: filter 0.16s ease;
+    }
+    .pp-embed-copy:hover { filter: brightness(1.1); }
     .pp-empty strong {
       color: var(--ink);
       font-family: 'Fraunces', serif;
@@ -285,6 +344,15 @@
       <div class="pp-cta-row">
         <a href="/" class="pp-cta pp-cta-primary">⚔️ Beat this score →</a>
         <button type="button" class="pp-cta pp-cta-secondary" id="pp-share-btn" aria-label="Share this profile">📤 Share</button>
+      </div>
+
+      <button type="button" class="pp-embed-toggle" id="pp-embed-toggle" aria-expanded="false">
+        &lt;&gt; Get embed code
+      </button>
+      <div id="pp-embed-panel" class="pp-embed-panel" style="display:none">
+        <p class="pp-embed-help">Paste this in a blog, README, or anywhere that allows iframes:</p>
+        <textarea id="pp-embed-code" class="pp-embed-code" readonly rows="3"></textarea>
+        <button type="button" class="pp-embed-copy" id="pp-embed-copy">Copy code</button>
       </div>
     </div>
 
@@ -360,6 +428,40 @@
           }
         })
         .catch(() => { /* server-side numbers carry the page */ });
+
+      // Embed-code panel — populates the textarea with an iframe snippet
+      const embedToggle = document.getElementById('pp-embed-toggle');
+      const embedPanel  = document.getElementById('pp-embed-panel');
+      const embedCode   = document.getElementById('pp-embed-code');
+      const embedCopy   = document.getElementById('pp-embed-copy');
+      if (embedToggle && embedPanel && embedCode) {
+        const origin = location.origin;
+        const src = origin + '/embed/u/' + encodeURIComponent(name);
+        const snippet = '<iframe src="' + src + '" width="100%" height="120" '
+          + 'frameborder="0" loading="lazy" '
+          + 'title="' + name.replace(/"/g, '&quot;') + ' on AI Challenge" '
+          + 'style="border:0;max-width:520px"></iframe>';
+        embedCode.value = snippet;
+        embedToggle.addEventListener('click', () => {
+          const open = embedPanel.style.display !== 'none';
+          embedPanel.style.display = open ? 'none' : 'block';
+          embedToggle.setAttribute('aria-expanded', String(!open));
+          if (!open) setTimeout(() => embedCode.select(), 50);
+        });
+        if (embedCopy) {
+          embedCopy.addEventListener('click', async () => {
+            try {
+              await navigator.clipboard.writeText(snippet);
+              const orig = embedCopy.textContent;
+              embedCopy.textContent = '✓ Copied';
+              setTimeout(() => { embedCopy.textContent = orig; }, 1600);
+            } catch (_) {
+              // Fallback: select the textarea so user can ctrl+c
+              embedCode.select();
+            }
+          });
+        }
+      }
 
       // Share button
       const shareBtn = document.getElementById('pp-share-btn');

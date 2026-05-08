@@ -224,6 +224,28 @@ test('GET /admin without auth returns 401', async () => {
   assert.equal(status, 401);
 });
 
+// ── /embed/u/:name (embeddable widget) ───────────────────────────────
+test('GET /embed/u/:name returns iframe-friendly HTML with stats', async () => {
+  await api('POST', '/api/scores', {
+    player_name: 'EmbedTest', score: 720, correct_answers: 7, accuracy: 70,
+    level: 'AI Foundations', difficulty: 'Beginner'
+  });
+  const { status, data, headers } = await api('GET', '/embed/u/EmbedTest');
+  assert.equal(status, 200);
+  assert.match(headers.get('content-type') || '', /text\/html/);
+  assert.match(headers.get('content-security-policy') || '', /frame-ancestors\s+\*/);
+  assert.ok(data.includes('EmbedTest'));
+  assert.ok(data.includes('720'));
+  assert.ok(data.includes('Beat me'));
+});
+
+test('GET /embed/u/:name escapes HTML in the player name', async () => {
+  const { status, data } = await api('GET', '/embed/u/' + encodeURIComponent('<x>'));
+  assert.equal(status, 200);
+  assert.ok(data.includes('&lt;x&gt;'), 'name escaped');
+  assert.ok(!data.includes('<x>'), 'no raw <x> in body');
+});
+
 // ── /og/tip.svg (daily-tip share card) ───────────────────────────────
 test('GET /og/tip.svg renders any text into a share-card SVG', async () => {
   const text = 'Vector embeddings convert words into numbers';
