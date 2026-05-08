@@ -1306,6 +1306,15 @@ function showResults() {
   showLessonRecommendation(correctCount, total, selectedLevel, isPractice);
 }
 
+// Ordered level progression — used to suggest the next topic after mastery
+const LEVEL_ORDER = [
+  'AI Foundations',
+  'Data Preparation',
+  'Model Building',
+  'AI App Development',
+  'Deployment and Responsible AI'
+];
+
 function showDifficultyRamp(correct, total, difficulty, level) {
   const rampEl = $('difficulty-ramp');
   if (!rampEl) return;
@@ -1313,6 +1322,40 @@ function showDifficultyRamp(correct, total, difficulty, level) {
 
   const nextDiff = { Beginner: 'Intermediate', Intermediate: 'Advanced' };
   const next = nextDiff[difficulty];
+
+  // ── Mastery: beat Advanced of the current level ≥80% → suggest next LEVEL
+  if (difficulty === 'Advanced' && correct >= 8) {
+    const idx = LEVEL_ORDER.indexOf(level);
+    const nextLevel = idx >= 0 ? LEVEL_ORDER[idx + 1] : null;
+    if (nextLevel) {
+      // Skip if user has already cleared the next level's Advanced
+      const p = getProgress();
+      const alreadyMastered = p[nextLevel] && p[nextLevel].Advanced && p[nextLevel].Advanced.completed;
+      if (!alreadyMastered) {
+        rampEl.innerHTML = `
+          <div class="ramp-icon">🎓</div>
+          <div class="ramp-text">
+            <div class="ramp-title">You've mastered ${level}!</div>
+            <div class="ramp-sub">Ready for the next chapter? Try <strong>${nextLevel}</strong>.</div>
+          </div>
+          <button class="btn-primary ramp-btn" id="ramp-next-level-btn">Start ${nextLevel} →</button>
+        `;
+        rampEl.className = 'difficulty-ramp ramp-upgrade ramp-mastery';
+        rampEl.style.display = 'flex';
+        $('ramp-next-level-btn').addEventListener('click', () => {
+          state.selectedLevel      = nextLevel;
+          state.selectedDifficulty = 'Beginner';
+          localStorage.setItem('aiChallenge_lastLevel', nextLevel);
+          localStorage.setItem('aiChallenge_lastDiff', 'Beginner');
+          rampEl.style.display = 'none';
+          clearSession();
+          showScreen('start');
+          loadLeaderboardPreview();
+        });
+        return;
+      }
+    }
+  }
 
   if (correct >= 8 && next) {
     // Nailed it — suggest levelling up
