@@ -1064,6 +1064,249 @@ function isDone(topicId, lessonId) {
   return !!getProgress()[`${topicId}/${lessonId}`];
 }
 
+// ── Quiz-pass tracking (subset of completed lessons that passed the check) ──
+const QUIZ_PASS_KEY = 'aiChallenge_lessonQuizPassed';
+function getQuizPassed() {
+  try { return JSON.parse(localStorage.getItem(QUIZ_PASS_KEY) || '{}'); } catch { return {}; }
+}
+function markQuizPassed(topicId, lessonId, score) {
+  const m = getQuizPassed();
+  const k = `${topicId}/${lessonId}`;
+  // Keep best score across attempts
+  if (!m[k] || score > m[k]) m[k] = score;
+  try { localStorage.setItem(QUIZ_PASS_KEY, JSON.stringify(m)); } catch {}
+}
+function isQuizPassed(topicId, lessonId) {
+  return !!getQuizPassed()[`${topicId}/${lessonId}`];
+}
+
+// ──────────────────────────────────────────────────────────────
+// LESSON QUIZ — 3-question understanding check
+// Wired by the "🎯 Test Understanding" CTA in renderLessonActions.
+// Pulls Beginner-difficulty questions from /api/questions filtered
+// by the topic's quiz level. Pass = ≥2/3 → mark lesson done.
+// ──────────────────────────────────────────────────────────────
+
+let _lq = null; // current quiz state
+
+async function startLessonQuiz(topic, lesson, quizLevel, nextLesson, nextTopic) {
+  const panel  = document.getElementById('lesson-quiz-panel');
+  const body   = document.getElementById('lq-body');
+  const acts   = document.getElementById('lq-actions');
+  const prog   = document.getElementById('lq-progress');
+  const fill   = document.getElementById('lq-bar-fill');
+  const actsEl = document.getElementById('lesson-actions');
+  if (!panel || !body) return;
+
+  // Hide the action buttons while testing
+  if (actsEl) actsEl.style.display = 'none';
+
+  panel.style.display = 'block';
+  body.innerHTML  = '<div class="lq-question">Loading questions…</div>';
+  acts.innerHTML  = '';
+  if (prog) prog.textContent = '';
+  if (fill) fill.style.width = '0%';
+
+  // Fetch a fresh set every attempt so a retry feels different
+  let questions = [];
+  try {
+    const res = await fetch(`/api/questions?level=${encodeURIComponent(quizLevel)}&difficulty=Beginner`);
+    if (!res.ok) throw new Error('fetch failed');
+    questions = await res.json();
+  } catch (_) {
+    body.innerHTML = '<div class="lq-question">Couldn\'t load questions. Check your connection and try again.</div>';
+    acts.innerHTML = `<button class="lq-btn" id="lq-cancel">Back to lesson</button>`;
+    document.getElementById('lq-cancel').addEventListener('click', () => closeLessonQuiz(topic, lesson));
+    return;
+  }
+
+  if (!Array.isArray(questions) || questions.length < 3) {
+    body.innerHTML = '<div class="lq-question">Not enough quiz questions for this topic yet — marking done.</div>';
+    acts.innerHTML = '';
+    setTimeout(() => {
+      markDone(topic.id, lesson.id);
+      advanceFromQuiz(topic, lesson, nextLesson, nextTopic);
+    }, 700);
+    return;
+  }
+
+  // Pick 3 random questions; offer a small skew toward the lesson topic if backend ever supports it
+  const picks = shuffleArray(questions).slice(0, 3);
+
+  _lq = {
+    topic, lesson, quizLevel, nextLesson, nextTopic,
+    questions: picks, idx: 0, score: 0, locked: false
+  };
+  renderLessonQuizQuestion();
+}
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function renderLessonQuizQuestion() {
+  if (!_lq) return;
+  const { questions, idx } = _lq;
+  const q     = questions[idx];
+  const body  = document.getElementById('lq-body');
+  const acts  = document.getElementById('lq-actions');
+  const prog  = document.getElementById('lq-progress');
+  const fill  = document.getElementById('lq-bar-fill');
+
+  if (prog) prog.textContent = `Question ${idx + 1} of ${questions.length}`;
+  if (fill) fill.style.width = `${(idx / questions.length) * 100}%`;
+
+  const opts = ['A','B','C','D'].map(letter => {
+    const text = q[`option_${letter.toLowerCase()}`];
+    return `<button class="lq-opt" data-opt="${letter}">
+      <span class="lq-opt-letter">${letter}</span>
+      <span class="lq-opt-text">${escapeHtml(text)}</span>
+    </button>`;
+  }).join('');
+
+  body.innerHTML = `
+    <div class="lq-question">${escapeHtml(q.question_text)}</div>
+    <div class="lq-options" id="lq-options">${opts}</div>
+  `;
+  acts.innerHTML = '';
+  _lq.locked = false;
+
+  body.querySelectorAll('.lq-opt').forEach(btn => {
+    btn.addEventListener('click', () => onLessonQuizAnswer(btn.dataset.opt));
+  });
+}
+
+function onLessonQuizAnswer(letter) {
+  if (!_lq || _lq.locked) return;
+  _lq.locked = true;
+  const q = _lq.questions[_lq.idx];
+  const correctLetter = String(q.correct_option || '').toUpperCase();
+  const isCorrect = letter === correctLetter;
+  if (isCorrect) _lq.score += 1;
+
+  // Lock all options, color correct + the picked-wrong one
+  document.querySelectorAll('.lq-opt').forEach(btn => {
+    btn.disabled = true;
+    const opt = btn.dataset.opt;
+    if (opt === correctLetter) btn.classList.add('correct');
+    else if (opt === letter)   btn.classList.add('wrong');
+  });
+
+  // Inline explanation
+  const body = document.getElementById('lq-body');
+  if (body) {
+    const fb = document.createElement('div');
+    fb.className = `lq-feedback ${isCorrect ? 'correct' : 'wrong'}`;
+    fb.innerHTML = isCorrect
+      ? `<strong>Right.</strong> ${escapeHtml(q.explanation || '')}`
+      : `<strong>Not quite.</strong> The correct answer is <strong>${correctLetter}</strong>. ${escapeHtml(q.explanation || '')}`;
+    body.appendChild(fb);
+  }
+
+  // Next button → either next question or final result
+  const acts = document.getElementById('lq-actions');
+  acts.innerHTML = '';
+  const isLast = _lq.idx === _lq.questions.length - 1;
+  const btn = document.createElement('button');
+  btn.className = 'lq-btn primary';
+  btn.textContent = isLast ? 'See Result →' : 'Next Question →';
+  btn.addEventListener('click', () => {
+    if (isLast) showLessonQuizResult();
+    else { _lq.idx += 1; renderLessonQuizQuestion(); }
+  });
+  acts.appendChild(btn);
+}
+
+function showLessonQuizResult() {
+  if (!_lq) return;
+  const { topic, lesson, score, questions, nextLesson, nextTopic } = _lq;
+  const total = questions.length;
+  const passed = score >= 2; // 2/3 or 3/3 → pass
+  const body = document.getElementById('lq-body');
+  const acts = document.getElementById('lq-actions');
+  const fill = document.getElementById('lq-bar-fill');
+  if (fill) fill.style.width = '100%';
+
+  const icon  = passed ? (score === total ? '🏆' : '🎉') : '📚';
+  const title = passed
+    ? (score === total ? 'Perfect — you nailed it!' : 'Lesson complete!')
+    : `Got ${score}/${total} — almost there.`;
+  const sub = passed
+    ? 'Marking this lesson as done.'
+    : 'Re-read the key takeaway and try a fresh set of questions.';
+
+  body.innerHTML = `
+    <div class="lq-result">
+      <div class="lq-result-icon">${icon}</div>
+      <div class="lq-result-title">${title}</div>
+      <div class="lq-score ${passed ? 'pass' : 'fail'}">${score} / ${total} correct</div>
+      <div class="lq-result-sub">${sub}</div>
+    </div>
+  `;
+
+  if (passed) {
+    markDone(topic.id, lesson.id);
+    markQuizPassed(topic.id, lesson.id, score);
+
+    acts.innerHTML = '';
+    let label = 'Continue →';
+    if (nextLesson) label = 'Next Lesson →';
+    else if (nextTopic) label = 'Next Topic →';
+    const cont = document.createElement('button');
+    cont.className = 'lq-btn primary';
+    cont.textContent = label;
+    cont.addEventListener('click', () => advanceFromQuiz(topic, lesson, nextLesson, nextTopic));
+    acts.appendChild(cont);
+  } else {
+    acts.innerHTML = '';
+    const retry = document.createElement('button');
+    retry.className = 'lq-btn primary';
+    retry.textContent = '↺ Try a Different Set';
+    retry.addEventListener('click', () => {
+      // Re-fetch and restart
+      startLessonQuiz(_lq.topic, _lq.lesson, _lq.quizLevel, _lq.nextLesson, _lq.nextTopic);
+    });
+    const back = document.createElement('button');
+    back.className = 'lq-btn';
+    back.textContent = 'Back to lesson';
+    back.addEventListener('click', () => closeLessonQuiz(topic, lesson));
+    acts.appendChild(retry);
+    acts.appendChild(back);
+  }
+}
+
+function closeLessonQuiz(topic, lesson) {
+  const panel  = document.getElementById('lesson-quiz-panel');
+  const actsEl = document.getElementById('lesson-actions');
+  if (panel)  panel.style.display  = 'none';
+  if (actsEl) actsEl.style.display = '';
+  _lq = null;
+  // Re-render actions in case completion state changed
+  renderLessonActions(topic, lesson);
+}
+
+function advanceFromQuiz(topic, lesson, nextLesson, nextTopic) {
+  if (nextLesson) {
+    showLessonDetail(topic.id, nextLesson.id);
+  } else if (nextTopic) {
+    showLessonList(nextTopic.id);
+  } else {
+    closeLessonQuiz(topic, lesson);
+  }
+  _lq = null;
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function topicDoneCount(topic) {
   const progress = getProgress();
   return topic.lessons.filter(l => progress[`${topic.id}/${l.id}`]).length;
@@ -1227,23 +1470,26 @@ function renderLessonList(topic) {
   if (!container) return;
 
   container.innerHTML = topic.lessons.map((lesson, idx) => {
-    const done = isDone(topic.id, lesson.id);
+    const done   = isDone(topic.id, lesson.id);
+    const tested = isQuizPassed(topic.id, lesson.id);
     // First undone lesson is "active" (next to do)
     const prevAllDone = idx === 0 || topic.lessons.slice(0, idx).every(l => isDone(topic.id, l.id));
     const isActive = !done && prevAllDone;
 
     let rowClass = 'lesson-row';
     if (done) rowClass += ' done';
-    else if (isActive) rowClass += ' active';
+    if (tested) rowClass += ' tested';
+    else if (isActive && !done) rowClass += ' active';
 
     const statusContent = done ? '✓' : (isActive ? '' : '');
+    const metaSuffix    = tested ? ' &nbsp;·&nbsp; <span style="color:var(--green)">🎯 Tested</span>' : '';
 
     return `
       <button class="${rowClass}" data-topic="${topic.id}" data-lesson="${lesson.id}">
         <span class="lesson-status-icon">${statusContent}</span>
         <div class="lesson-info">
           <div class="lesson-title">${lesson.title}</div>
-          <div class="lesson-meta">⏱ ${lesson.duration}</div>
+          <div class="lesson-meta">⏱ ${lesson.duration}${metaSuffix}</div>
         </div>
       </button>
     `;
@@ -1306,6 +1552,10 @@ function renderLessonActions(topic, lesson) {
   const container = document.getElementById('lesson-actions');
   if (!container) return;
 
+  // Hide any leftover quiz panel from a previous lesson
+  const quizPanel = document.getElementById('lesson-quiz-panel');
+  if (quizPanel) quizPanel.style.display = 'none';
+
   const done = isDone(topic.id, lesson.id);
 
   // Find next lesson
@@ -1337,14 +1587,20 @@ function renderLessonActions(topic, lesson) {
       html += `<button class="btn-next-lesson" id="btn-next-topic" data-topic="${nextTopic.id}">Next Topic →</button>`;
     }
   } else {
-    // Not complete — combine mark-done + advance into one button
-    if (nextLesson) {
-      html += `<button class="btn-done btn-done-advance" id="btn-mark-done" data-next-topic="${topic.id}" data-next-lesson="${nextLesson.id}">Done &amp; Next →</button>`;
-    } else if (nextTopic) {
-      html += `<button class="btn-done btn-done-advance" id="btn-mark-done" data-next-topic="${nextTopic.id}" data-next-type="topic">Done &amp; Next Topic →</button>`;
+    // Not complete — primary path is the 3-question understanding check.
+    // Falls back to the legacy "skip & mark done" if the user wants out.
+    if (quizLevel) {
+      html += `<button class="btn-test-understanding" id="btn-test-understanding">🎯 Test Understanding & Mark Done</button>`;
+      html += `<button class="btn-skip-test" id="btn-mark-done" title="Skip the check and mark this lesson done">Skip — mark done</button>`;
     } else {
-      // Last lesson in entire curriculum
-      html += `<button class="btn-done" id="btn-mark-done">Mark as Done ✓</button>`;
+      // Topic without a matching quiz level — keep the original button
+      if (nextLesson) {
+        html += `<button class="btn-done btn-done-advance" id="btn-mark-done" data-next-topic="${topic.id}" data-next-lesson="${nextLesson.id}">Done &amp; Next →</button>`;
+      } else if (nextTopic) {
+        html += `<button class="btn-done btn-done-advance" id="btn-mark-done" data-next-topic="${nextTopic.id}" data-next-type="topic">Done &amp; Next Topic →</button>`;
+      } else {
+        html += `<button class="btn-done" id="btn-mark-done">Mark as Done ✓</button>`;
+      }
     }
   }
 
@@ -1357,6 +1613,12 @@ function renderLessonActions(topic, lesson) {
   html += `<a class="btn-ask-alex-lesson" href="/chat.html?q=${alexQ}" title="Ask Alex about this lesson">🤖 Ask Alex</a>`;
 
   container.innerHTML = html;
+
+  // Wire the "Test Understanding" CTA
+  const testBtn = document.getElementById('btn-test-understanding');
+  if (testBtn && quizLevel) {
+    testBtn.addEventListener('click', () => startLessonQuiz(topic, lesson, quizLevel, nextLesson, nextTopic));
+  }
 
   // Mark done handler
   const btnDone = document.getElementById('btn-mark-done');

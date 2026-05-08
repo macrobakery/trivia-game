@@ -122,6 +122,17 @@
         <!-- JS renders lesson content -->
       </article>
 
+      <!-- ── Inline lesson quiz: 3-question check before marking complete ── -->
+      <section class="lesson-quiz" id="lesson-quiz-panel" style="display:none" aria-live="polite">
+        <div class="lq-header">
+          <span class="lq-title">🎯 Test Your Understanding</span>
+          <span class="lq-progress" id="lq-progress">Question 1 of 3</span>
+        </div>
+        <div class="lq-bar"><div class="lq-bar-fill" id="lq-bar-fill"></div></div>
+        <div class="lq-body" id="lq-body"></div>
+        <div class="lq-actions" id="lq-actions"></div>
+      </section>
+
       <div class="lesson-actions" id="lesson-actions">
         <!-- JS renders action buttons -->
       </div>

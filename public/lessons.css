@@ -490,10 +490,234 @@
   line-height: 1.6;
 }
 
+/* ── Inline Lesson Quiz (3-question understanding check) ─────── */
+
+.lesson-quiz {
+  margin: 24px 0 4px;
+  padding: 18px 18px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  animation: lq-fade-in 0.32s ease-out;
+}
+@keyframes lq-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+.lq-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.lq-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1rem; font-weight: 700;
+  color: var(--ink);
+}
+.lq-progress {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.4px;
+}
+.lq-bar {
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.lq-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  width: 0%;
+  transition: width 0.4s ease;
+}
+.lq-body { min-height: 120px; }
+
+.lq-question {
+  font-size: 0.96rem; font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.lq-options {
+  display: flex; flex-direction: column;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.lq-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  min-height: 48px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+.lq-opt:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+.lq-opt:disabled { cursor: default; }
+.lq-opt-letter {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--accent);
+  flex-shrink: 0;
+  width: 18px;
+}
+.lq-opt.correct {
+  border-color: var(--green);
+  background: var(--green-dim);
+  color: var(--ink);
+}
+.lq-opt.correct .lq-opt-letter { color: var(--green); }
+.lq-opt.wrong {
+  border-color: var(--red);
+  background: var(--red-dim);
+  color: var(--ink);
+}
+.lq-opt.wrong .lq-opt-letter { color: var(--red); }
+.lq-feedback {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  border-left: 3px solid var(--accent);
+  background: hsl(270 90% 70% / 0.06);
+  color: var(--ink-faint);
+}
+.lq-feedback.correct { border-left-color: var(--green); background: var(--green-dim); }
+.lq-feedback.wrong   { border-left-color: var(--red);   background: var(--red-dim); }
+.lq-feedback strong { color: var(--ink); }
+
+.lq-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+.lq-actions:empty { margin-top: 0; }
+.lq-btn {
+  flex: 1;
+  min-height: 44px;
+  padding: 11px 16px;
+  font-size: 0.86rem; font-weight: 600;
+  font-family: inherit;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+.lq-btn:hover { border-color: var(--border-hi); }
+.lq-btn.primary {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+.lq-btn.primary:hover { filter: brightness(1.12); }
+
+/* Result panel */
+.lq-result {
+  text-align: center;
+  padding: 6px 0 0;
+}
+.lq-result-icon { font-size: 2.4rem; line-height: 1; margin-bottom: 8px; }
+.lq-result-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.1rem; font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.lq-result-sub {
+  font-size: 0.84rem;
+  color: var(--ink-faint);
+  margin-bottom: 14px;
+  line-height: 1.45;
+}
+.lq-score {
+  display: inline-block;
+  padding: 4px 12px;
+  margin-bottom: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.lq-score.pass { background: var(--green-dim); color: var(--green); }
+.lq-score.fail { background: hsl(40 95% 58% / 0.18); color: var(--gold); }
+
+/* "Test understanding" CTA in lesson actions */
+.btn-test-understanding {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  padding: 13px 20px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: inherit;
+  background: var(--accent);
+  color: var(--accent-text);
+  border: none;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-test-understanding:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px var(--accent-glow);
+}
+.btn-skip-test {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 16px;
+  min-height: 44px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  font-family: inherit;
+  background: transparent;
+  color: var(--ink-faint);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: color 0.16s ease, border-color 0.16s ease;
+}
+.btn-skip-test:hover { color: var(--ink); border-color: var(--border-hi); }
+
+/* Tested-passed badge in lesson list */
+.lesson-row.tested .lesson-status-icon::after {
+  content: '🎯';
+  position: absolute;
+  font-size: 0.55rem;
+  margin-left: 2px;
+  margin-top: -10px;
+}
+
 /* ── Lesson Actions ─────────────────────────────────────────── */
 
 .lesson-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   padding: 24px 0 32px;
 }
