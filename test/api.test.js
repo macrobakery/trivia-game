@@ -224,6 +224,12 @@ test('GET /admin without auth returns 401', async () => {
   assert.equal(status, 401);
 });
 
+// ── Analytics search-misses (admin-only) ─────────────────────────────
+test('GET /api/analytics/search-misses without auth returns 401', async () => {
+  const { status } = await api('GET', '/api/analytics/search-misses');
+  assert.equal(status, 401);
+});
+
 // ── 404 ──────────────────────────────────────────────────────────────
 test('GET /api/nonexistent returns JSON 404', async () => {
   const { status, data } = await api('GET', '/api/nonexistent');

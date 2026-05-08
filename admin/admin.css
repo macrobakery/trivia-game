@@ -708,6 +708,89 @@ button { cursor: pointer; border: none; outline: none; }
 }
 
 /* ════════════════════════════════════════════
+   SEARCH MISSES — content-gap report
+════════════════════════════════════════════ */
+
+.analytics-section {
+  margin-top: 28px;
+  padding: 18px 20px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+}
+.analytics-section-header h3 {
+  margin: 0 0 4px;
+  font-size: 1.05rem;
+  color: #f5f3fa;
+}
+.analytics-section-sub {
+  margin: 0 0 14px;
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.5;
+}
+.search-misses-summary {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 10px;
+}
+.search-misses-summary strong { color: #f5f3fa; }
+.search-misses-table {
+  width: 100%;
+}
+.search-misses-table th.num,
+.search-misses-table td.num {
+  text-align: right;
+  width: 80px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+.search-misses-table .actions {
+  width: 200px;
+  text-align: right;
+  white-space: nowrap;
+}
+.sm-query {
+  font-weight: 600;
+  color: #f5f3fa;
+  max-width: 320px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sm-last {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.55);
+}
+.btn-gen {
+  background: hsl(270 90% 70% / 0.18);
+  border: 1px solid hsl(270 90% 70% / 0.5);
+  color: hsl(270 90% 80%);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  margin-right: 6px;
+}
+.btn-gen:hover { background: hsl(270 90% 70% / 0.28); border-color: hsl(270 90% 70% / 0.8); }
+.btn-sm.btn-ghost-sm {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.7);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+.btn-sm.btn-ghost-sm:hover { color: #f5f3fa; border-color: rgba(255,255,255,0.32); }
+
+@media (max-width: 700px) {
+  .search-misses-table .actions { width: auto; }
+  .sm-query { max-width: 160px; }
+}
+
+/* ════════════════════════════════════════════
    FLAGGED QUESTIONS TAB
 ════════════════════════════════════════════ */
 

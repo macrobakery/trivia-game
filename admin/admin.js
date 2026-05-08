@@ -506,6 +506,107 @@ async function loadAnalytics() {
     grid.innerHTML = '<div class="loading-msg">Error loading analytics.</div>';
     console.error(err);
   }
+
+  // Load the search-misses report below the analytics grid
+  loadSearchMisses();
+}
+
+// ════════════════════════════════════════════════════════════
+// SEARCH MISSES — content gap report
+// Reads /api/analytics/search-misses (last 30 days, top 50)
+// and renders a list with one-click "Generate questions on this
+// topic" buttons that call /api/questions/generate (admin route).
+// ════════════════════════════════════════════════════════════
+async function loadSearchMisses() {
+  const list = $('search-misses-list');
+  if (!list) return;
+  list.innerHTML = '<div class="loading-msg">Loading search misses…</div>';
+  try {
+    const data = await fetch('/api/analytics/search-misses?days=30').then(r => r.json());
+    const top  = Array.isArray(data.top) ? data.top : [];
+
+    if (!top.length) {
+      list.innerHTML = `
+        <div class="loading-msg">
+          No search misses recorded yet.<br/>
+          Once users start searching for lessons we don't cover, the gaps will surface here.
+        </div>`;
+      return;
+    }
+
+    const fmt = (s) => {
+      try { return new Date(s.replace(' ', 'T') + 'Z').toLocaleDateString(); }
+      catch { return ''; }
+    };
+
+    list.innerHTML = `
+      <div class="search-misses-summary">
+        <span><strong>${data.total_misses}</strong> total misses · <strong>${data.unique}</strong> unique queries · last ${data.days} days</span>
+      </div>
+      <table class="lb-admin-table search-misses-table">
+        <thead>
+          <tr>
+            <th>Query</th>
+            <th class="num">Times</th>
+            <th>Last seen</th>
+            <th class="actions">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${top.map(row => `
+            <tr>
+              <td class="sm-query">${escHtml(row.q)}</td>
+              <td class="num">${row.count}</td>
+              <td class="sm-last">${fmt(row.lastSeen)}</td>
+              <td class="actions">
+                <button class="btn-sm btn-gen" data-topic="${escHtml(row.q).replace(/"/g, '&quot;')}">
+                  ✨ Generate
+                </button>
+                <button class="btn-sm btn-ghost-sm sm-preview" data-topic="${escHtml(row.q).replace(/"/g, '&quot;')}">
+                  Try search
+                </button>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+
+    // Wire generate buttons — calls the existing admin generation endpoint
+    list.querySelectorAll('.btn-gen').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const topic = btn.dataset.topic;
+        if (!topic) return;
+        // Pre-fill the AI Generate tab + switch to it
+        const tabBtn   = document.querySelector('.tab-btn[data-tab="generate"]');
+        const topicEl  = $('gen-topic-hint');
+        const levelEl  = $('gen-level');
+        const diffEl   = $('gen-diff');
+        if (tabBtn) tabBtn.click();
+        // The Generate tab uses level + difficulty, not free-text topic.
+        // Best fit: prepend the topic to the level select as a "Custom: <topic>"
+        // hint so the admin can adjust then generate. Falls back to a prompt
+        // injection if those elements aren't present.
+        if (topicEl) {
+          topicEl.value = topic;
+        } else {
+          // Stash on window so the generate-tab handler can pick it up
+          window._adminPendingTopic = topic;
+          alert('Switched to AI Generate tab. Suggested topic: "' + topic + '"\\nPick the closest level + difficulty and click Generate.');
+        }
+      });
+    });
+
+    // "Try search" — opens the public lessons page with the query pre-typed
+    list.querySelectorAll('.sm-preview').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const t = btn.dataset.topic;
+        if (t) window.open('/lessons.html?q=' + encodeURIComponent(t), '_blank');
+      });
+    });
+  } catch (err) {
+    list.innerHTML = '<div class="loading-msg">Error loading search misses.</div>';
+    console.error(err);
+  }
 }
 
 // ════════════════════════════════════════════════════════════

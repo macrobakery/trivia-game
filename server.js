@@ -1070,6 +1070,49 @@ app.get('/api/analytics/events', adminAuth, async (req, res) => {
   res.json({ summary, recent: rows });
 });
 
+// GET /api/analytics/search-misses — admin: top "no results" search queries
+// Powers a content-gap report: which topics do users search for that we
+// don't have curated lessons on? The output drives where to write next.
+app.get('/api/analytics/search-misses', adminAuth, async (req, res) => {
+  const days = Math.min(Math.max(parseInt(req.query.days, 10) || 30, 1), 365);
+  let rows = [];
+  try {
+    rows = await dbAll(
+      `SELECT props, created_at FROM analytics_events
+       WHERE event = 'lesson_search_miss'
+         AND created_at >= datetime('now', '-' || ? || ' days')
+       ORDER BY created_at DESC LIMIT 1000`,
+      [days]
+    );
+  } catch (_) { /* table may not exist yet */ }
+
+  // Aggregate by normalised query (case-insensitive, whitespace-collapsed)
+  const counts = new Map(); // norm → { q, count, lastSeen }
+  for (const r of rows) {
+    let q = '';
+    try {
+      const parsed = r.props ? JSON.parse(r.props) : {};
+      q = String(parsed.q || '').trim();
+    } catch (_) { continue; }
+    if (!q || q.length < 2) continue;
+    const norm = q.toLowerCase().replace(/\s+/g, ' ');
+    const existing = counts.get(norm);
+    if (existing) {
+      existing.count += 1;
+      // keep the most recent created_at
+      if (r.created_at > existing.lastSeen) existing.lastSeen = r.created_at;
+    } else {
+      counts.set(norm, { q, count: 1, lastSeen: r.created_at });
+    }
+  }
+
+  const top = [...counts.values()]
+    .sort((a, b) => b.count - a.count || b.lastSeen.localeCompare(a.lastSeen))
+    .slice(0, 50);
+
+  res.json({ days, total_misses: rows.length, unique: top.length, top });
+});
+
 // ── Daily challenge in-memory cache (invalidates at date change) ──
 let _dcCache     = null;
 let _dcCacheDate = null;

@@ -1950,6 +1950,18 @@ document.addEventListener('DOMContentLoaded', () => {
             </a>
           </div>
         </div>`;
+      // Fire a fire-and-forget analytics event so the admin dashboard
+      // can surface the top "we don't have a lesson on X" gaps. Debounced
+      // by the parent input handler (90ms) so we don't log every keystroke.
+      try {
+        if (q && q.length >= 3) {
+          fetch('/api/analytics/event', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event: 'lesson_search_miss', props: { q: q.slice(0, 80) } })
+          }).catch(() => {});
+        }
+      } catch (_) {}
       return;
     }
 
@@ -1985,6 +1997,15 @@ document.addEventListener('DOMContentLoaded', () => {
     _t = setTimeout(() => render(input.value.trim().toLowerCase()), 90);
   });
   // Native search input ✕ also fires 'input' with value='', which clears.
+
+  // Honour ?q=<term> deep links (e.g. from the admin search-misses report)
+  try {
+    const q = new URLSearchParams(location.search).get('q');
+    if (q && q.trim()) {
+      input.value = q.trim();
+      render(q.trim().toLowerCase());
+    }
+  } catch (_) {}
 })();
 
 // ── AI Fact of the Day ─────────────────────────────────────────
