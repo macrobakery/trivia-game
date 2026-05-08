@@ -1855,31 +1855,127 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { passive: true });
 })();
 
-// ── Lesson search ──────────────────────────────────────────────
+// ──────────────────────────────────────────────────────────────
+// LESSON SEARCH — flat search across the entire 35-lesson curriculum
+// Filters the CURRICULUM array (not the rendered DOM) so it works
+// from the topic-overview without the user having to drill in first.
+// Renders dedicated result rows; clicking a result jumps straight
+// to the lesson detail view.
+// ──────────────────────────────────────────────────────────────
 (function initLessonsSearch() {
-  const input = document.getElementById('lessons-search');
-  if (!input) return;
+  const input    = document.getElementById('lessons-search');
+  const resultsW = document.getElementById('lessons-search-results');
+  const topicEl  = document.getElementById('topic-list');
+  const banner   = document.getElementById('lessons-continue-banner');
+  const progress = document.querySelector('.lessons-progress-bar-wrap');
+  if (!input || !resultsW) return;
 
-  input.addEventListener('input', () => {
-    const q = input.value.trim().toLowerCase();
-    const topicCards = document.querySelectorAll('.topic-card');
-    const lessonCards = document.querySelectorAll('.lesson-item');
+  function score(text, q) {
+    if (!text) return 0;
+    const t = text.toLowerCase();
+    if (t === q) return 100;
+    if (t.startsWith(q)) return 60;
+    const idx = t.indexOf(q);
+    if (idx === -1) return 0;
+    // prefer matches at word boundaries
+    return idx === 0 || /\s/.test(t[idx - 1]) ? 30 : 15;
+  }
 
+  function buildIndex() {
+    const out = [];
+    if (typeof CURRICULUM === 'undefined' || !Array.isArray(CURRICULUM)) return out;
+    CURRICULUM.forEach(topic => {
+      topic.lessons.forEach(lesson => {
+        out.push({
+          topicId:    topic.id,
+          topicTitle: topic.title,
+          topicIcon:  topic.icon,
+          lessonId:   lesson.id,
+          lesson
+        });
+      });
+    });
+    return out;
+  }
+
+  const INDEX = buildIndex();
+
+  function highlight(text, q) {
+    if (!q) return escapeHtml(text);
+    const safe = escapeHtml(text);
+    const re   = new RegExp('(' + q.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + ')', 'ig');
+    return safe.replace(re, '<mark class="lsr-hl">$1</mark>');
+  }
+
+  function render(q) {
     if (!q) {
-      topicCards.forEach(c => c.style.display = '');
-      lessonCards.forEach(c => c.style.display = '');
+      resultsW.style.display = 'none';
+      resultsW.innerHTML = '';
+      if (topicEl)  topicEl.style.display  = '';
+      if (banner)   banner.style.removeProperty('display');
+      if (progress) progress.style.display = '';
+      // Re-evaluate continue banner via existing renderer (don't fight its display logic)
       return;
     }
 
-    topicCards.forEach(c => {
-      const text = c.textContent.toLowerCase();
-      c.style.display = text.includes(q) ? '' : 'none';
+    // Hide topic grid, banner, progress while searching
+    if (topicEl)  topicEl.style.display  = 'none';
+    if (banner)   banner.style.display   = 'none';
+    if (progress) progress.style.display = 'none';
+
+    const ranked = INDEX.map(item => {
+      const titleScore = score(item.lesson.title, q) * 3;
+      const introScore = score(item.lesson.intro || '', q) * 1.2;
+      const takeawayS  = score(item.lesson.takeaway || '', q) * 0.8;
+      const topicS     = score(item.topicTitle, q) * 0.5;
+      const total      = titleScore + introScore + takeawayS + topicS;
+      return { item, total };
+    }).filter(x => x.total > 0)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 25);
+
+    if (!ranked.length) {
+      resultsW.style.display = '';
+      resultsW.innerHTML = `
+        <div class="lsr-empty">
+          <strong>No lessons match "${escapeHtml(q)}"</strong>
+          Try keywords like "neural", "prompt", "bias", or "deployment".
+        </div>`;
+      return;
+    }
+
+    const progressMap = getProgress();
+    resultsW.innerHTML = ranked.map(({ item }) => {
+      const k    = `${item.topicId}/${item.lessonId}`;
+      const done = !!progressMap[k];
+      return `
+        <button class="lsr-row" data-topic="${item.topicId}" data-lesson="${item.lessonId}">
+          <span class="lsr-icon">${item.topicIcon}</span>
+          <div class="lsr-info">
+            <div class="lsr-crumb">${escapeHtml(item.topicTitle)}</div>
+            <div class="lsr-title">${highlight(item.lesson.title, q)}</div>
+          </div>
+          <span class="lsr-status ${done ? 'done' : ''}">${done ? '✓' : '→'}</span>
+        </button>`;
+    }).join('');
+
+    resultsW.style.display = '';
+    resultsW.querySelectorAll('.lsr-row').forEach(row => {
+      row.addEventListener('click', () => {
+        showLessonDetail(row.dataset.topic, row.dataset.lesson);
+        // Clear search when jumping into a lesson
+        input.value = '';
+        render('');
+      });
     });
-    lessonCards.forEach(c => {
-      const text = c.textContent.toLowerCase();
-      c.style.display = text.includes(q) ? '' : 'none';
-    });
+  }
+
+  let _t = null;
+  input.addEventListener('input', () => {
+    clearTimeout(_t);
+    _t = setTimeout(() => render(input.value.trim().toLowerCase()), 90);
   });
+  // Native search input ✕ also fires 'input' with value='', which clears.
 })();
 
 // ── AI Fact of the Day ─────────────────────────────────────────
