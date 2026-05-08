@@ -3548,7 +3548,63 @@ renderRecentGames();
 
   // Tap/click on hero block to cycle to next tip
   if (heroBlock) {
-    heroBlock.addEventListener('click', () => showTip(idx + 1, true));
+    heroBlock.addEventListener('click', (e) => {
+      // Don't cycle when the share button was tapped — handle that separately
+      if (e.target.closest('#hn-tip-share')) return;
+      showTip(idx + 1, true);
+    });
+  }
+
+  // Share button — Web Share API → clipboard fallback. Builds a tweet-friendly
+  // URL with utm_source so we can spot tip-driven traffic in analytics.
+  const shareBtn = document.getElementById('hn-tip-share');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const text = TIPS[idx];
+      if (!text) return;
+      const tipUrl = `https://ai-app-builder-challenge.vercel.app/?utm_source=tip_share&utm_tip=${idx}`;
+      const shareText = `💡 AI Tip: ${text}`;
+
+      // Try native share first
+      if (typeof navigator.share === 'function') {
+        try {
+          await navigator.share({ title: 'AI Tip of the Day', text: shareText, url: tipUrl });
+          if (typeof track === 'function') track('tip_share', { idx, method: 'native' });
+          return;
+        } catch (err) {
+          if (err && (err.name === 'AbortError' || err.name === 'NotAllowedError')) return;
+          // fall through
+        }
+      }
+
+      // Clipboard fallback
+      try {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+          await navigator.clipboard.writeText(`${shareText}\n\n${tipUrl}`);
+          const orig = shareBtn.textContent;
+          shareBtn.textContent = '✓';
+          setTimeout(() => { shareBtn.textContent = orig; }, 1600);
+          if (typeof track === 'function') track('tip_share', { idx, method: 'clipboard' });
+          return;
+        }
+      } catch (_) {}
+
+      // Last-resort textarea hack
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = `${shareText}\n\n${tipUrl}`;
+        ta.style.cssText = 'position:fixed;opacity:0;left:-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        const orig = shareBtn.textContent;
+        shareBtn.textContent = '✓';
+        setTimeout(() => { shareBtn.textContent = orig; }, 1600);
+      } catch (_) {}
+    });
   }
 })();
 

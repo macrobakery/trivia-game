@@ -224,6 +224,23 @@ test('GET /admin without auth returns 401', async () => {
   assert.equal(status, 401);
 });
 
+// ── /og/tip.svg (daily-tip share card) ───────────────────────────────
+test('GET /og/tip.svg renders any text into a share-card SVG', async () => {
+  const text = 'Vector embeddings convert words into numbers';
+  const { status, data, headers } = await api('GET', '/og/tip.svg?text=' + encodeURIComponent(text));
+  assert.equal(status, 200);
+  assert.match(headers.get('content-type') || '', /image\/svg\+xml/);
+  assert.ok(data.includes('AI TIP OF THE DAY'));
+  assert.ok(data.includes('Vector embeddings'));
+});
+
+test('GET /og/tip.svg with empty text redirects to default OG image', async () => {
+  const { status } = await api('GET', '/og/tip.svg');
+  // Should redirect (302/301) — fetch follows redirects, so we expect 200 from the destination
+  // The destination is /og-image.svg which is a static file; just check we get a 200.
+  assert.ok(status === 200 || status === 302 || status === 301);
+});
+
 // ── Analytics search-misses (admin-only) ─────────────────────────────
 test('GET /api/analytics/search-misses without auth returns 401', async () => {
   const { status } = await api('GET', '/api/analytics/search-misses');

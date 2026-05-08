@@ -701,6 +701,90 @@ app.get('/u/:name', async (req, res) => {
 });
 
 // ============================================================
+// OG TIP CARD — /og/tip.svg?text=<encoded>
+// Renders any short text as a 1200×630 share card. Used by the
+// home tip block's "share" button so a tweet about today's tip
+// unfurls beautifully instead of dropping the generic banner.
+// MUST be declared BEFORE /og/:name — otherwise Express's param
+// route would match "/og/tip.svg" first and treat "tip" as a name.
+// ============================================================
+app.get('/og/tip.svg', (req, res) => {
+  const raw = String(req.query.text || '').slice(0, 300).trim();
+  if (!raw) return res.redirect('/og-image.svg');
+
+  const escSvg = (s) => String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+
+  // Wrap the tip text into 3-4 lines of ~52 chars each. Greedy word-wrap.
+  const wrapText = (text, maxChars) => {
+    const words = text.split(/\s+/);
+    const lines = [];
+    let cur = '';
+    for (const w of words) {
+      if (!cur) { cur = w; continue; }
+      if ((cur + ' ' + w).length <= maxChars) cur += ' ' + w;
+      else { lines.push(cur); cur = w; }
+    }
+    if (cur) lines.push(cur);
+    return lines;
+  };
+  const allLines = wrapText(raw, 56);
+  const lines = allLines.slice(0, 4);
+  if (allLines.length > 4) {
+    const last = lines[3];
+    lines[3] = (last.length > 53 ? last.slice(0, 50).replace(/\s+\S*$/, '') : last) + '…';
+  }
+
+  const tspans = lines.map((line, i) =>
+    `<tspan x="80" dy="${i === 0 ? 0 : 70}">${escSvg(line)}</tspan>`
+  ).join('');
+  const startY = 250 - ((lines.length - 1) * 35);
+
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"  stop-color="#0a0613"/>
+      <stop offset="100%" stop-color="#1a0a2e"/>
+    </linearGradient>
+    <radialGradient id="blob1" cx="15%" cy="20%" r="40%">
+      <stop offset="0%"  stop-color="hsl(40 95% 58%)" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="hsl(40 95% 58%)" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blob2" cx="90%" cy="85%" r="50%">
+      <stop offset="0%"  stop-color="hsl(270 90% 70%)" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="hsl(270 90% 70%)" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#blob1)"/>
+  <rect width="1200" height="630" fill="url(#blob2)"/>
+
+  <g transform="translate(80, 80)">
+    <text font-size="28" font-weight="700" fill="#f5f3fa">⚡ AI Challenge</text>
+    <text x="0" y="40" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="18" fill="hsl(40 95% 70%)" letter-spacing="2">💡 AI TIP OF THE DAY</text>
+  </g>
+
+  <text font-family="Georgia, 'Fraunces', serif" font-style="italic" font-size="44" fill="#f5f3fa" font-weight="400" y="${startY}">
+    ${tspans}
+  </text>
+
+  <g transform="translate(80, 580)">
+    <text font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="20" fill="#a8a3c4" letter-spacing="0.5">📚 Learn AI in 5 min a day · ai-app-builder-challenge.vercel.app</text>
+  </g>
+</svg>`;
+
+  res.set('Content-Type', 'image/svg+xml; charset=utf-8');
+  res.set('Cache-Control', 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800');
+  res.send(svg);
+});
+
+// ============================================================
 // OG SHARE CARD — /og/:name renders a 1200×630 SVG with the
 // player's stats, suitable for og:image / twitter:image. Pure
 // SVG, no Canvas dep — fast and edge-cacheable. Discord, Slack,
