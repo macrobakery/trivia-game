@@ -24,7 +24,7 @@ const ACHIEVEMENTS = [
   { id: 'scholar',         icon: '📚', name: 'Scholar',           desc: 'Complete all 5 quiz levels',            category: 'learn'   },
   { id: 'lesson_starter',  icon: '🌱', name: 'First Lesson',      desc: 'Complete your first lesson',            category: 'learn'   },
   { id: 'lesson_halfway',  icon: '📖', name: 'Halfway There',     desc: 'Complete 13 or more lessons',           category: 'learn'   },
-  { id: 'lesson_master',   icon: '🎓', name: 'Graduated',         desc: 'Complete all 25 lessons',               category: 'learn'   },
+  { id: 'lesson_master',   icon: '🎓', name: 'Graduated',         desc: 'Complete all 35 lessons',               category: 'learn'   },
   // News achievements
   { id: 'news_reader',     icon: '📰', name: 'News Reader',       desc: 'Read 5 AI news articles',               category: 'news'    },
   { id: 'news_addict',     icon: '🗞️', name: 'AI Journalist',     desc: 'Read 25 AI news articles',              category: 'news'    },
@@ -651,7 +651,7 @@ function renderContinueLearning() {
   if (!nextTopic) {
     // All done — show completion state
     if (iconEl)  iconEl.textContent  = '🎓';
-    if (topicEl) { topicEl.textContent = 'All 25 lessons done!'; topicEl.style.color = 'var(--green)'; }
+    if (topicEl) { topicEl.textContent = 'All 35 lessons done!'; topicEl.style.color = 'var(--green)'; }
     if (titleEl) titleEl.textContent = 'You\'ve mastered every AI topic.';
     if (linkEl)  linkEl.href         = '/lessons.html';
   } else {

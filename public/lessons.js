@@ -139,6 +139,56 @@ const CURRICULUM = [
           }
         ],
         takeaway: 'AI systems inherit and amplify human biases, cannot fully explain themselves, and optimise for what they\'re measured on — not necessarily what we want — making ethics a core engineering concern.'
+      },
+      {
+        id: 'gen-vs-pred-ai',
+        title: 'Generative AI vs Predictive AI',
+        duration: '3 min',
+        intro: 'Two families of AI dominate today\'s products, and they solve fundamentally different problems. Knowing which one you need saves months of wasted engineering and millions in compute.',
+        points: [
+          {
+            heading: 'Predictive AI: Choose from a Set',
+            body: 'Predictive models output a label or a number from a fixed range — spam or not, churn risk between 0 and 1, predicted house price in dollars. They are built with structured data and well-defined targets. Logistic regression, gradient-boosted trees, and traditional neural classifiers are all predictive. They\'re fast, cheap to run, easy to evaluate, and dominate fraud detection, recommendations, and forecasting.'
+          },
+          {
+            heading: 'Generative AI: Create Something New',
+            body: 'Generative models output novel content — text, images, audio, video, code. They sample from a learned distribution rather than picking from a fixed set. GPT, Claude, Stable Diffusion, and DALL·E are generative. They unlock totally new product categories — drafting emails, designing logos, writing code — but cost more per call, can hallucinate, and are much harder to evaluate quantitatively.'
+          },
+          {
+            heading: 'When to Use Which',
+            body: 'Use predictive AI when the answer space is small and well-defined: yes/no, one of N categories, a single number. Use generative AI when the output is open-ended creative content. Many real products combine both — a customer-support tool might use predictive AI to classify ticket urgency, then generative AI to draft a reply. The classification step is fast and cheap; the generation step is slower but flexible.'
+          },
+          {
+            heading: 'Why Generative AI Feels Like Magic',
+            body: 'Generative models trained on internet-scale data exhibit emergent abilities the engineers never explicitly programmed — translation, summarisation, code generation, even basic reasoning. These abilities emerge once models pass certain parameter and data thresholds. This is why a single LLM can power dozens of different products, while a predictive model is locked to its specific labelled task.'
+          }
+        ],
+        takeaway: 'Predictive AI picks from a fixed set of answers; generative AI creates novel content. Match the tool to the problem — and recognise that one well-prompted generative model can replace many narrow predictive ones.'
+      },
+      {
+        id: 'ai-history',
+        title: 'A Brief History of AI',
+        duration: '4 min',
+        intro: 'AI didn\'t arrive in 2022 with ChatGPT. It has gone through seven decades of breakthroughs and "AI winters." Understanding the arc helps you place current excitement in context — and predict where the field goes next.',
+        points: [
+          {
+            heading: 'The Symbolic Era (1956–1980s)',
+            body: 'AI was born at the 1956 Dartmouth Conference, where John McCarthy coined the term. Early researchers believed intelligence could be coded as symbolic rules — if-then logic and search trees. Expert systems like MYCIN diagnosed infections; chess engines used minimax search. The approach hit a wall: real-world knowledge is too messy and too vast to encode as rules. Funding collapsed in the first "AI winter" of the 1970s.'
+          },
+          {
+            heading: 'The Statistical Turn (1990s–2000s)',
+            body: 'Researchers shifted from coding rules to learning patterns from data. Support Vector Machines, Random Forests, and shallow neural networks dominated. IBM\'s Deep Blue beat Kasparov at chess in 1997 using massive search plus tuned heuristics, not learning. The web exploded with data, but compute was still limited — most ML happened on single CPUs and tiny datasets compared to today.'
+          },
+          {
+            heading: 'The Deep Learning Revolution (2012–2017)',
+            body: 'In 2012, AlexNet shocked the field by winning the ImageNet image-classification challenge with a deep convolutional network — cutting error rates by half overnight. GPUs proved essential for training. Deep learning quickly conquered speech recognition, machine translation, and game playing — DeepMind\'s AlphaGo beat the world Go champion in 2016. The approach was clearly different: learn features end-to-end from raw data.'
+          },
+          {
+            heading: 'The Transformer Era (2017–Today)',
+            body: 'The 2017 "Attention Is All You Need" paper introduced the Transformer architecture. By 2020, GPT-3 showed that scaling Transformers to hundreds of billions of parameters produced emergent abilities. ChatGPT in November 2022 made the technology accessible to everyone, kicking off the current wave. Today\'s frontier is multi-modal models that handle text, images, audio, and video together — and AI agents that can use tools and complete multi-step tasks.'
+          }
+        ],
+        takeaway: 'AI\'s history is a cycle of overpromising, underdelivering, and rebooting around new ideas — symbolic rules, then statistics, then deep learning, then Transformers. Each era stood on the previous one\'s shoulders.'
       }
     ]
   },
@@ -273,6 +323,56 @@ const CURRICULUM = [
           }
         ],
         takeaway: 'Correct data splitting is how you tell the truth to yourself — the test set is sacred, temporal leakage is insidious, and cross-validation is your ally when data is limited.'
+      },
+      {
+        id: 'data-augmentation',
+        title: 'Data Augmentation & Synthetic Data',
+        duration: '4 min',
+        intro: 'Real labelled data is expensive — sometimes impossible — to collect at scale. Data augmentation and synthetic generation let you stretch the data you have, or invent new data that didn\'t exist before. Used well, they unlock training runs that would otherwise be impossible.',
+        points: [
+          {
+            heading: 'Augmentation: Cheap Variants of Real Data',
+            body: 'Image augmentation rotates, crops, flips, blurs, or recolours real photos to teach a model that the same object can appear in many forms. Text augmentation paraphrases sentences, swaps synonyms, or back-translates through another language. Audio augmentation adds noise, shifts pitch, or trims silence. Each technique multiplies your effective dataset size for free, and in computer vision routinely halves the data needed to reach a target accuracy.'
+          },
+          {
+            heading: 'Synthetic Data: Generating from Scratch',
+            body: 'When real data is scarce, regulated, or private, you can generate synthetic examples. Game engines render perfect labelled images of pedestrians for self-driving training. GANs produce realistic faces of people who don\'t exist. Modern LLMs synthesise training questions for fine-tuning smaller models. Synthetic data shines for rare events — fraud, accidents, edge-case medical conditions — that you\'ll never collect enough of in the wild.'
+          },
+          {
+            heading: 'The Distribution-Shift Trap',
+            body: 'Synthetic data must match the real-world distribution your model will face in production. A model trained only on rendered images of pedestrians may fail on dimly lit night photos. The most common pitfall is "synthetic-to-real gap": your model overfits the artefacts of the generator (lighting tells, GAN fingerprints) instead of the real signal. Always validate on a held-out real dataset, even if training is mostly synthetic.'
+          },
+          {
+            heading: 'Augmentation as Regularisation',
+            body: 'Augmentation isn\'t just about more data — it acts as a regulariser, forcing the model to learn invariances. A classifier trained with random crops cannot rely on absolute pixel positions. A model trained with paraphrased text cannot memorise exact wording. This naturally improves generalisation and reduces overfitting, which is why even data-rich projects benefit from aggressive augmentation pipelines.'
+          }
+        ],
+        takeaway: 'Augmentation multiplies real data through transformations; synthetic data invents it from scratch. Both stretch your dataset and act as regularisation — but only if the generated examples reflect the distribution you\'ll actually see in production.'
+      },
+      {
+        id: 'data-privacy-pii',
+        title: 'Data Privacy & PII Handling',
+        duration: '4 min',
+        intro: 'AI systems trained on personal data carry real legal and ethical risk. Privacy isn\'t a step you bolt on at the end — it\'s a design constraint that shapes every part of your data pipeline.',
+        points: [
+          {
+            heading: 'What Counts as PII',
+            body: 'Personally Identifiable Information includes obvious fields — name, email, phone, ID number — and surprisingly powerful indirect identifiers. A combination of birth date, postcode, and gender uniquely identifies most individuals in many countries. Voice recordings, walking patterns, and even typing rhythm can be personally identifying. Treat any field that, alone or combined, narrows a record to a single person as PII.'
+          },
+          {
+            heading: 'Anonymisation Techniques',
+            body: 'Hashing, generalisation (binning ages into ranges), and k-anonymity (ensuring each record looks like at least k-1 others) are common defences. Differential privacy adds calibrated random noise to query results, with mathematical guarantees that any one person\'s contribution stays hidden. Beware naive anonymisation: removing names from a dataset doesn\'t prevent linkage attacks if other fields can be cross-referenced with public sources.'
+          },
+          {
+            heading: 'Memorisation in Trained Models',
+            body: 'Large language models can memorise and verbatim regurgitate training data, including PII. Researchers have extracted real email addresses, phone numbers, and even passwords from models trained on web crawls. Mitigations include training-data deduplication, output filtering, and differential-privacy fine-tuning. For regulated domains, never train directly on raw PII — sanitise first.'
+          },
+          {
+            heading: 'Regulatory Landscape',
+            body: 'GDPR (EU), CCPA (California), HIPAA (US healthcare), and PIPL (China) all impose specific rules on AI systems handling personal data — including the right to explanation, the right to erasure, and limits on automated decision-making. Get a lawyer involved early on any product that touches health, finance, or children\'s data. The cost of compliance up front is always lower than the cost of a fine or breach later.'
+          }
+        ],
+        takeaway: 'PII is broader than you think and harder to anonymise than you\'d hope. Build privacy in by design — sanitise before training, audit for memorisation, and consult legal expertise on regulated domains.'
       }
     ]
   },
@@ -407,6 +507,56 @@ const CURRICULUM = [
           }
         ],
         takeaway: 'Overfitting is memorisation, not learning — regularisation techniques like L2, dropout, data augmentation, and early stopping force models to generalise to unseen data rather than just replay training examples.'
+      },
+      {
+        id: 'hyperparameters',
+        title: 'Hyperparameter Tuning',
+        duration: '4 min',
+        intro: 'Model parameters are learned from data; hyperparameters are knobs you set before training even starts. Learning rate, batch size, network depth, dropout rate — these shape how the whole training run behaves, and the difference between mediocre and excellent results often comes down to tuning them.',
+        points: [
+          {
+            heading: 'The Knobs That Matter Most',
+            body: 'Learning rate is by far the most important: too high and training diverges, too low and it crawls. Batch size affects both training speed and final accuracy. Network depth and width set capacity. Regularisation strength (L2, dropout) controls overfitting. Optimiser choice (SGD, Adam, AdamW) interacts with everything else. The Pareto rule applies — a few hyperparameters drive most of the gain; tune those first.'
+          },
+          {
+            heading: 'Grid Search vs Random Search',
+            body: 'Grid search tries every combination of values you specify on each axis. It\'s exhaustive but explodes combinatorially — 5 values across 5 hyperparameters is already 3125 runs. Random search samples combinations randomly within ranges and consistently outperforms grid search at the same compute budget, because most hyperparameters don\'t matter equally and random sampling is more likely to land near the important ones.'
+          },
+          {
+            heading: 'Bayesian and Population-Based Methods',
+            body: 'Bayesian optimisation builds a surrogate model of how hyperparameters map to validation loss, then proposes the next configuration most likely to improve. Population-based training runs many trials in parallel, periodically replacing the worst with mutated versions of the best. Both approaches dramatically reduce the number of training runs needed. Tools like Optuna, Ray Tune, and Weights & Biases Sweeps automate this end-to-end.'
+          },
+          {
+            heading: 'Don\'t Tune on the Test Set',
+            body: 'A subtle but devastating mistake: every hyperparameter you choose by checking test-set performance leaks information from the test set into your model selection. Always tune on a separate validation set, then evaluate the final winning configuration once on the test set. Otherwise your published accuracy will be optimistic and the model will disappoint in production.'
+          }
+        ],
+        takeaway: 'Hyperparameters control the shape of training itself. Random search and Bayesian methods beat grid search; tune on validation data only; and obsess over learning rate first.'
+      },
+      {
+        id: 'cross-validation',
+        title: 'Cross-Validation Done Right',
+        duration: '3 min',
+        intro: 'A single train/validation split is fast but noisy — the score you get depends on which examples happened to land in validation. Cross-validation gives you a more reliable estimate by training and evaluating multiple times.',
+        points: [
+          {
+            heading: 'k-Fold Cross-Validation',
+            body: 'Split the training data into k equal folds (typically 5 or 10). Train k separate models, each holding out one fold for validation and training on the rest. Average the k validation scores. The result is a more stable estimate of how the model generalises, and the variance across folds tells you how sensitive performance is to the specific split. Compute cost scales linearly with k.'
+          },
+          {
+            heading: 'Stratified Folds for Imbalanced Data',
+            body: 'If your classes are imbalanced — 95% no-fraud, 5% fraud — random k-fold can produce folds with no fraud examples at all, breaking validation. Stratified k-fold ensures each fold preserves the class ratio of the full dataset. For continuous targets, bin the target into ranges and stratify on those bins. Most ML libraries provide stratified splitters out of the box.'
+          },
+          {
+            heading: 'Time-Series Splits',
+            body: 'Standard k-fold is wrong for time-series data because it lets the model train on future examples to predict past ones — leakage. Use expanding-window or rolling-window splits: each fold trains on data up to time t and validates on data from t to t+Δ. The fold scores reflect how the model actually performs in deployment, where you can only train on the past.'
+          },
+          {
+            heading: 'When NOT to Cross-Validate',
+            body: 'When you have millions of examples, a single 80/20 split is already low-variance — k-fold buys little but costs k× the compute. When training is expensive (large language models, multi-day runs) the cost is prohibitive. Use cross-validation for small-to-medium datasets and during hyperparameter search; skip it once you have abundant data and a chosen configuration.'
+          }
+        ],
+        takeaway: 'Cross-validation trades compute for confidence. Stratify on imbalance, respect time order on temporal data, and skip it when you have data abundance or compute scarcity.'
       }
     ]
   },
@@ -541,6 +691,56 @@ const CURRICULUM = [
           }
         ],
         takeaway: 'AI app quality is maintained through curated eval sets, LLM-as-judge automation, regression tracking, and adversarial red teaming — not traditional unit tests alone.'
+      },
+      {
+        id: 'embeddings-vector-db',
+        title: 'Embeddings & Vector Databases',
+        duration: '4 min',
+        intro: 'Embeddings turn text, images, or any other data into dense numerical vectors that capture meaning. Vector databases let you search those vectors at scale. Together they\'re the foundation of semantic search, recommendation systems, and Retrieval-Augmented Generation.',
+        points: [
+          {
+            heading: 'What an Embedding Actually Is',
+            body: 'An embedding is a list of numbers — typically 384 to 3072 dimensions — produced by a neural network from input data. The geometry of these vectors encodes meaning: documents with similar topics cluster close together; words with similar usage patterns end up near each other. The same model produces consistent embeddings, which lets you measure similarity by computing cosine distance or dot product between two vectors.'
+          },
+          {
+            heading: 'Why Vector Search Beats Keyword Search',
+            body: 'Keyword search matches strings literally — it misses synonyms, paraphrases, and conceptual matches. A query for "fix engine noise" misses a document titled "diagnose strange motor sounds." Vector search compares meaning, so semantically related content surfaces even when the words are completely different. This is what makes modern AI search feel intelligent rather than dumb-string-matching.'
+          },
+          {
+            heading: 'Vector Databases at Scale',
+            body: 'Computing distances against millions of vectors naively is slow. Vector databases — Pinecone, Weaviate, Qdrant, pgvector, Milvus — use approximate nearest neighbour algorithms (HNSW, IVF) that trade a tiny accuracy loss for orders-of-magnitude speedup. They also handle metadata filtering (search only documents from this user, tagged with these labels), hybrid search (combine keyword and vector scores), and incremental updates.'
+          },
+          {
+            heading: 'The RAG Pattern',
+            body: 'Retrieval-Augmented Generation is the killer use case: chunk your documents, embed each chunk, store them in a vector DB. At query time, embed the user\'s question, retrieve the top-k most similar chunks, and inject them into the LLM prompt as context. The result is an LLM that answers questions about your private data without retraining — and cites its sources. RAG is the workhorse pattern behind most "chat with your docs" products today.'
+          }
+        ],
+        takeaway: 'Embeddings turn meaning into geometry; vector databases search that geometry at scale. Together they unlock semantic search and the RAG pattern that lets LLMs work with your private data.'
+      },
+      {
+        id: 'ai-cost-latency',
+        title: 'AI Cost & Latency Optimisation',
+        duration: '4 min',
+        intro: 'A great AI app that\'s slow or expensive is a great AI app that nobody can ship. Cost and latency are first-class product concerns — and there are concrete techniques to dramatically improve both without sacrificing quality.',
+        points: [
+          {
+            heading: 'Pick the Right Model for Each Step',
+            body: 'Don\'t use the biggest model for everything. A pipeline might use a tiny model to classify intent, a medium model to extract structure, and only call the largest model when truly creative output is needed. Anthropic\'s Haiku, OpenAI\'s gpt-4o-mini, and Google\'s Gemini Flash are 10–100× cheaper and faster than their flagship siblings — and good enough for most steps.'
+          },
+          {
+            heading: 'Prompt Caching',
+            body: 'Most production prompts have huge static prefixes — system instructions, schemas, examples. Anthropic, OpenAI, and Google all support prompt caching: the static prefix is processed once and reused across calls at a fraction of the input-token cost. This often cuts LLM bills by 50–90% with one config change. Place all volatile content (the user\'s question) at the end of the prompt.'
+          },
+          {
+            heading: 'Streaming for Perceived Speed',
+            body: 'A 3-second full response feels slower than a 5-second response that starts streaming the first words at 300ms. Streaming via Server-Sent Events lets users start reading immediately and gives them an out — they can stop reading as soon as they have what they need. Almost every modern LLM API supports streaming; almost every great LLM product uses it.'
+          },
+          {
+            heading: 'Batch and Cache When Possible',
+            body: 'For non-interactive workloads — generating product descriptions, classifying support tickets, summarising documents — use the batch API. Anthropic and OpenAI both offer 50% off on batch requests with a 24-hour SLA. For repeated identical queries, cache results in Redis or your DB. A simple hash-of-prompt cache can eliminate 30%+ of LLM calls in user-facing products with predictable patterns.'
+          }
+        ],
+        takeaway: 'AI cost and latency are levers, not constants. Use small models where you can, cache static prompt prefixes, stream tokens for perceived speed, and batch non-interactive work.'
       }
     ]
   },
@@ -675,6 +875,56 @@ const CURRICULUM = [
           }
         ],
         takeaway: 'AI\'s future belongs to practitioners who combine domain expertise with AI fluency — staying current requires building regularly, reading primary research, and focusing on durable skills over specific tools.'
+      },
+      {
+        id: 'ai-ab-testing',
+        title: 'A/B Testing AI Features',
+        duration: '4 min',
+        intro: 'Shipping an AI feature without measurement is shipping in the dark. A/B testing lets you prove an AI change improves the actual outcome you care about — not a benchmark, not a vibe, but real user behaviour.',
+        points: [
+          {
+            heading: 'Pick a North-Star Metric',
+            body: 'Don\'t test for "the model is smarter" — test for the business outcome. Conversion rate, completed sessions, time to answer, retained users, support tickets resolved. Define one primary metric and 2-3 guardrails (latency, error rate, cost per call). The primary metric tells you whether the change wins; guardrails tell you whether it wins at acceptable cost.'
+          },
+          {
+            heading: 'Randomise at the Right Level',
+            body: 'Randomise users, not requests. If the same user hits both variants in one session, learning effects and inconsistencies confound the test. Use deterministic hashing of the user ID into a bucket so a user always sees the same variant. For features without users (background pipelines), randomise per-document or per-task and analyse with cluster-robust standard errors.'
+          },
+          {
+            heading: 'Power and Sample Size',
+            body: 'You need enough users in each variant to detect the effect size you care about. The smaller the expected lift, the more samples needed — detecting a 1% lift may require 50× the sample of a 10% lift. Calculate power before launching: undersampled tests produce false-negatives (real wins look flat) or false-positives (random noise looks like a win). Sequential testing methods like CUPED reduce required sample sizes substantially.'
+          },
+          {
+            heading: 'Beware Novelty and Survivorship',
+            body: 'A new AI feature often wins early simply because it\'s new — users explore it. Run tests long enough for novelty to fade (usually 2+ weeks). Watch for survivorship bias too: if users who hate the new feature churn before metrics are collected, your funnel metrics look great but retention craters. Always pair conversion metrics with retention and complaint signals.'
+          }
+        ],
+        takeaway: 'A/B test AI features against real user outcomes, randomise on stable identifiers, calculate power before launching, and watch novelty + survivorship effects so a winning test isn\'t a Pyrrhic one.'
+      },
+      {
+        id: 'ai-red-teaming',
+        title: 'Red Teaming AI Systems',
+        duration: '4 min',
+        intro: 'Red teaming is the practice of attacking your own AI to find failures before adversaries do. It\'s a core part of safe, robust deployment — and now an explicit requirement under several emerging AI regulations.',
+        points: [
+          {
+            heading: 'What Red Teamers Look For',
+            body: 'Common categories: prompt injection (malicious input that hijacks instructions), jailbreaks (bypassing safety policies), data leakage (extracting training-data PII), hallucinations on consequential queries, biased or harmful outputs across demographic groups, and tool-use abuse (an agent making unintended API calls). A good red team explores all categories systematically, not just whatever\'s trending.'
+          },
+          {
+            heading: 'Manual vs Automated Red Teaming',
+            body: 'Skilled humans find creative attacks no test suite anticipates — social-engineering phrasings, multi-turn jailbreaks, edge cases unique to your domain. Automated red teaming uses one model to generate adversarial prompts against another, scaling coverage to thousands of variants. Use both: humans set the strategy and find novel attack classes, automation expands coverage and runs continuously in CI.'
+          },
+          {
+            heading: 'From Findings to Mitigations',
+            body: 'Each successful attack should produce concrete defences: input filtering, output validation, system-prompt hardening, output classifier checks, rate limiting, or model-level fine-tuning. Track every finding in a register with severity, status, and a regression test that runs on every release so the same vulnerability never re-emerges. The register itself becomes evidence in compliance audits.'
+          },
+          {
+            heading: 'Governance and Accountability',
+            body: 'Red teaming isn\'t just an engineering task — it\'s a governance one. Decide who has authority to ship despite open red-team findings, what risk threshold blocks release, and how findings are disclosed (to users, regulators, the public). The EU AI Act and the US Executive Order on AI both name red teaming as part of "safe and trustworthy" deployment. Build the muscle now; it\'s only going to be more required, not less.'
+          }
+        ],
+        takeaway: 'Red teaming hunts for failures before users or attackers do. Combine human creativity with automated coverage, convert every finding into a regression test, and treat the practice as core governance — not optional QA.'
       }
     ]
   }
@@ -740,7 +990,7 @@ function showLessonCelebration(type, topicTitle) {
   toast.innerHTML = isAll
     ? `<span class="lesson-cel-icon">🎓</span>
        <div class="lesson-cel-body">
-         <div class="lesson-cel-title">All 25 Lessons Done!</div>
+         <div class="lesson-cel-title">All 35 Lessons Done!</div>
          <div class="lesson-cel-sub">You've completed the full AI curriculum!</div>
        </div>`
     : `<span class="lesson-cel-icon">🏆</span>

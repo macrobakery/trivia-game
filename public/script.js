@@ -3337,7 +3337,7 @@ function initWelcomeBanner() {
   }
 
   if (!nextTopic) {
-    // All 25 lessons done — show a celebration card
+    // All 35 lessons done — show a celebration card
     container.innerHTML = `
       <div class="cl-header">
         <span class="cl-title">📚 Learning Complete!</span>
@@ -3346,7 +3346,7 @@ function initWelcomeBanner() {
       <div class="cl-done-card">
         <span class="cl-done-icon">🎓</span>
         <div class="cl-lesson-info">
-          <div class="cl-lesson-topic" style="color:var(--green)">All 25 lessons done!</div>
+          <div class="cl-lesson-topic" style="color:var(--green)">All 35 lessons done!</div>
           <div class="cl-lesson-title">You've mastered every topic.</div>
         </div>
       </div>`;
@@ -3784,11 +3784,11 @@ function initHomeStatsStrip() {
     // Update lessons card progress text + ring
     const lessonsProg = $('hn-lessons-progress');
     if (lessonsProg) {
-      lessonsProg.textContent = lessonsDone > 0 ? `${lessonsDone} / 25 done` : '25 lessons';
+      lessonsProg.textContent = lessonsDone > 0 ? `${lessonsDone} / 35 done` : '35 lessons';
     }
     const lessonRing = $('hn-lessons-ring');
     if (lessonRing) {
-      const pct = Math.round((lessonsDone / 25) * 100);
+      const pct = Math.round((lessonsDone / 35) * 100);
       // Animate on next frame so CSS transition fires
       requestAnimationFrame(() => {
         lessonRing.style.strokeDasharray = `${pct} 100`;
