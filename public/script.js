@@ -1863,6 +1863,25 @@ function launchConfetti() {
 
 $('share-score-btn').addEventListener('click', shareScore);
 
+// Build a /share/round URL — when this lands in WhatsApp / X / Discord /
+// Telegram / Slack the unfurl shows the round-card SVG with the actual
+// score, badge, accuracy, level, difficulty.
+function _shareRoundUrl() {
+  const { score, correctCount, maxStreak, selectedLevel, selectedDifficulty, questions } = state;
+  const total = questions.length;
+  const name  = (localStorage.getItem('aiChallenge_playerName') || '').trim();
+  const params = new URLSearchParams({
+    score:   String(score || 0),
+    correct: String(correctCount || 0),
+    total:   String(total || 10),
+    level:   selectedLevel || '',
+    diff:    selectedDifficulty || '',
+    streak:  String(maxStreak || 0)
+  });
+  if (name && name !== 'Anonymous') params.set('name', name);
+  return `${window.location.origin}/share/round?${params.toString()}`;
+}
+
 function _shareText() {
   const { score, correctCount, maxStreak, selectedLevel, selectedDifficulty, questions } = state;
   const total    = questions.length;
@@ -1876,7 +1895,7 @@ function _shareText() {
     `${badge.icon} ${badge.name} — ${score.toLocaleString()} pts\n` +
     `${correctCount}/${total} correct · ${accuracy}% accuracy · ${selectedDifficulty}\n` +
     `${streakLine}` +
-    `Think you can beat me? 👉 ${window.location.origin}`
+    `Think you can beat me? 👉 ${_shareRoundUrl()}`
   );
 }
 
@@ -1935,26 +1954,33 @@ function shareScore() {
   }
 
   const text = _shareText();
+  const shareUrl = _shareRoundUrl();
 
-  // Native share (mobile)
+  // Native share (mobile) — pass both text + url so the receiving app can
+  // render whichever it prefers (most respect the URL for unfurl previews).
   const nb = $('share-native-btn');
   if (navigator.share) {
     nb.style.display = '';
-    nb.addEventListener('click', () => navigator.share({ title: 'AI Challenge Score', text }).catch(() => {}));
+    nb.addEventListener('click', () => navigator.share({
+      title: 'AI Challenge Score',
+      text,
+      url: shareUrl
+    }).catch(() => {}));
   } else {
     nb.style.display = 'none';
   }
 
-  // X / Twitter
+  // X / Twitter — text already includes the URL, but pass it explicitly too
+  // so Twitter's intent renders a card preview alongside the text.
   $('share-x-btn').addEventListener('click', () => {
-    const encoded = encodeURIComponent(text);
-    window.open(`https://twitter.com/intent/tweet?text=${encoded}`, '_blank', 'noopener');
+    const params = new URLSearchParams({ text, url: shareUrl });
+    window.open(`https://twitter.com/intent/tweet?${params.toString()}`, '_blank', 'noopener');
   });
 
-  // LinkedIn
+  // LinkedIn — use the round-result URL so the unfurl shows the round card
   $('share-linkedin-btn').addEventListener('click', () => {
-    const url  = encodeURIComponent(window.location.origin);
-    const title = encodeURIComponent('AI App Builder Challenge');
+    const url    = encodeURIComponent(shareUrl);
+    const title  = encodeURIComponent('AI Challenge — my round result');
     const summary = encodeURIComponent(text);
     window.open(`https://www.linkedin.com/shareArticle?mini=true&url=${url}&title=${title}&summary=${summary}`, '_blank', 'noopener');
   });

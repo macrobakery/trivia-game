@@ -1043,6 +1043,253 @@ app.get('/og/tip.svg', (req, res) => {
 // LinkedIn falls back to the static site OG (still personalised
 // title/desc).
 // ============================================================
+
+// ============================================================
+// OG ROUND CARD — /og/round.svg?score=&correct=&total=10&level=&diff=&name=
+// Renders the card players see right after a great round, with their
+// score, badge, accuracy, level, difficulty. Used as og:image on the
+// /share/round page so social unfurls show the actual round result.
+// MUST be declared BEFORE /og/:name — same routing-order constraint.
+// ============================================================
+app.get('/og/round.svg', (req, res) => {
+  // Parse + sanitize all params with hard caps
+  const score    = Math.min(Math.max(parseInt(req.query.score, 10) || 0, 0), 9999);
+  const correct  = Math.min(Math.max(parseInt(req.query.correct, 10) || 0, 0), 10);
+  const total    = Math.min(Math.max(parseInt(req.query.total, 10) || 10, 1), 20);
+  const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+  const streak   = Math.min(Math.max(parseInt(req.query.streak, 10) || 0, 0), 20);
+  const name     = String(req.query.name || '').slice(0, 30).trim();
+  const level    = String(req.query.level || 'Custom').slice(0, 40).trim() || 'Custom';
+  const diff     = String(req.query.diff || 'Beginner').slice(0, 20).trim() || 'Beginner';
+
+  const escSvg = (s) => String(s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+
+  // Pick a badge by correct count — mirrors the client-side BADGES table
+  let badgeIcon, badgeName;
+  if      (correct >= 9) { badgeIcon = '🏗️'; badgeName = 'AI Architect'; }
+  else if (correct >= 7) { badgeIcon = '💻'; badgeName = 'AI App Developer'; }
+  else if (correct >= 4) { badgeIcon = '🔍'; badgeName = 'Prompt Explorer'; }
+  else                   { badgeIcon = '🔰'; badgeName = 'AI Rookie'; }
+
+  // Headline emoji
+  let eyebrow = '🎯 ROUND COMPLETE';
+  if      (correct === total) eyebrow = '🏆 PERFECT SCORE';
+  else if (correct >= 8)      eyebrow = '🔥 EXCELLENT ROUND';
+  else if (correct >= 6)      eyebrow = '👍 GOOD ROUND';
+
+  // Top-right player attribution
+  const attribution = name ? `${name}'s round` : 'Anonymous round';
+  const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+
+  // Accuracy bar fill (0-100% mapped to 0-960 px)
+  const barFill = Math.round((accuracy / 100) * 960);
+
+  // Streak chip — only render if ≥3 (matches client gating)
+  const streakChip = streak >= 3
+    ? `<g transform="translate(80, 522)">
+         <rect width="180" height="44" rx="22" fill="hsl(0 82% 62% / 0.18)" stroke="hsl(0 82% 62% / 0.5)" stroke-width="1"/>
+         <text x="20" y="29" font-size="20" fill="hsl(0 82% 78%)" font-weight="700">🔥 ${streak}-streak</text>
+       </g>`
+    : '';
+
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"  stop-color="#0a0613"/>
+      <stop offset="100%" stop-color="#1a0a2e"/>
+    </linearGradient>
+    <radialGradient id="blob1" cx="80%" cy="20%" r="45%">
+      <stop offset="0%"  stop-color="hsl(270 90% 70%)" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="hsl(270 90% 70%)" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blob2" cx="15%" cy="85%" r="50%">
+      <stop offset="0%"  stop-color="hsl(40 95% 58%)" stop-opacity="0.20"/>
+      <stop offset="100%" stop-color="hsl(40 95% 58%)" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="accuracyBar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"  stop-color="hsl(270 90% 70%)"/>
+      <stop offset="100%" stop-color="hsl(200 100% 60%)"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#blob1)"/>
+  <rect width="1200" height="630" fill="url(#blob2)"/>
+
+  <!-- Top: brand wordmark + attribution -->
+  <g transform="translate(80, 70)">
+    <text font-size="28" font-weight="700" fill="#f5f3fa">⚡ AI Challenge</text>
+  </g>
+  <g transform="translate(1120, 70)">
+    <text text-anchor="end" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="18" fill="#a8a3c4" letter-spacing="0.5">${escSvg(attribution)}</text>
+  </g>
+
+  <!-- Eyebrow -->
+  <g transform="translate(80, 140)">
+    <text font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="20" fill="hsl(40 95% 70%)" letter-spacing="3" font-weight="700">${escSvg(eyebrow)}</text>
+  </g>
+
+  <!-- Score (massive, italic Fraunces) -->
+  <g transform="translate(80, 240)">
+    <text font-family="Georgia, 'Fraunces', serif" font-style="italic" font-size="160" fill="#f5f3fa" font-weight="700" letter-spacing="-4">${fmt(score)}</text>
+    <text x="0" y="40" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="16" fill="#a8a3c4" letter-spacing="2">POINTS</text>
+  </g>
+
+  <!-- Badge (right side, vertically next to score) -->
+  <g transform="translate(820, 200)">
+    <text font-size="120">${escSvg(badgeIcon)}</text>
+    <text x="0" y="160" font-family="Georgia, 'Fraunces', serif" font-size="28" fill="#f5f3fa" font-weight="700" font-style="italic">${escSvg(badgeName)}</text>
+  </g>
+
+  <!-- Stat trio: correct / accuracy / difficulty -->
+  <g transform="translate(80, 410)">
+    <!-- Correct -->
+    <g>
+      <text font-size="44" font-weight="700" fill="#f5f3fa">${correct}/${total}</text>
+      <text y="32" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="14" fill="#a8a3c4" letter-spacing="2">CORRECT</text>
+    </g>
+    <!-- Accuracy -->
+    <g transform="translate(280, 0)">
+      <text font-size="44" font-weight="700" fill="#f5f3fa">${accuracy}%</text>
+      <text y="32" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="14" fill="#a8a3c4" letter-spacing="2">ACCURACY</text>
+    </g>
+    <!-- Difficulty -->
+    <g transform="translate(540, 0)">
+      <text font-size="32" font-weight="700" fill="#f5f3fa">${escSvg(diff)}</text>
+      <text y="32" font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="14" fill="#a8a3c4" letter-spacing="2">DIFFICULTY</text>
+    </g>
+  </g>
+
+  <!-- Level pill -->
+  <g transform="translate(80, 480)">
+    <rect width="500" height="40" rx="20" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+    <text x="22" y="27" font-size="18" fill="#f5f3fa" font-weight="600">📚 ${escSvg(level)}</text>
+  </g>
+
+  ${streakChip}
+
+  <!-- Accuracy progress bar -->
+  <g transform="translate(80, 570)">
+    <rect width="960" height="6" rx="3" fill="rgba(255,255,255,0.10)"/>
+    <rect width="${barFill}" height="6" rx="3" fill="url(#accuracyBar)"/>
+  </g>
+
+  <!-- Footer CTA -->
+  <g transform="translate(80, 605)">
+    <text font-family="ui-monospace, 'JetBrains Mono', monospace" font-size="18" fill="#a8a3c4" letter-spacing="0.5">⚔️  Beat this score  ·  ai-app-builder-challenge.vercel.app</text>
+  </g>
+</svg>`;
+
+  res.set('Content-Type', 'image/svg+xml; charset=utf-8');
+  res.set('Cache-Control', 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800');
+  res.send(svg);
+});
+
+// ============================================================
+// SHARE/ROUND PAGE — /share/round?same params as /og/round.svg
+// Self-contained HTML page with proper og:image / og:description
+// pointing at the round card. Rendered server-side so social
+// unfurls show the actual numbers, not a generic site banner.
+// ============================================================
+app.get('/share/round', (req, res) => {
+  const score    = Math.min(Math.max(parseInt(req.query.score, 10) || 0, 0), 9999);
+  const correct  = Math.min(Math.max(parseInt(req.query.correct, 10) || 0, 0), 10);
+  const total    = Math.min(Math.max(parseInt(req.query.total, 10) || 10, 1), 20);
+  const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+  const name     = String(req.query.name || '').slice(0, 30).trim();
+  const level    = String(req.query.level || 'AI Foundations').slice(0, 40).trim() || 'AI Foundations';
+  const diff     = String(req.query.diff || 'Beginner').slice(0, 20).trim() || 'Beginner';
+  const streak   = Math.min(Math.max(parseInt(req.query.streak, 10) || 0, 0), 20);
+
+  const escHtml = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const fmt = (n) => Number(n || 0).toLocaleString('en-US');
+
+  const who   = name ? name : 'Someone';
+  const verb  = correct === total ? 'aced' : correct >= 8 ? 'crushed' : correct >= 6 ? 'completed' : 'tried';
+  const desc  = `${who} ${verb} ${level} on ${diff} — ${fmt(score)} points (${correct}/${total} correct, ${accuracy}% accuracy). Can you beat them?`;
+  const title = `${who} scored ${fmt(score)} on AI Challenge`;
+
+  // Build the OG image URL with the same params
+  const qs = new URLSearchParams({
+    score: String(score),
+    correct: String(correct),
+    total: String(total),
+    name, level, diff,
+    streak: String(streak)
+  }).toString();
+  const ogUrl    = `https://ai-app-builder-challenge.vercel.app/og/round.svg?${qs}`;
+  const pageUrl  = `https://ai-app-builder-challenge.vercel.app/share/round?${qs}`;
+  const playUrl  = `https://ai-app-builder-challenge.vercel.app/?utm_source=share_round&utm_level=${encodeURIComponent(level)}`;
+
+  const html = `<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>${escHtml(title)}</title>
+<meta name="description" content="${escHtml(desc)}"/>
+<link rel="canonical" href="${escHtml(pageUrl)}"/>
+
+<meta property="og:type"        content="article"/>
+<meta property="og:site_name"   content="AI Challenge"/>
+<meta property="og:title"       content="${escHtml(title)}"/>
+<meta property="og:description" content="${escHtml(desc)}"/>
+<meta property="og:url"         content="${escHtml(pageUrl)}"/>
+<meta property="og:image"       content="${escHtml(ogUrl)}"/>
+<meta property="og:image:width"  content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:image:type"  content="image/svg+xml"/>
+<meta name="twitter:card"        content="summary_large_image"/>
+<meta name="twitter:title"       content="${escHtml(title)}"/>
+<meta name="twitter:description" content="${escHtml(desc)}"/>
+<meta name="twitter:image"       content="${escHtml(ogUrl)}"/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Geist:wght@300..700&family=JetBrains+Mono:wght@400..600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/style.css"/>
+<style>
+  .sr-wrap { max-width: 720px; margin: 0 auto; padding: 28px 18px 100px; position: relative; z-index: 2; }
+  .sr-back { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-faint); text-decoration: none; padding: 8px 4px; min-height: 40px; }
+  .sr-back:hover { color: var(--ink); }
+  .sr-card { margin-top: 14px; padding: 0; border-radius: 22px; overflow: hidden; border: 1px solid hsl(270 90% 70% / 0.35); box-shadow: 0 8px 40px rgba(10,6,19,0.4); }
+  .sr-card img { display: block; width: 100%; height: auto; }
+  .sr-headline { margin-top: 22px; font-family: 'Fraunces', serif; font-size: 1.5rem; font-weight: 700; color: var(--ink); line-height: 1.25; }
+  .sr-sub { margin-top: 8px; font-size: 0.95rem; color: var(--ink-faint); line-height: 1.5; }
+  .sr-cta { display: flex; gap: 10px; margin-top: 26px; }
+  .sr-cta-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 14px 18px; min-height: 50px; font-size: 0.92rem; font-weight: 600; border-radius: var(--radius-pill); text-decoration: none; transition: all 0.18s ease; }
+  .sr-cta-primary { background: var(--accent); color: var(--accent-text); border: 1px solid var(--accent); }
+  .sr-cta-primary:hover { filter: brightness(1.12); transform: translateY(-1px); box-shadow: 0 6px 22px var(--accent-glow); }
+  .sr-cta-secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--border); }
+  .sr-cta-secondary:hover { border-color: var(--border-hi); }
+</style>
+</head>
+<body>
+<script>(function(){var t=localStorage.getItem('aiChallenge_theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+<div class="bg" aria-hidden="true">
+  <div class="bg-blob bg-blob-1"></div><div class="bg-blob bg-blob-2"></div><div class="bg-blob bg-blob-3"></div><div class="bg-grain"></div>
+</div>
+<div class="sr-wrap">
+  <a href="/" class="sr-back" aria-label="Back to home">← AI Challenge home</a>
+  <div class="sr-card">
+    <img src="${escHtml(ogUrl)}" alt="${escHtml(title)}" width="1200" height="630"/>
+  </div>
+  <h1 class="sr-headline">${escHtml(title)}</h1>
+  <p class="sr-sub">${escHtml(desc)}</p>
+  <div class="sr-cta">
+    <a href="${escHtml(playUrl)}" class="sr-cta-btn sr-cta-primary">⚔️ Try to beat it →</a>
+    ${name ? `<a href="/u/${encodeURIComponent(name)}" class="sr-cta-btn sr-cta-secondary">View ${escHtml(name)}'s profile</a>` : ''}
+  </div>
+</div>
+</body></html>`;
+
+  res.set('Content-Type', 'text/html; charset=utf-8');
+  res.set('Cache-Control', 'public, max-age=300, s-maxage=600, stale-while-revalidate=86400');
+  res.send(html);
+});
+
 app.get('/og/:name', async (req, res) => {
   const rawName = String(req.params.name || '').replace(/\.svg$/, '').slice(0, 80);
   const name    = decodeURIComponent(rawName).trim();

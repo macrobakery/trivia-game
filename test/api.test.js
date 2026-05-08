@@ -295,6 +295,53 @@ test('GET /embed/u/:name escapes HTML in the player name', async () => {
   assert.ok(!data.includes('<x>'), 'no raw <x> in body');
 });
 
+// ── /og/round.svg + /share/round (round-result share) ──────────────
+test('GET /og/round.svg renders an SVG with the round numbers', async () => {
+  const qs = 'score=920&correct=9&total=10&level=AI%20Foundations&diff=Beginner&name=Aziz&streak=5';
+  const { status, data, headers } = await api('GET', '/og/round.svg?' + qs);
+  assert.equal(status, 200);
+  assert.match(headers.get('content-type') || '', /image\/svg\+xml/);
+  assert.match(headers.get('cache-control') || '', /max-age=3600/);
+  assert.ok(data.includes('920'), 'svg shows score');
+  assert.ok(data.includes('9/10'), 'svg shows correct/total');
+  assert.ok(data.includes('Aziz'), 'svg shows player name');
+  assert.ok(data.includes('AI Foundations'), 'svg shows level');
+  assert.ok(data.includes('Beginner'), 'svg shows difficulty');
+  assert.ok(data.includes('5-streak'), 'svg shows streak chip when ≥3');
+});
+
+test('GET /og/round.svg clamps out-of-range params', async () => {
+  // score=99999 should clamp to 9999, correct=999 should clamp to 10
+  const { status, data } = await api('GET', '/og/round.svg?score=99999&correct=999&total=10');
+  assert.equal(status, 200);
+  // 99999 must NOT appear as raw number — it should be 9999
+  assert.ok(!data.includes('99,999'));
+  assert.ok(!data.includes('999/10'));
+  assert.ok(data.includes('9,999'));
+  assert.ok(data.includes('10/10'));
+});
+
+test('GET /og/round.svg escapes HTML in name and level', async () => {
+  const qs = 'name=' + encodeURIComponent('<x>&y') + '&level=' + encodeURIComponent('<bad>');
+  const { status, data } = await api('GET', '/og/round.svg?' + qs);
+  assert.equal(status, 200);
+  assert.ok(data.includes('&lt;x&gt;'), 'name escaped');
+  assert.ok(data.includes('&lt;bad&gt;'), 'level escaped');
+  assert.ok(!data.match(/<text[^>]*>[^<]*<x>/), 'raw <x> must not appear inside <text>');
+});
+
+test('GET /share/round renders OG meta and the embedded card image', async () => {
+  const qs = 'score=720&correct=7&total=10&name=Aziz&level=Model%20Building&diff=Intermediate';
+  const { status, data, headers } = await api('GET', '/share/round?' + qs);
+  assert.equal(status, 200);
+  assert.match(headers.get('content-type') || '', /text\/html/);
+  assert.ok(data.includes('og:image'));
+  assert.ok(data.includes('og/round.svg?'), 'og:image points to round SVG');
+  assert.ok(data.includes('Aziz scored 720'), 'title carries name + score');
+  assert.ok(data.includes('Model Building'));
+  assert.ok(data.includes('⚔️ Try to beat it'), 'page has play CTA');
+});
+
 // ── /og/tip.svg (daily-tip share card) ───────────────────────────────
 test('GET /og/tip.svg renders any text into a share-card SVG', async () => {
   const text = 'Vector embeddings convert words into numbers';
