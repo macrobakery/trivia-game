@@ -674,7 +674,41 @@ renderAchievements();
 renderDailyChallenge();
 renderGameHistory();
 renderContinueLearning();
+renderWeakSpots();
 fetchGlobalRank();
+
+// ── Weak Spots — surface spaced-repetition queue ──────────────
+function renderWeakSpots() {
+  const section = document.getElementById('prof-weak-section');
+  const cta     = document.getElementById('prof-weak-cta');
+  const countEl = document.getElementById('prof-weak-count');
+  const subEl   = document.getElementById('prof-weak-sub');
+  if (!section || !cta) return;
+
+  let store = [];
+  try { store = JSON.parse(localStorage.getItem('aiChallenge_weakSpots') || '[]'); } catch {}
+  const active = store.filter(s => (s.wrongCount || 0) > 0);
+
+  // Hide until the user has at least 3 wrong questions saved
+  if (active.length < 3) { section.style.display = 'none'; return; }
+
+  section.style.display = '';
+  if (countEl) countEl.textContent = `${active.length} question${active.length === 1 ? '' : 's'}`;
+
+  // Show top 1-3 levels they're missing
+  if (subEl) {
+    const byLevel = {};
+    active.forEach(q => { byLevel[q.level || 'Mixed'] = (byLevel[q.level || 'Mixed'] || 0) + 1; });
+    const top = Object.entries(byLevel).sort((a,b) => b[1] - a[1]).slice(0,2).map(([lv]) => lv);
+    subEl.textContent = top.length
+      ? `Sharpen your ${top.join(' & ')}`
+      : 'Review the questions you got wrong';
+  }
+
+  cta.addEventListener('click', () => {
+    window.location.href = '/?practice=weak-spots';
+  }, { once: true });
+}
 
 // Register service worker
 if ('serviceWorker' in navigator) {

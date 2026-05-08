@@ -2859,13 +2859,19 @@ initHubStreakDisplay();
 (function handlePWAShortcut() {
   const params = new URLSearchParams(window.location.search);
   const shortcut = params.get('shortcut');
-  if (!shortcut) return;
-  // Remove the param from history so it doesn't replay on refresh
+  const practice = params.get('practice');
+  if (!shortcut && !practice) return;
+  // Remove the params from history so they don't replay on refresh
   history.replaceState({}, '', '/');
   if (shortcut === 'play') {
     setTimeout(() => $('start-btn')?.click(), 300);
   } else if (shortcut === 'daily') {
     setTimeout(() => $('daily-challenge-btn')?.click(), 300);
+  } else if (practice === 'weak-spots') {
+    setTimeout(() => {
+      const store = getSRStore();
+      if (store.length) startWeakSpotsSession();
+    }, 300);
   }
 })();
 initWeakSpotsBtn();

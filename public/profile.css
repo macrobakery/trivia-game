@@ -803,3 +803,46 @@
   font-size: 1rem;
   flex-shrink: 0;
 }
+
+/* ── Weak Spots card ── */
+.prof-weak-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--t), background var(--t);
+}
+.prof-weak-card:hover {
+  border-color: hsl(40 95% 58% / 0.6);
+  background: hsl(40 95% 58% / 0.06);
+}
+.prof-weak-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+}
+.prof-weak-info { flex: 1; min-width: 0; }
+.prof-weak-title {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.prof-weak-sub {
+  font-size: 0.74rem;
+  color: var(--ink-faint);
+}
+.prof-weak-arrow {
+  color: var(--gold);
+  font-size: 1rem;
+  flex-shrink: 0;
+  font-weight: 700;
+}
