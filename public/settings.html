@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Settings — AI Challenge</title>
+  <meta name="description" content="Manage your AI Challenge preferences: theme, sound, notifications, analytics, and data." />
+  <meta name="robots" content="noindex, follow" />
+  <link rel="canonical" href="https://ai-app-builder-challenge.vercel.app/settings.html" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Geist:wght@300..700&family=JetBrains+Mono:wght@400..600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#07060c" id="meta-theme-color" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <style>
+    /* ── Settings page-specific styles ── */
+    .set-page {
+      max-width: 680px; margin: 0 auto;
+      padding: 12px 16px calc(80px + env(safe-area-inset-bottom));
+      position: relative; z-index: 1;
+    }
+
+    .set-nav {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 0 16px;
+    }
+    .set-nav-title {
+      flex: 1; text-align: center;
+      font-family: 'Fraunces', serif;
+      font-size: 1.4rem; font-weight: 700;
+      color: var(--ink); letter-spacing: -0.02em;
+    }
+
+    .set-section {
+      margin-bottom: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .set-section-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.66rem; font-weight: 700;
+      letter-spacing: 0.6px; text-transform: uppercase;
+      color: var(--ink-faint);
+      padding: 14px 16px 8px;
+    }
+
+    .set-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+    }
+    .set-row:first-of-type { border-top: none; }
+    .set-row-info { flex: 1; min-width: 0; }
+    .set-row-label {
+      font-size: 0.92rem; font-weight: 600; color: var(--ink);
+      margin-bottom: 2px;
+    }
+    .set-row-sub {
+      font-size: 0.76rem; color: var(--ink-faint); line-height: 1.4;
+    }
+
+    /* ── iOS-style switch ── */
+    .set-switch {
+      position: relative;
+      width: 50px; height: 30px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background var(--t), border-color var(--t);
+      padding: 0;
+    }
+    .set-switch::before {
+      content: '';
+      position: absolute;
+      left: 3px; top: 50%;
+      transform: translateY(-50%);
+      width: 22px; height: 22px;
+      background: var(--ink);
+      border-radius: 50%;
+      transition: left var(--t), background var(--t);
+    }
+    .set-switch[aria-checked="true"] {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .set-switch[aria-checked="true"]::before {
+      left: 25px;
+      background: var(--accent-text);
+    }
+
+    /* ── Action buttons inside rows ── */
+    .set-action {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 14px; border-radius: var(--radius-pill);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      font-size: 0.8rem; font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+      min-height: 36px;
+      transition: all var(--t);
+    }
+    .set-action:hover { border-color: var(--border-hi); background: var(--surface); }
+
+    .set-action.danger {
+      color: var(--red);
+      border-color: hsl(0 82% 62% / 0.3);
+    }
+    .set-action.danger:hover {
+      background: hsl(0 82% 62% / 0.08);
+      border-color: var(--red);
+    }
+
+    .set-status {
+      font-size: 0.74rem;
+      color: var(--ink-faint);
+      padding: 0 16px 14px;
+      min-height: 16px;
+    }
+    .set-status.ok { color: var(--green); }
+    .set-status.err { color: var(--red); }
+
+    .set-foot {
+      text-align: center; padding: 24px 0 12px;
+      font-size: 0.74rem; color: var(--ink-faint);
+    }
+    .set-foot a {
+      color: var(--ink-faint); text-decoration: none;
+      padding: 6px 8px; display: inline-block;
+    }
+    .set-foot a:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <!-- Inline theme restore — must run before CSS paint -->
+  <script>
+    (function(){
+      const t = localStorage.getItem('aiChallenge_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+      const m = document.getElementById('meta-theme-color');
+      if (m) m.setAttribute('content', t === 'dark' ? '#07060c' : '#f0eff8');
+    })();
+  </script>
+
+  <!-- Animated nebula background -->
+  <div class="bg" aria-hidden="true">
+    <div class="bg-blob bg-blob-1"></div>
+    <div class="bg-blob bg-blob-2"></div>
+    <div class="bg-blob bg-blob-3"></div>
+    <div class="bg-grain"></div>
+  </div>
+
+  <div class="set-page">
+
+    <!-- Top nav -->
+    <nav class="set-nav">
+      <a href="/profile.html" class="btn-ghost-sm">← Profile</a>
+      <span class="set-nav-title">⚙️ Settings</span>
+      <button class="theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">🌙</button>
+    </nav>
+
+    <!-- ── Appearance ── -->
+    <section class="set-section">
+      <h2 class="set-section-title">Appearance</h2>
+      <div class="set-row">
+        <div class="set-row-info">
+          <div class="set-row-label">Dark mode</div>
+          <div class="set-row-sub">Cosmic dark theme. Off uses the soft lavender light theme.</div>
+        </div>
+        <button class="set-switch" id="sw-theme" role="switch" aria-checked="true" aria-label="Toggle dark mode"></button>
+      </div>
+    </section>
+
+    <!-- ── Audio ── -->
+    <section class="set-section">
+      <h2 class="set-section-title">Audio</h2>
+      <div class="set-row">
+        <div class="set-row-info">
+          <div class="set-row-label">Sound effects</div>
+          <div class="set-row-sub">Clicks, correct/wrong, streak milestones.</div>
+        </div>
+        <button class="set-switch" id="sw-sound" role="switch" aria-checked="true" aria-label="Toggle sound"></button>
+      </div>
+    </section>
+
+    <!-- ── Notifications ── -->
+    <section class="set-section">
+      <h2 class="set-section-title">Notifications</h2>
+      <div class="set-row">
+        <div class="set-row-info">
+          <div class="set-row-label">Daily reminders</div>
+          <div class="set-row-sub">Push notification at 9pm Kuwait when fresh content goes live.</div>
+        </div>
+        <button class="set-action" id="push-toggle-btn">
+          <span id="push-btn-icon">🔔</span>
+          <span id="push-btn-label">Enable</span>
+        </button>
+      </div>
+      <p class="set-status" id="push-status"></p>
+    </section>
+
+    <!-- ── Privacy ── -->
+    <section class="set-section">
+      <h2 class="set-section-title">Privacy</h2>
+      <div class="set-row">
+        <div class="set-row-info">
+          <div class="set-row-label">Analytics</div>
+          <div class="set-row-sub">Anonymous usage events to improve the app. Off keeps everything local.</div>
+        </div>
+        <button class="set-switch" id="sw-analytics" role="switch" aria-checked="false" aria-label="Toggle analytics"></button>
+      </div>
+    </section>
+
+    <!-- ── Data ── -->
+    <section class="set-section">
+      <h2 class="set-section-title">Data</h2>
+      <div class="set-row">
+        <div class="set-row-info">
+          <div class="set-row-label">Storage on this device</div>
+          <div class="set-row-sub" id="data-size">Calculating…</div>
+        </div>
+        <button class="set-action" id="export-data-btn">📥 Export</button>
+      </div>
+      <div class="set-row">
+        <div class="set-row-info">
+          <div class="set-row-label">Reset all progress</div>
+          <div class="set-row-sub">Clears streaks, scores, weak spots, lessons, and achievements on this device. Cannot be undone.</div>
+        </div>
+        <button class="set-action danger" id="reset-all-btn">🗑 Reset</button>
+      </div>
+      <p class="set-status" id="data-status"></p>
+    </section>
+
+    <p class="set-foot">
+      AI Challenge · v1 · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a>
+    </p>
+
+  </div><!-- /set-page -->
+
+  <!-- Bottom App Navigation -->
+  <nav class="app-nav">
+    <a href="/"                class="app-nav-item"><span class="app-nav-icon">🏠</span><span class="app-nav-label">Home</span></a>
+    <a href="/lessons.html"    class="app-nav-item"><span class="app-nav-icon">📚</span><span class="app-nav-label">Learn</span></a>
+    <a href="/news.html"       class="app-nav-item"><span class="app-nav-icon">📰</span><span class="app-nav-label">News</span></a>
+    <a href="/profile.html"    class="app-nav-item active"><span class="app-nav-icon">👤</span><span class="app-nav-label">Profile</span></a>
+    <a href="/leaderboard.html" class="app-nav-item"><span class="app-nav-icon">🏆</span><span class="app-nav-label">Rank</span></a>
+    <a href="/chat.html"       class="app-nav-item"><span class="app-nav-icon">🤖</span><span class="app-nav-label">Alex</span></a>
+  </nav>
+
+  <script src="consent.js"></script>
+  <script>
+  // ── Settings page logic ─────────────────────────────────────
+  (function () {
+    'use strict';
+    const $ = (id) => document.getElementById(id);
+
+    // ── Theme switch ──
+    const swTheme = $('sw-theme');
+    function applyTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      localStorage.setItem('aiChallenge_theme', t);
+      const m = $('meta-theme-color');
+      if (m) m.setAttribute('content', t === 'dark' ? '#07060c' : '#f0eff8');
+      swTheme.setAttribute('aria-checked', String(t === 'dark'));
+    }
+    applyTheme(localStorage.getItem('aiChallenge_theme') || 'dark');
+    swTheme.addEventListener('click', () => {
+      const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+      applyTheme(cur === 'dark' ? 'light' : 'dark');
+    });
+
+    // Top-bar theme toggle mirrors the switch
+    $('theme-toggle')?.addEventListener('click', () => swTheme.click());
+
+    // ── Sound switch ──
+    const swSound = $('sw-sound');
+    function applySound(on) {
+      localStorage.setItem('aiChallenge_sound', on ? 'on' : 'off');
+      swSound.setAttribute('aria-checked', String(!!on));
+    }
+    applySound(localStorage.getItem('aiChallenge_sound') !== 'off');
+    swSound.addEventListener('click', () => {
+      const on = swSound.getAttribute('aria-checked') !== 'true';
+      applySound(on);
+    });
+
+    // ── Analytics consent switch ──
+    const swAnalytics = $('sw-analytics');
+    function applyAnalytics(on) {
+      localStorage.setItem('analytics_consent', on ? 'accepted' : 'declined');
+      swAnalytics.setAttribute('aria-checked', String(!!on));
+    }
+    applyAnalytics(localStorage.getItem('analytics_consent') === 'accepted');
+    swAnalytics.addEventListener('click', () => {
+      const on = swAnalytics.getAttribute('aria-checked') !== 'true';
+      applyAnalytics(on);
+    });
+
+    // ── Storage size ──
+    function calcStorage() {
+      let bytes = 0;
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (!k || k.indexOf('aiChallenge_') !== 0 && k !== 'analytics_consent') continue;
+          const v = localStorage.getItem(k) || '';
+          bytes += k.length + v.length;
+        }
+      } catch (_) {}
+      const kb = (bytes / 1024).toFixed(1);
+      const el = $('data-size');
+      if (el) el.textContent = `${kb} KB across this app's keys.`;
+    }
+    calcStorage();
+
+    // ── Export ──
+    $('export-data-btn').addEventListener('click', () => {
+      const dump = {};
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (!k || (k.indexOf('aiChallenge_') !== 0 && k !== 'analytics_consent')) continue;
+          dump[k] = localStorage.getItem(k);
+        }
+      } catch (_) {}
+      const blob = new Blob([JSON.stringify(dump, null, 2)], { type: 'application/json' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url;
+      a.download = `ai-challenge-data-${new Date().toISOString().slice(0,10)}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      const status = $('data-status');
+      status.textContent = '✅ Data exported.';
+      status.className = 'set-status ok';
+      setTimeout(() => { status.textContent = ''; status.className = 'set-status'; }, 3000);
+    });
+
+    // ── Reset all ──
+    $('reset-all-btn').addEventListener('click', () => {
+      const ok = confirm('Reset ALL progress on this device? Streaks, scores, weak spots, lessons and achievements will be cleared. This cannot be undone.');
+      if (!ok) return;
+      try {
+        const toDelete = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (!k) continue;
+          if (k.indexOf('aiChallenge_') === 0) toDelete.push(k);
+        }
+        toDelete.forEach(k => localStorage.removeItem(k));
+      } catch (_) {}
+      const status = $('data-status');
+      status.textContent = '✅ Progress cleared. Reload any page to see the fresh state.';
+      status.className = 'set-status ok';
+      calcStorage();
+    });
+
+    // ── Push notification logic (mirrors profile.js) ──
+    (function initPush() {
+      const btn    = $('push-toggle-btn');
+      const label  = $('push-btn-label');
+      const icon   = $('push-btn-icon');
+      const status = $('push-status');
+      if (!btn || !('Notification' in window) || !('serviceWorker' in navigator)) {
+        if (btn) btn.style.display = 'none';
+        if (status) status.textContent = 'Push notifications are not supported in this browser.';
+        return;
+      }
+      function urlBase64ToUint8Array(b64) {
+        const pad = '='.repeat((4 - b64.length % 4) % 4);
+        const s = (b64 + pad).replace(/-/g,'+').replace(/_/g,'/');
+        const raw = window.atob(s);
+        return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+      }
+      function update(subscribed) {
+        if (subscribed) {
+          icon.textContent = '🔕';
+          label.textContent = 'Disable';
+          status.textContent = '✅ You will receive daily reminders.';
+          status.className = 'set-status ok';
+        } else {
+          icon.textContent = '🔔';
+          label.textContent = 'Enable';
+          status.textContent = '';
+          status.className = 'set-status';
+        }
+      }
+      async function check() {
+        try {
+          const reg = await navigator.serviceWorker.ready;
+          const sub = await reg.pushManager.getSubscription();
+          update(!!sub);
+        } catch (_) {}
+      }
+      btn.addEventListener('click', async () => {
+        try {
+          const reg = await navigator.serviceWorker.ready;
+          const sub = await reg.pushManager.getSubscription();
+          if (sub) {
+            await sub.unsubscribe();
+            await fetch('/api/push/unsubscribe', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ endpoint: sub.endpoint })
+            });
+            update(false);
+          } else {
+            const perm = await Notification.requestPermission();
+            if (perm !== 'granted') {
+              status.textContent = '❌ Permission denied. Enable in browser settings.';
+              status.className = 'set-status err';
+              return;
+            }
+            const keyData = await fetch('/api/push/vapid-public-key').then(r => r.json());
+            const newSub  = await reg.pushManager.subscribe({
+              userVisibleOnly: true,
+              applicationServerKey: urlBase64ToUint8Array(keyData.key)
+            });
+            const j = newSub.toJSON();
+            await fetch('/api/push/subscribe', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ endpoint: j.endpoint, keys: j.keys })
+            });
+            update(true);
+          }
+        } catch (err) {
+          status.textContent = '⚠️ Could not set up notifications: ' + err.message;
+          status.className = 'set-status err';
+        }
+      });
+      check();
+    })();
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+      });
+    }
+  })();
+  </script>
+
+</body>
+</html>
