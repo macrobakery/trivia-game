@@ -7,6 +7,11 @@ node_modules/
 # Database file — created fresh on each deployment
 database.db
 
+# Test artifacts (per-suite temp DBs)
+.test-db-*.sqlite
+.test-db-*.sqlite-shm
+.test-db-*.sqlite-wal
+
 # OS noise
 .DS_Store
 Thumbs.db

@@ -93,6 +93,16 @@ http://localhost:3000
 
 ---
 
+## How to Run the Tests
+
+```bash
+npm test
+```
+
+Spins up the Express app on an ephemeral port against a fresh per-process SQLite file (`.test-db-<pid>.sqlite`, gitignored) and exercises the public API surface plus the `/u/:name` profile-page route. No external services or API keys required — AI-dependent endpoints are tested via their "not configured" branches so the suite runs offline and free.
+
+---
+
 ## How to Open the Admin Page
 
 ```
