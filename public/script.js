@@ -3839,6 +3839,10 @@ function initHomeStatsStrip() {
 // Wired to the "✨ Custom AI Quiz" CTA in the quiz bottom-sheet.
 // Runs in practice mode (no timer pressure, no leaderboard write)
 // because these questions aren't from the curated bank.
+//
+// Also accepts a ?genquiz=<topic> URL param so deep links from
+// other pages (e.g. the lesson-search empty state) can drop the
+// user straight into the modal pre-filled.
 // ══════════════════════════════════════════════════════════════
 (function initGenQuiz() {
   const openBtn  = document.getElementById('genquiz-open-btn');
@@ -3853,18 +3857,33 @@ function initHomeStatsStrip() {
 
   let chosenDiff = 'Beginner';
 
-  function openModal() {
+  function openModal(prefillTopic) {
     if (typeof closeQuizPanel === 'function') closeQuizPanel();
     modal.style.display = 'flex';
     if (errEl) errEl.style.display = 'none';
+    if (prefillTopic && topicEl) topicEl.value = prefillTopic;
     setTimeout(() => topicEl?.focus(), 80);
-    if (typeof track === 'function') track('genquiz_open', {});
+    if (typeof track === 'function') track('genquiz_open', { prefilled: !!prefillTopic });
   }
   function closeModal() {
     modal.style.display = 'none';
   }
 
-  openBtn.addEventListener('click', openModal);
+  // Deep-link: ?genquiz=<topic> auto-opens the modal pre-filled.
+  // Strip the param from the URL afterwards so a back-nav doesn't re-open.
+  try {
+    const params = new URLSearchParams(location.search);
+    const prefill = params.get('genquiz');
+    if (prefill && prefill.trim()) {
+      // Defer until DOM + main script have wired the rest of the home screen
+      setTimeout(() => openModal(prefill.trim().slice(0, 80)), 120);
+      params.delete('genquiz');
+      const cleanUrl = location.pathname + (params.toString() ? '?' + params.toString() : '') + location.hash;
+      try { history.replaceState(null, '', cleanUrl); } catch (_) {}
+    }
+  } catch (_) {}
+
+  openBtn.addEventListener('click', () => openModal());
   closeBtn?.addEventListener('click', closeModal);
   modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
   document.addEventListener('keydown', (e) => {

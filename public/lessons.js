@@ -1936,10 +1936,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!ranked.length) {
       resultsW.style.display = '';
+      // Bridge to the Custom AI Quiz: offer to generate a quiz on the
+      // exact search term that the curated lessons don't cover yet.
+      const safeQ = escapeHtml(q);
       resultsW.innerHTML = `
         <div class="lsr-empty">
-          <strong>No lessons match "${escapeHtml(q)}"</strong>
-          Try keywords like "neural", "prompt", "bias", or "deployment".
+          <strong>No lessons match "${safeQ}"</strong>
+          We don't have a curated lesson on that yet — but you can spin up
+          a custom quiz on it right now.
+          <div style="margin-top:14px">
+            <a class="lsr-genquiz-cta" href="/?genquiz=${encodeURIComponent(q)}">
+              ✨ Generate a quiz on "${safeQ}" →
+            </a>
+          </div>
         </div>`;
       return;
     }

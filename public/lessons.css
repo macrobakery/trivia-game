@@ -1197,8 +1197,30 @@
 .lsr-empty {
   text-align: center; padding: 28px 14px;
   color: var(--ink-faint); font-size: 0.88rem;
+  line-height: 1.55;
 }
 .lsr-empty strong { color: var(--ink); display: block; margin-bottom: 6px; font-family: 'Fraunces', serif; font-size: 1rem; }
+
+/* CTA that bridges from "no lessons match" → Custom AI Quiz */
+.lsr-genquiz-cta {
+  display: inline-flex; align-items: center;
+  gap: 6px;
+  padding: 11px 18px;
+  min-height: 44px;
+  background: linear-gradient(135deg, hsl(270 90% 70% / 0.18), hsl(200 100% 60% / 0.10));
+  border: 1px solid hsl(270 90% 70% / 0.5);
+  color: var(--accent);
+  border-radius: var(--radius-pill);
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.18s ease;
+}
+.lsr-genquiz-cta:hover {
+  background: linear-gradient(135deg, hsl(270 90% 70% / 0.28), hsl(200 100% 60% / 0.16));
+  border-color: hsl(270 90% 70% / 0.8);
+  transform: translateY(-1px);
+}
 mark.lsr-hl {
   background: hsl(40 95% 58% / 0.28);
   color: var(--ink);
